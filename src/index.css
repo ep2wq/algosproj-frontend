@@ -1,1 +1,24 @@
 @import "tailwindcss";
+
+@theme {
+  --color-paper: #f8f9fb;
+  --color-ink: #1e2532;
+  --color-muted: #5a6475;
+  --color-line: #dde2ea;
+  --color-accent: #15626a;
+  --color-accent-soft: #e3f0f1;
+  --color-pass: #23703a;
+  --color-fail: #b42318;
+  --color-warn: #8a5300;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+/* Visible keyboard focus on every link, button and input. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

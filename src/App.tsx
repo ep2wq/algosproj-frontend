@@ -1,8 +1,14 @@
+import { Route, Routes } from 'react-router-dom'
+import Layout from './components/Layout'
+import NotFoundPage from './pages/NotFoundPage'
+
 function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <h1 className="text-4xl font-bold">algosproj-frontend</h1>
-    </div>
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
   )
 }
 
