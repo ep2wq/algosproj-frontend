@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
@@ -5,11 +6,22 @@ import LoginPage from './pages/LoginPage'
 import NotFoundPage from './pages/NotFoundPage'
 import RegisterPage from './pages/RegisterPage'
 
+// Lazy, so the Monaco editor isn't part of the first bundle.
+const LessonPage = lazy(() => import('./pages/LessonPage'))
+
 function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<HomePage />} />
+        <Route
+          path="/lessons/:slug"
+          element={
+            <Suspense fallback={<p className="text-muted">Loading lesson...</p>}>
+              <LessonPage />
+            </Suspense>
+          }
+        />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="*" element={<NotFoundPage />} />
