@@ -67,6 +67,9 @@ lesson text and the problems. So far:
   (`ArrayScanVisual.tsx` with a `mode` prop, `arrayScanFrames.ts`).
 - `reverse-a-string`, `check-for-a-palindrome`: two pointers moving inward
   (`TwoPointerVisual.tsx` with a `mode` prop, `twoPointerFrames.ts`).
+- `balanced-brackets`, `evaluate-a-postfix-expression`, `next-greater-element`: the input
+  in a row and a stack column with its top labelled (`StackVisual.tsx` with a `mode` prop,
+  `stackFrames.ts`).
 - `sort-an-array`: bubble, insertion and merge sort (`sortFrames.ts`).
 - `binary-search`: low/mid/high over a sorted array with a target (`binarySearchFrames.ts`).
 
@@ -87,6 +90,11 @@ Frame design decisions:
 - Reverse and Palindrome only accept what the graded problem allows: letters, digits and
   single inner spaces for Reverse; lowercase a-z for Palindrome, compared exactly. Each
   swap or comparison is one step; the palindrome check stops at the first mismatch.
+- Stack visuals follow the problems: brackets ( ) [ ] { } only, empty counts as balanced;
+  postfix pops the right operand first and `/` truncates toward zero, and own input is
+  rejected if it is malformed, divides by zero or leaves the 32-bit range; next greater
+  means strictly bigger, and positions left on the stack get -1 in one final step. Own
+  postfix input allows numbers from -99 to 99 (the problem itself only uses 0 to 1000).
 
 ## Docker
 

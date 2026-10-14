@@ -47,8 +47,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## Current status
 
 - Done: lessons list, lesson page with Monaco and submit, login/register, leaderboard,
-  404, lesson text rendering (`LessonBody`). Visualizations on six lessons: sum, maximum,
-  reverse, palindrome, sort, binary search. Lint and build pass. Recent work is unpushed.
+  404, lesson text rendering (`LessonBody`). Visualizations on 9 of 12 lessons (all but
+  Warm-up, Two Sum, Count inversions). Lint and build pass. Recent work is unpushed.
 - Next: visualizations for the remaining lessons; AI hint UI once the backend has one.
 - Decisions: oxlint, not ESLint. A 401 with a token clears it and goes to `/login`.
   Leaderboard "me" row is matched on name, rank and points (no user ids).
