@@ -1,6 +1,7 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { binarySearchFrames, type SearchFrame } from './binarySearchFrames'
-import { usePlayback, type Speed } from './usePlayback'
+import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import { usePlayback } from './usePlayback'
 
 const MAX_NUMBERS = 15
 
@@ -66,8 +67,6 @@ const LEGEND = [
   { label: 'Ruled out', style: 'border-muted/40 bg-paper' },
 ]
 
-const buttonClass = 'rounded border border-line bg-white px-3 py-1.5 text-sm hover:border-muted aria-disabled:cursor-not-allowed aria-disabled:opacity-50'
-
 export default function BinarySearchVisual() {
   const id = useId()
   const [initial] = useState(randomCase)
@@ -79,7 +78,8 @@ export default function BinarySearchVisual() {
   const [inputError, setInputError] = useState('')
 
   const frames = useMemo(() => binarySearchFrames(array, target), [array, target])
-  const { step, lastStep, playing, speed, setSpeed, togglePlay, goTo } = usePlayback(frames.length)
+  const playback = usePlayback(frames.length)
+  const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
 
   function handleRandom() {
@@ -143,21 +143,7 @@ export default function BinarySearchVisual() {
             </p>
           )}
         </form>
-        <div>
-          <label htmlFor={`${id}-speed`} className="text-sm font-medium">
-            Speed
-          </label>
-          <select
-            id={`${id}-speed`}
-            value={speed}
-            onChange={(event) => setSpeed(event.target.value as Speed)}
-            className="ml-2 rounded border border-line bg-white px-2 py-1 text-sm hover:border-muted"
-          >
-            <option value="slow">Slow</option>
-            <option value="normal">Normal</option>
-            <option value="fast">Fast</option>
-          </select>
-        </div>
+        <SpeedSelect playback={playback} />
       </div>
 
       <div
@@ -192,28 +178,7 @@ export default function BinarySearchVisual() {
         {current.description}
       </p>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={togglePlay}
-          aria-disabled={lastStep === 0}
-          className="min-w-20 rounded bg-accent px-4 py-1.5 text-sm font-medium text-white hover:bg-accent/90 aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
-        >
-          {playing ? 'Pause' : 'Play'}
-        </button>
-        <button type="button" onClick={() => goTo(step - 1)} aria-disabled={step === 0} className={buttonClass}>
-          Step back
-        </button>
-        <button type="button" onClick={() => goTo(step + 1)} aria-disabled={step >= lastStep} className={buttonClass}>
-          Step forward
-        </button>
-        <button type="button" onClick={() => goTo(0)} className={buttonClass}>
-          Reset
-        </button>
-        <span className="text-sm text-muted tabular-nums">
-          Step {Math.min(step, lastStep) + 1} of {frames.length}
-        </span>
-      </div>
+      <PlaybackControls playback={playback} />
 
       <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
         <button type="button" onClick={handleRandom} className={buttonClass}>
