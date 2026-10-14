@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError, getLesson, type Lesson } from '../api'
 import ProblemCard from '../components/ProblemCard'
+import { VISUALS } from '../visuals'
 
 // Loaded with React.lazy, so Monaco stays out of the first bundle.
 export default function LessonPage() {
@@ -31,6 +32,7 @@ export default function LessonPage() {
   const current = loaded?.slug === slug ? loaded : null
   const lesson = current?.lesson ?? null
   const error = current?.error ?? ''
+  const Visual = VISUALS.get(slug)
 
   if (error) {
     return (
@@ -54,6 +56,19 @@ export default function LessonPage() {
       </Link>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">{lesson.title}</h1>
       {lesson.body && <p className="mt-4 max-w-prose whitespace-pre-wrap leading-relaxed">{lesson.body}</p>}
+
+      {Visual && (
+        <section className="mt-10 border-t border-line pt-8" aria-labelledby="visual-heading">
+          <h2 id="visual-heading" className="text-xl font-semibold">
+            Visualization
+          </h2>
+          <Suspense fallback={<p className="mt-4 text-sm text-muted">Loading visualization...</p>}>
+            {/* Looked up from a module-level map, so it is the same component on every render. */}
+            {/* oxlint-disable-next-line react/static-components */}
+            <Visual />
+          </Suspense>
+        </section>
+      )}
 
       {lesson.problems.map((problem) => (
         <ProblemCard key={problem.id} problem={problem} />
