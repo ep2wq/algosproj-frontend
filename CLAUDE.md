@@ -24,9 +24,14 @@ server-side. Never trust a score sent by the client.
 ## This repo
 
 - Stack: React 19, TypeScript, Vite, Tailwind v4 (via `@tailwindcss/vite`, no
-  `tailwind.config` file).
-- Planned: Monaco editor for code, React Flow or D3 for visualizations.
-- API base URL comes from `VITE_API_URL`.
+  `tailwind.config` file), react-router-dom, @monaco-editor/react. No other runtime
+  dependencies: `fetch` for HTTP, React context for auth.
+- Structure: `src/api.ts` (fetch wrapper, error handling, one typed function per
+  endpoint), `src/auth.tsx` (AuthProvider, `useAuth`), `src/pages/*`, `src/components/*`.
+- Planned: React Flow or D3 for visualizations.
+- API base URL comes from `VITE_API_URL` in `.env` (default `http://localhost:8000`).
+- Only the token goes in `localStorage`. Render server text as plain text; never use
+  `dangerouslySetInnerHTML`.
 - Commands: `npm install`, `npm run dev`, `npm run build`, `npm run lint`.
 - Dockerfile: builds with Node, serves `dist` with nginx on port 80; `VITE_API_URL` is a build arg (see README).
 
@@ -53,18 +58,29 @@ server-side. Never trust a score sent by the client.
 ## Current status
 
 ### Done
-- Vite + React 19 + TypeScript scaffold with Tailwind v4; `src/App.tsx` is only a
-  placeholder heading. Committed and pushed.
+- First working version: header with auth state and points, lessons list (grouped by
+  track), lesson page (lazy-loaded) with Monaco editor, per-language starter code and
+  submit results, login/register, leaderboard with the user's row or rank, "Page not
+  found". Lint and build pass; checked end to end against the real backend and sandbox.
+  Committed, not pushed.
 
 ### In progress
 - Nothing.
 
 ### Next
-- Pages for register/login and lessons, once the backend has those endpoints.
-- Code editor (Monaco is planned; ask before adding it).
+- Visualizations (React Flow or D3, not chosen yet) and the AI hint UI once the
+  backend has a hint endpoint.
 
 ### Decisions
 - Linting uses oxlint (`npm run lint`), not ESLint.
+- A 401 on a request that sent a token clears the token and goes to `/login`; a 401
+  without a token (wrong password) is shown as an error.
+- The leaderboard API has no user ids, so the user's row is matched on name, rank and
+  points from `/leaderboard/me`.
 
 ### Gotchas
-- There is no `.env.local` yet; create it with `VITE_API_URL` before calling the API.
+- Monaco is loaded from the jsDelivr CDN at runtime (the `@monaco-editor/react`
+  default); `monaco-editor` is only an auto-installed peer dependency.
+- `auth.tsx` exports the provider and `useAuth` together, so one
+  `react/only-export-components` lint rule is disabled on that line.
+- Vite must run on port 5173, the backend's allowed CORS origin.

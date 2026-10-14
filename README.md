@@ -8,14 +8,32 @@ grading. It never calls the sandbox service directly.
 ## Stack
 
 React 19, TypeScript, Vite, Tailwind v4 (via `@tailwindcss/vite`, so there is no
-`tailwind.config` file).
+`tailwind.config` file), React Router, and Monaco (`@monaco-editor/react`) for the code
+editor. API calls use `fetch`; auth state lives in a React context.
 
 ## Setup
 
 ```bash
 npm install
-npm run dev
+cp .env.example .env
+npm run dev          # http://localhost:5173
 ```
+
+The app needs the other services running. From the `AlgosProj` folder:
+
+1. MySQL: `docker start algosproj-mysql` (host port 3307).
+2. Backend: in `algosproj-backend`, `php artisan migrate --seed` once, then
+   `php artisan serve --port=8000`.
+3. Sandbox: in `algosproj-sandbox`, build the runner image once
+   (`docker build -t algosproj-runner runner`), then
+   `venv\Scripts\python -m uvicorn app.main:app --port 8001`.
+4. Frontend: `npm run dev` in this repo.
+
+The backend only allows CORS requests from its `FRONTEND_URL` (default
+`http://localhost:5173`), so keep the dev server on that port.
+
+The editor loads Monaco from the jsDelivr CDN at runtime (the `@monaco-editor/react`
+default), so the lesson page needs internet access.
 
 Other commands:
 
@@ -24,9 +42,17 @@ Other commands:
 
 ## Environment variables
 
-Put these in `.env.local`:
+Put these in `.env` (copy `.env.example`; `.env` is not committed):
 
-- `VITE_API_URL` — base URL of the backend API, e.g. `http://localhost:8000`
+- `VITE_API_URL` — base URL of the backend, default `http://localhost:8000`. The app
+  calls `${VITE_API_URL}/api/...`.
+
+Only the auth token is stored in `localStorage`.
+
+## Pages
+
+- `/` lessons grouped by track, `/lessons/:slug` lesson with editor and submit,
+  `/login`, `/register`, `/leaderboard`. Unknown paths show "Page not found".
 
 ## Docker
 
