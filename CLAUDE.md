@@ -20,7 +20,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   `src/pages/*`, `src/components/*`, `src/visuals/*`, `src/lessonText.ts` (lesson text
   parser: `## ` headings, `- ` lists, 4-space code, paragraphs; format in backend README).
 - Visualizations: `src/visuals/index.ts` maps a lesson slug to a lazy component. Steps are
-  pure "frames" functions; `usePlayback` holds play/step/speed/timer. No charting library.
+  pure "frames" functions; `usePlayback` + `PlaybackControls` are shared. No chart library.
 - `VITE_API_URL` in `.env` (default `http://localhost:8000`); a build arg in the Dockerfile.
 - Only the token goes in `localStorage`. Render server text as plain text; never use
   `dangerouslySetInnerHTML`.
@@ -47,9 +47,9 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## Current status
 
 - Done: lessons list, lesson page with Monaco and submit, login/register, leaderboard,
-  404. Visualizations on `sort-an-array` (bubble/insertion/merge) and `binary-search`.
-  `LessonBody` renders lesson text. Lint and build pass. Only the lesson text work is unpushed.
-- Next: visualizations for other lessons; AI hint UI once the backend has an endpoint.
+  404, lesson text rendering (`LessonBody`). Visualizations on six lessons: sum, maximum,
+  reverse, palindrome, sort, binary search. Lint and build pass. Recent work is unpushed.
+- Next: visualizations for the remaining lessons; AI hint UI once the backend has one.
 - Decisions: oxlint, not ESLint. A 401 with a token clears it and goes to `/login`.
   Leaderboard "me" row is matched on name, rank and points (no user ids).
   Visualization frame design: see README "Visualizations". Code blocks have tabIndex 0

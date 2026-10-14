@@ -63,11 +63,16 @@ as plain React elements. The format is documented in the backend README.
 `src/visuals/index.ts` maps a lesson slug to a lazy-loaded component, shown between the
 lesson text and the problems. So far:
 
+- `sum-of-an-array`, `maximum-of-an-array`: one pass with a running total or running best
+  (`ArrayScanVisual.tsx` with a `mode` prop, `arrayScanFrames.ts`).
+- `reverse-a-string`, `check-for-a-palindrome`: two pointers moving inward
+  (`TwoPointerVisual.tsx` with a `mode` prop, `twoPointerFrames.ts`).
 - `sort-an-array`: bubble, insertion and merge sort (`sortFrames.ts`).
 - `binary-search`: low/mid/high over a sorted array with a target (`binarySearchFrames.ts`).
 
-Each visualization's steps come from a pure function; the player components share
-`usePlayback.ts` for play/pause, stepping and speed. No charting or animation library is
+Each visualization's steps come from a pure function. The player components share
+`usePlayback.ts` (state and timer) and `PlaybackControls.tsx` (Play/Pause, step buttons,
+Reset, step counter, `SpeedSelect`, `buttonClass`). No charting or animation library is
 used.
 
 Frame design decisions:
@@ -78,6 +83,10 @@ Frame design decisions:
 - Binary search: in each "discard" step the dimmed range is what is left after it, while
   low, mid and high still show the current step; a not-found final frame has low, high
   and mid set to null, since the pointers have crossed.
+- Sum starts from a total of 0 and Maximum from the first number, as the lesson text does.
+- Reverse and Palindrome only accept what the graded problem allows: letters, digits and
+  single inner spaces for Reverse; lowercase a-z for Palindrome, compared exactly. Each
+  swap or comparison is one step; the palindrome check stops at the first mismatch.
 
 ## Docker
 
