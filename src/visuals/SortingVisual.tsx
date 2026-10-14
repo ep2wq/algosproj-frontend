@@ -1,5 +1,6 @@
-import { useEffect, useId, useMemo, useState, type FormEvent } from 'react'
+import { useId, useMemo, useState, type FormEvent } from 'react'
 import { bubbleSortFrames, insertionSortFrames, mergeSortFrames, type Frame } from './sortFrames'
+import { usePlayback, type Speed } from './usePlayback'
 
 const ALGORITHMS = {
   bubble: { label: 'Bubble sort', frames: bubbleSortFrames },
@@ -7,10 +8,6 @@ const ALGORITHMS = {
   merge: { label: 'Merge sort', frames: mergeSortFrames },
 }
 type Algorithm = keyof typeof ALGORITHMS
-
-// Milliseconds per step.
-const SPEEDS = { slow: 1200, normal: 600, fast: 250 }
-type Speed = keyof typeof SPEEDS
 
 const MAX_NUMBERS = 12
 
@@ -48,47 +45,18 @@ export default function SortingVisual() {
   const id = useId()
   const [algorithm, setAlgorithm] = useState<Algorithm>('bubble')
   const [array, setArray] = useState(randomArray)
-  const [step, setStep] = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [speed, setSpeed] = useState<Speed>('normal')
   const [customText, setCustomText] = useState('')
   const [inputError, setInputError] = useState('')
 
   const frames = useMemo(() => ALGORITHMS[algorithm].frames(array), [algorithm, array])
-  const lastStep = frames.length - 1
+  const { step, lastStep, playing, speed, setSpeed, togglePlay, goTo } = usePlayback(frames.length)
   const current = frames[Math.min(step, lastStep)]
   const maxValue = Math.max(1, ...current.array)
-
-  // One timeout per step. The cleanup clears it on pause, on any change and on unmount.
-  useEffect(() => {
-    if (!playing) return
-    const timer = setTimeout(() => {
-      if (step + 1 >= lastStep) setPlaying(false)
-      setStep(step + 1)
-    }, SPEEDS[speed])
-    return () => clearTimeout(timer)
-  }, [playing, step, lastStep, speed])
 
   function restart(nextArray: number[], nextAlgorithm: Algorithm) {
     setArray(nextArray)
     setAlgorithm(nextAlgorithm)
-    setStep(0)
-    setPlaying(false)
-  }
-
-  function togglePlay() {
-    if (playing) {
-      setPlaying(false)
-      return
-    }
-    if (lastStep === 0) return
-    if (step >= lastStep) setStep(0)
-    setPlaying(true)
-  }
-
-  function goTo(nextStep: number) {
-    setPlaying(false)
-    setStep(Math.max(0, Math.min(lastStep, nextStep)))
+    goTo(0)
   }
 
   function handleCustom(event: FormEvent<HTMLFormElement>) {
