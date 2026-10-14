@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError, getLesson, type Lesson } from '../api'
+import LessonBody from '../components/LessonBody'
 import ProblemCard from '../components/ProblemCard'
 import { VISUALS } from '../visuals'
 
@@ -55,7 +56,7 @@ export default function LessonPage() {
         All lessons
       </Link>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">{lesson.title}</h1>
-      {lesson.body && <p className="mt-4 max-w-prose whitespace-pre-wrap leading-relaxed">{lesson.body}</p>}
+      {lesson.body && <LessonBody text={lesson.body} />}
 
       {Visual && (
         <section className="mt-10 border-t border-line pt-8" aria-labelledby="visual-heading">
