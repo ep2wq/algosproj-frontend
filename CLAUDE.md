@@ -28,6 +28,7 @@ server-side. Never trust a score sent by the client.
 - Planned: Monaco editor for code, React Flow or D3 for visualizations.
 - API base URL comes from `VITE_API_URL`.
 - Commands: `npm install`, `npm run dev`, `npm run build`, `npm run lint`.
+- Dockerfile: builds with Node, serves `dist` with nginx on port 80; `VITE_API_URL` is a build arg (see README).
 
 ## Working rules
 
