@@ -57,9 +57,14 @@ Only the auth token is stored in `localStorage`.
 ## Visualizations
 
 `src/visuals/index.ts` maps a lesson slug to a lazy-loaded component, shown between the
-lesson text and the problems. Only `sort-an-array` has one so far: a step-by-step player
-for bubble, insertion and merge sort. The steps come from pure functions in
-`src/visuals/sortFrames.ts`; no charting or animation library is used.
+lesson text and the problems. So far:
+
+- `sort-an-array`: bubble, insertion and merge sort (`sortFrames.ts`).
+- `binary-search`: low/mid/high over a sorted array with a target (`binarySearchFrames.ts`).
+
+Each visualization's steps come from a pure function; the player components share
+`usePlayback.ts` for play/pause, stepping and speed. No charting or animation library is
+used.
 
 ## Docker
 
