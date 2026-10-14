@@ -54,6 +54,13 @@ Only the auth token is stored in `localStorage`.
 - `/` lessons grouped by track, `/lessons/:slug` lesson with editor and submit,
   `/login`, `/register`, `/leaderboard`. Unknown paths show "Page not found".
 
+## Visualizations
+
+`src/visuals/index.ts` maps a lesson slug to a lazy-loaded component, shown between the
+lesson text and the problems. Only `sort-an-array` has one so far: a step-by-step player
+for bubble, insertion and merge sort. The steps come from pure functions in
+`src/visuals/sortFrames.ts`; no charting or animation library is used.
+
 ## Docker
 
 ```bash

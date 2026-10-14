@@ -27,8 +27,10 @@ server-side. Never trust a score sent by the client.
   `tailwind.config` file), react-router-dom, @monaco-editor/react. No other runtime
   dependencies: `fetch` for HTTP, React context for auth.
 - Structure: `src/api.ts` (fetch wrapper, error handling, one typed function per
-  endpoint), `src/auth.tsx` (AuthProvider, `useAuth`), `src/pages/*`, `src/components/*`.
-- Planned: React Flow or D3 for visualizations.
+  endpoint), `src/auth.tsx` (AuthProvider, `useAuth`), `src/pages/*`, `src/components/*`,
+  `src/visuals/*` (lesson visualizations).
+- Visualizations: `src/visuals/index.ts` maps a lesson slug to a lazy component. Steps are
+  pure "frames" functions; the player is plain React + Tailwind, no charting library.
 - API base URL comes from `VITE_API_URL` in `.env` (default `http://localhost:8000`).
 - Only the token goes in `localStorage`. Render server text as plain text; never use
   `dangerouslySetInnerHTML`.
@@ -62,14 +64,17 @@ server-side. Never trust a score sent by the client.
   track), lesson page (lazy-loaded) with Monaco editor, per-language starter code and
   submit results, login/register, leaderboard with the user's row or rank, "Page not
   found". Lint and build pass; checked end to end against the real backend and sandbox.
-  Committed, not pushed.
+- Sorting visualization on `sort-an-array` (bubble, insertion, merge; play/step/speed,
+  random or typed array). Frames checked with a script over 200 arrays; played in the
+  browser, incl. phone width.
+- All committed, not pushed.
 
 ### In progress
 - Nothing.
 
 ### Next
-- Visualizations (React Flow or D3, not chosen yet) and the AI hint UI once the
-  backend has a hint endpoint.
+- Visualizations for other lessons (add to `src/visuals/index.ts`) and the AI hint UI
+  once the backend has a hint endpoint.
 
 ### Decisions
 - Linting uses oxlint (`npm run lint`), not ESLint.
@@ -77,6 +82,9 @@ server-side. Never trust a score sent by the client.
   without a token (wrong password) is shown as an error.
 - The leaderboard API has no user ids, so the user's row is matched on name, rank and
   points from `/leaderboard/me`.
+- Sort frames: bubble/insertion use adjacent swaps; merge sort shows its comparisons, then
+  writes each merged range back in one frame, so every frame is a permutation of the input.
+  Only bubble sort marks bars "in final place" before the last frame.
 
 ### Gotchas
 - Monaco is loaded from the jsDelivr CDN at runtime (the `@monaco-editor/react`
@@ -84,3 +92,5 @@ server-side. Never trust a score sent by the client.
 - `auth.tsx` exports the provider and `useAuth` together, so one
   `react/only-export-components` lint rule is disabled on that line.
 - Vite must run on port 5173, the backend's allowed CORS origin.
+- `<Visual />` on the lesson page has one `react/static-components` lint rule disabled:
+  it comes from a module-level map, not created during render.
