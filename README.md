@@ -54,6 +54,10 @@ Only the auth token is stored in `localStorage`.
 - `/` lessons grouped by track, `/lessons/:slug` lesson with editor and submit,
   `/login`, `/register`, `/leaderboard`. Unknown paths show "Page not found".
 
+Lesson text is parsed by `src/lessonText.ts` (a pure function: headings `## `, `- ` lists,
+4-space-indented code blocks, paragraphs) and rendered by `src/components/LessonBody.tsx`
+as plain React elements. The format is documented in the backend README.
+
 ## Visualizations
 
 `src/visuals/index.ts` maps a lesson slug to a lazy-loaded component, shown between the
@@ -65,6 +69,15 @@ lesson text and the problems. So far:
 Each visualization's steps come from a pure function; the player components share
 `usePlayback.ts` for play/pause, stepping and speed. No charting or animation library is
 used.
+
+Frame design decisions:
+
+- Sorting: bubble and insertion sort use adjacent swaps; merge sort shows its comparisons,
+  then writes each merged range back in one frame, so every frame is a permutation of the
+  input.
+- Binary search: in each "discard" step the dimmed range is what is left after it, while
+  low, mid and high still show the current step; a not-found final frame has low, high
+  and mid set to null, since the pointers have crossed.
 
 ## Docker
 

@@ -17,7 +17,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - React 19, TypeScript, Vite, Tailwind v4 (`@tailwindcss/vite`, no `tailwind.config`),
   react-router-dom, @monaco-editor/react. No other runtime deps; `fetch`, React context.
 - `src/api.ts` (fetch wrapper, one typed function per endpoint), `src/auth.tsx`,
-  `src/pages/*`, `src/components/*`, `src/visuals/*`.
+  `src/pages/*`, `src/components/*`, `src/visuals/*`, `src/lessonText.ts` (lesson text
+  parser: `## ` headings, `- ` lists, 4-space code, paragraphs; format in backend README).
 - Visualizations: `src/visuals/index.ts` maps a lesson slug to a lazy component. Steps are
   pure "frames" functions; `usePlayback` holds play/step/speed/timer. No charting library.
 - `VITE_API_URL` in `.env` (default `http://localhost:8000`); a build arg in the Dockerfile.
@@ -47,13 +48,12 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 - Done: lessons list, lesson page with Monaco and submit, login/register, leaderboard,
   404. Visualizations on `sort-an-array` (bubble/insertion/merge) and `binary-search`.
-  Lint and build pass. All committed, not pushed.
+  `LessonBody` renders lesson text. Lint and build pass. Only the lesson text work is unpushed.
 - Next: visualizations for other lessons; AI hint UI once the backend has an endpoint.
 - Decisions: oxlint, not ESLint. A 401 with a token clears it and goes to `/login`.
   Leaderboard "me" row is matched on name, rank and points (no user ids).
-  Sort frames use adjacent swaps; merge sort writes each merged range back in one frame.
-  Binary search frames: each step's dimmed range is what's left after it; a not-found
-  final frame has low/high/mid null.
+  Visualization frame design: see README "Visualizations". Code blocks have tabIndex 0
+  so keyboard users can scroll them.
 - Gotchas: Monaco loads from the jsDelivr CDN at runtime. Lint rules disabled on one line
   each: `react/only-export-components` (auth.tsx), `react/static-components`
   (`<Visual />`, which comes from a module-level map). Vite must run on port 5173 (CORS).
