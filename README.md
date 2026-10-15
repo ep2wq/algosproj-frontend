@@ -61,7 +61,7 @@ as plain React elements. The format is documented in the backend README.
 ## Visualizations
 
 `src/visuals/index.ts` maps a lesson slug to a lazy-loaded component, shown between the
-lesson text and the problems. 12 of the 15 lessons have one:
+lesson text and the problems. All 15 lessons have one:
 
 - `warm-up`: read, compute, print for "Double the number": standard input, the program
   (Python, Java, JavaScript or C++, current line highlighted) and standard output
@@ -78,6 +78,9 @@ lesson text and the problems. 12 of the 15 lessons have one:
 - `two-sum`: one walk with a value -> position hash map (`TwoSumVisual.tsx`, `twoSumFrames.ts`).
 - `count-inversions`: merge sort with a running inversion count (`InversionsVisual.tsx`,
   `inversionFrames.ts`).
+- `reverse-a-linked-list`, `middle-of-a-linked-list`, `detect-a-cycle`: nodes, next arrows
+  and null, with prev/curr/next or slow/fast pointers (`LinkedListVisual.tsx` with a `mode`
+  prop, `linkedListFrames.ts`).
 
 Each visualization's steps come from a pure function. The player components share
 `usePlayback.ts` (state and timer) and `PlaybackControls.tsx` (Play/Pause, step buttons,
