@@ -66,9 +66,10 @@ function parsePostfix(text: string): Parsed {
   const tokens = text.trim().split(/\s+/).filter(Boolean)
   if (tokens.length === 0) return { error: 'Enter at least one token.' }
   if (tokens.length > 9) return { error: 'Use at most 9 tokens.' }
-  const isNumber = (t: string) => /^-?\d+$/.test(t) && Number(t) >= -99 && Number(t) <= 99
+  // The problem's token range: numbers are 0 to 1000. Negative values only appear as results.
+  const isNumber = (t: string) => /^\d+$/.test(t) && Number(t) <= 1000
   if (tokens.some((t) => !isNumber(t) && !['+', '-', '*', '/'].includes(t))) {
-    return { error: 'Use whole numbers from -99 to 99 and the operators + - * /, separated by spaces.' }
+    return { error: 'Use whole numbers from 0 to 1000 and the operators + - * /, separated by spaces.' }
   }
   const error = postfixError(tokens)
   return error ? { error } : { frames: postfixFrames(tokens.map((t) => (isNumber(t) ? String(Number(t)) : t))) }
@@ -99,7 +100,7 @@ const MODES = {
     random: randomPostfix,
     inputLabel: 'Your own expression',
     placeholder: 'e.g. 3 4 + 2 *',
-    hint: 'Up to 9 tokens separated by spaces: whole numbers from -99 to 99 and + - * /. As in the problem, / truncates toward zero: -7 / 2 = -3.',
+    hint: 'Up to 9 tokens separated by spaces: whole numbers from 0 to 1000 and + - * /. As in the problem, / truncates toward zero: 1 8 - 2 / gives -7 / 2 = -3.',
     itemsLabel: 'Tokens',
   },
   'next-greater': {
