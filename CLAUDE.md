@@ -47,8 +47,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## Current status
 
 - Done: lessons list, lesson page with Monaco and submit, login/register, leaderboard,
-  404, lesson text rendering (`LessonBody`). Visualizations on 24 of 35 lessons (none yet
-  for Programming basics, Core programming, Recursion). Lint and build pass. Recent work
+  404, lesson text rendering (`LessonBody`). Visualizations on 24 of 39 lessons (none yet
+  for Programming basics, Core programming, OOP, Recursion). Lint and build pass. Recent work
   is unpushed.
 - Next: AI hint UI once the backend has one.
 - Decisions: oxlint, not ESLint. A 401 with a token clears it and goes to `/login`.
