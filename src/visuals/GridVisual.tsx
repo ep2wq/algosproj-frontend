@@ -1,0 +1,318 @@
+import { useId, useMemo, useState, type FormEvent } from 'react'
+import { componentColor } from './componentColors'
+import { cellText, islandsFrames, shortestPathFrames, type Cell, type GridFrame, type GridMode } from './gridFrames'
+import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import { usePlayback } from './usePlayback'
+
+// The problems allow grids up to 50 by 50; 8 by 8 fits on screen.
+const MAX_SIDE = 8
+
+function randomInt(min: number, max: number) {
+  return min + Math.floor(Math.random() * (max - min + 1))
+}
+
+function randomGrid(rows: number, cols: number, density: number) {
+  return Array.from({ length: rows }, () => Array.from({ length: cols }, () => (Math.random() < density ? '1' : '0')).join(''))
+}
+
+// Grids where 1s touch only at corners, so every 1 is its own island.
+function diagonalGrid() {
+  const size = randomInt(3, 6)
+  const roll = Math.random()
+  return Array.from({ length: size }, (_, r) =>
+    Array.from({ length: size }, (_, c) => {
+      if (roll < 0.4) return (r + c) % 2 === 0 ? '1' : '0'
+      if (roll < 0.7) return r === c ? '1' : '0'
+      return r === c || r + c === size - 1 ? '1' : '0'
+    }).join(''),
+  )
+}
+
+const MODES = {
+  islands: {
+    frames: islandsFrames,
+    random: () => {
+      const roll = Math.random()
+      if (roll < 0.15) return ['11000', '11000', '00100', '00011']
+      if (roll < 0.4) return diagonalGrid()
+      return randomGrid(randomInt(4, 7), randomInt(4, 7), 0.45)
+    },
+    pendingLabel: 'Stack (top on the right)',
+    placeholder: 'e.g. 11000 11000 00100 00011',
+    hint: `1 to ${MAX_SIDE} rows of 1 to ${MAX_SIDE} characters, each 0 or 1, separated by spaces or commas. The problem allows up to 50 by 50; ${MAX_SIDE} by ${MAX_SIDE} fits on screen.`,
+  },
+  shortest: {
+    frames: shortestPathFrames,
+    random: () => {
+      if (Math.random() < 0.15) return ['00000', '00000', '00001', '00100']
+      const grid = randomGrid(randomInt(4, 7), randomInt(4, 7), 0.28)
+      // Usually keep the start and end open, so the search has something to do.
+      if (Math.random() < 0.85) {
+        grid[0] = `0${grid[0].slice(1)}`
+        const last = grid.length - 1
+        grid[last] = `${grid[last].slice(0, -1)}0`
+      }
+      return grid
+    },
+    pendingLabel: 'Queue (front on the left)',
+    placeholder: 'e.g. 00000 00000 00001 00100',
+    hint: `1 to ${MAX_SIDE} rows of 1 to ${MAX_SIDE} characters, each 0 (open) or 1 (wall), separated by spaces or commas. Start at the top-left, end at the bottom-right. The problem allows up to 50 by 50; ${MAX_SIDE} by ${MAX_SIDE} fits on screen.`,
+  },
+}
+
+function parseGrid(text: string): string[] | string {
+  const rows = text.split(/[\s,]+/).filter(Boolean)
+  if (rows.length === 0) return 'Enter at least one row.'
+  if (rows.some((row) => !/^[01]+$/.test(row))) return 'Use only 0 and 1 in each row, and separate rows with spaces or commas.'
+  if (rows.length > MAX_SIDE || rows.some((row) => row.length > MAX_SIDE)) {
+    return `Use at most ${MAX_SIDE} rows of at most ${MAX_SIDE} characters each, so the grid fits.`
+  }
+  const uneven = rows.findIndex((row) => row.length !== rows[0].length)
+  if (uneven !== -1) return `Every row must have the same length: row 1 has ${rows[0].length} characters, row ${uneven + 1} has ${rows[uneven].length}.`
+  return rows
+}
+
+const same = (a: Cell | null, r: number, c: number) => a !== null && a[0] === r && a[1] === c
+const has = (cells: Cell[], r: number, c: number) => cells.some((cell) => cell[0] === r && cell[1] === c)
+
+function islandCellClass(frame: GridFrame, r: number, c: number) {
+  const island = frame.marks[r][c]
+  const dashed = has(frame.pending, r, c) ? 'border-dashed' : ''
+  if (island !== null) {
+    const color = componentColor(island)
+    return `${color.bg} ${same(frame.current, r, c) ? 'border-warn' : color.border} ${dashed} text-ink`
+  }
+  if (frame.grid[r][c] === '1') return 'border-muted bg-line text-ink'
+  return 'border-line bg-white text-muted'
+}
+
+function shortestCellClass(frame: GridFrame, r: number, c: number) {
+  if (frame.grid[r][c] === '1') return 'border-ink bg-ink text-white'
+  const isEnd = r === frame.grid.length - 1 && c === frame.grid[0].length - 1
+  if (frame.output !== null && isEnd && frame.marks[r][c] !== null) return 'border-pass bg-pass text-white'
+  if (same(frame.current, r, c)) return 'border-warn bg-warn text-white'
+  if (has(frame.pending, r, c)) return 'border-warn bg-amber-100 text-ink'
+  if (frame.marks[r][c] !== null) return 'border-line bg-paper text-muted'
+  return 'border-line bg-white text-ink'
+}
+
+function gridLabel(mode: GridMode, frame: GridFrame) {
+  const rows = frame.grid.map((row, r) => {
+    const cells = [...row].map((ch, c) => {
+      const mark = frame.marks[r][c]
+      if (mode === 'islands') return mark !== null ? `island ${mark}` : ch === '1' ? 'unmarked 1' : '0'
+      if (ch === '1') return 'wall'
+      return mark !== null ? `dist ${mark}` : 'open'
+    })
+    return `row ${r}: ${cells.join(', ')}`
+  })
+  const at = frame.current ? ` Current cell ${cellText(frame.current)}.` : ''
+  return `${rows.join('; ')}.${at}`
+}
+
+// Two grid searches: counting islands with a stack, and the shortest path with a BFS queue.
+export default function GridVisual({ mode }: { mode: GridMode }) {
+  const id = useId()
+  const config = MODES[mode]
+  const [grid, setGrid] = useState(config.random)
+  const [gridText, setGridText] = useState('')
+  const [inputError, setInputError] = useState('')
+
+  const frames = useMemo(() => config.frames(grid), [config, grid])
+  const playback = usePlayback(frames.length)
+  const { step, lastStep, goTo } = playback
+  const current = frames[Math.min(step, lastStep)]
+  const rows = current.grid.length
+  const cols = current.grid[0].length
+
+  function restart(next: string[]) {
+    setGrid(next)
+    goTo(0)
+  }
+
+  function handleCustom(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const parsed = parseGrid(gridText)
+    if (typeof parsed === 'string') {
+      setInputError(parsed)
+      return
+    }
+    setInputError('')
+    restart(parsed)
+  }
+
+  const describedBy = `${id}-hint${inputError ? ` ${id}-error` : ''}`
+
+  return (
+    <div className="mt-4 max-w-2xl">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <SpeedSelect playback={playback} />
+      </div>
+
+      {mode === 'islands' && (
+        <p className="mt-4 inline-flex items-baseline gap-2 rounded border border-line bg-white px-3 py-1.5">
+          <span className="text-sm text-muted">count</span>
+          <span className="text-lg font-semibold tabular-nums">{current.count}</span>
+        </p>
+      )}
+
+      <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-start">
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label="Grid, scrolls sideways when wider than the screen"
+          className="overflow-x-auto rounded border border-line bg-white p-3"
+        >
+          <div role="img" aria-label={gridLabel(mode, current)} className="w-max">
+            <div className="flex gap-0.5 pl-5">
+              {Array.from({ length: cols }, (_, c) => (
+                <span key={c} className="w-8 text-center text-xs text-muted tabular-nums">
+                  {c}
+                </span>
+              ))}
+            </div>
+            {current.grid.map((row, r) => (
+              <div key={r} className="mt-0.5 flex items-center gap-0.5">
+                <span className="w-4.5 text-right text-xs text-muted tabular-nums">{r}</span>
+                {[...row].map((_, c) => {
+                  const mark = current.marks[r][c]
+                  const cellClass = mode === 'islands' ? islandCellClass(current, r, c) : shortestCellClass(current, r, c)
+                  const corner = mode === 'shortest' ? (r === 0 && c === 0 ? 'S' : r === rows - 1 && c === cols - 1 ? 'E' : '') : ''
+                  return (
+                    <span
+                      key={c}
+                      className={`relative flex size-8 items-center justify-center rounded border-2 text-sm font-semibold tabular-nums motion-safe:transition-colors motion-safe:duration-300 ${cellClass}`}
+                    >
+                      {corner && <span className="absolute top-0 left-0.5 text-[9px] leading-none font-medium">{corner}</span>}
+                      {mark ?? ''}
+                    </span>
+                  )
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium">{config.pendingLabel}</p>
+          <div
+            aria-label={`${mode === 'islands' ? 'Stack' : 'Queue'}: ${current.pending.length === 0 ? 'empty' : current.pending.map(cellText).join(', ')}.`}
+            className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-white p-1.5"
+          >
+            {current.pending.length === 0 && <span className="px-1 text-sm text-muted">empty</span>}
+            {current.pending.map((cell) => (
+              <span
+                key={cellText(cell)}
+                className={`rounded border px-1.5 py-0.5 text-xs font-medium tabular-nums ${has(current.added, cell[0], cell[1]) ? 'border-accent bg-accent-soft' : 'border-muted bg-white'}`}
+              >
+                {cellText(cell)}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+        {mode === 'islands' ? (
+          <>
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block size-3 rounded-sm border border-muted bg-line" aria-hidden="true" />
+              A 1 not marked yet
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block size-3 rounded-sm border border-line bg-white" aria-hidden="true" />A 0
+            </li>
+            <li>Coloured: marked, with its island number; one colour per island.</li>
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block size-3 rounded-sm border-2 border-warn bg-white" aria-hidden="true" />
+              Found or popped
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block size-3 rounded-sm border-2 border-dashed border-muted bg-white" aria-hidden="true" />
+              On the stack
+            </li>
+          </>
+        ) : (
+          <>
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block size-3 rounded-sm border border-ink bg-ink" aria-hidden="true" />
+              Wall
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block size-3 rounded-sm border border-warn bg-warn" aria-hidden="true" />
+              Taken from the front
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block size-3 rounded-sm border border-warn bg-amber-100" aria-hidden="true" />
+              In the queue
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block size-3 rounded-sm border border-pass bg-pass" aria-hidden="true" />
+              The end, reached
+            </li>
+            <li>Numbers: dist. S: start, E: end.</li>
+          </>
+        )}
+        <li>Small numbers outside: row and column.</li>
+      </ul>
+
+      {current.output !== null && (
+        <p className="mt-3 inline-block rounded border border-line bg-white px-3 py-2 font-semibold">
+          Output: <span className="font-mono">{current.output}</span>
+        </p>
+      )}
+
+      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+        {current.description}
+      </p>
+
+      <PlaybackControls playback={playback} />
+
+      <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
+        <button type="button" onClick={() => restart(config.random())} className={buttonClass}>
+          New random example
+        </button>
+        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-end gap-2">
+            <div className="min-w-0 flex-1 basis-40">
+              <label htmlFor={`${id}-input`} className="block text-sm font-medium">
+                Your own grid
+              </label>
+              <input
+                id={`${id}-input`}
+                type="text"
+                autoComplete="off"
+                spellCheck={false}
+                value={gridText}
+                onChange={(event) => setGridText(event.target.value)}
+                placeholder={config.placeholder}
+                aria-invalid={Boolean(inputError)}
+                aria-describedby={describedBy}
+                className={`mt-1 block w-full min-w-0 rounded border bg-white px-3 py-1.5 font-mono text-sm ${inputError ? 'border-fail' : 'border-line hover:border-muted'}`}
+              />
+            </div>
+            <button type="submit" className={`${buttonClass} shrink-0`}>
+              Use this
+            </button>
+          </div>
+          <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
+            {config.hint}
+          </p>
+          {inputError && (
+            <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
+              {inputError}
+            </p>
+          )}
+        </form>
+      </div>
+    </div>
+  )
+}
+
+export function IslandsVisual() {
+  return <GridVisual mode="islands" />
+}
+
+export function ShortestPathVisual() {
+  return <GridVisual mode="shortest" />
+}
