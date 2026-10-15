@@ -61,8 +61,7 @@ as plain React elements. The format is documented in the backend README.
 ## Visualizations
 
 `src/visuals/index.ts` maps a lesson slug to a lazy-loaded component, shown between the
-lesson text and the problems. 18 of the 21 lessons have one (the three Graphs lessons have
-none yet):
+lesson text and the problems. All 21 lessons have one:
 
 - `warm-up`: read, compute, print for "Double the number": standard input, the program
   (Python, Java, JavaScript or C++, current line highlighted) and standard output
@@ -89,6 +88,10 @@ none yet):
   `longestSubstringFrames.ts`).
 - `subarray-sum-equals-k`: running totals and a total -> times seen map that starts at
   {0: 1} (`SubarraySumVisual.tsx`, `subarraySumFrames.ts`).
+- `count-connected-components`: nodes on a circle, the stack, and one colour per component
+  (`ComponentsVisual.tsx`, `componentsFrames.ts`, colours in `componentColors.ts`).
+- `number-of-islands`, `shortest-path-in-a-grid`: a grid with a stack and island colours, or
+  a BFS queue and dist in each cell (`GridVisual.tsx` with a `mode` prop, `gridFrames.ts`).
 
 Each visualization's steps come from a pure function. The player components share
 `usePlayback.ts` (state and timer) and `PlaybackControls.tsx` (Play/Pause, step buttons,
