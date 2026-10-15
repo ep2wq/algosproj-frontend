@@ -135,11 +135,6 @@ function Diagram({ frame, rows }: { frame: TreeFrame; rows: number }) {
   const edgeIs = (from: number, to: number) => frame.edge !== null && frame.edge[0] === from && frame.edge[1] === to
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block" aria-hidden="true">
-      {frame.root === null && (
-        <text x={width / 2} y={height / 2 + 5} textAnchor="middle" className="fill-muted text-sm">
-          empty tree
-        </text>
-      )}
       {frame.nodes.flatMap((node) =>
         [node.left, node.right]
           .filter((child): child is number => child !== null)
@@ -215,6 +210,7 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
       inputError?.field === field ? 'border-fail' : 'border-line hover:border-muted'
     }`
   const marks = new Set(frames.flatMap((frame) => frame.marks.map(({ mark }) => mark)))
+  const hasEdge = frames.some((frame) => frame.edge !== null)
 
   return (
     <div className="mt-4 max-w-2xl">
@@ -235,11 +231,16 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
         tabIndex={0}
         role="region"
         aria-label="Tree drawing, scrolls sideways when it is wider than the screen"
-        className="mt-3 overflow-x-auto rounded border border-line bg-white p-2"
+        className="relative mt-3 overflow-x-auto rounded border border-line bg-white p-2"
       >
         <div role="img" aria-label={treeLabel(current, mode)} className="w-max">
           <Diagram frame={current} rows={rows} />
         </div>
+        {current.root === null && (
+          <p aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-sm text-muted">
+            Empty tree
+          </p>
+        )}
       </div>
 
       {current.stack !== null && (
@@ -256,34 +257,40 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
         </>
       )}
 
-      <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-        {marks.has('path') && (
-          <li className="flex items-center gap-1.5">
-            <span className="inline-block size-3 rounded-full border-2 border-accent bg-accent-soft" aria-hidden="true" />
-            {mode === 'height' ? 'On the insert path, or already popped' : 'On the path walked'}
-          </li>
-        )}
-        {marks.has('current') && (
-          <li className="flex items-center gap-1.5">
-            <span className="inline-block size-3 rounded-full border-2 border-warn bg-white" aria-hidden="true" />
-            {mode === 'height' ? 'Just popped' : mode === 'lca' ? 'node' : 'cur'}
-          </li>
-        )}
-        <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-full border-2 border-pass bg-white" aria-hidden="true" />
-          {mode === 'delete' ? 'Just inserted, the successor, or the child that moved up' : 'Just inserted'}
-        </li>
-        {mode === 'lca' && (
-          <li className="flex items-center gap-1.5">
-            <span className="inline-block size-3 rounded-full border-2 border-pass bg-pass" aria-hidden="true" />
-            Lowest common ancestor
-          </li>
-        )}
-        <li className="flex items-center gap-1.5">
-          <span className="inline-block h-0.5 w-4 bg-warn" aria-hidden="true" />
-          Link used or changed in this step
-        </li>
-      </ul>
+      {(marks.size > 0 || hasEdge) && (
+        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+          {marks.has('path') && (
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block size-3 rounded-full border-2 border-accent bg-accent-soft" aria-hidden="true" />
+              {mode === 'height' ? 'On the insert path, or already popped' : 'On the path walked'}
+            </li>
+          )}
+          {marks.has('current') && (
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block size-3 rounded-full border-2 border-warn bg-white" aria-hidden="true" />
+              {mode === 'height' ? 'Just popped' : mode === 'lca' ? 'node' : 'cur'}
+            </li>
+          )}
+          {marks.has('focus') && (
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block size-3 rounded-full border-2 border-pass bg-white" aria-hidden="true" />
+              {mode === 'delete' ? 'Just inserted, the successor, or the child that moved up' : 'Just inserted'}
+            </li>
+          )}
+          {marks.has('answer') && (
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block size-3 rounded-full border-2 border-pass bg-pass" aria-hidden="true" />
+              Lowest common ancestor
+            </li>
+          )}
+          {hasEdge && (
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block h-0.5 w-4 bg-warn" aria-hidden="true" />
+              Link used or changed in this step
+            </li>
+          )}
+        </ul>
+      )}
 
       {current.output !== null && (
         <p className="mt-3 inline-block rounded border border-line bg-white px-3 py-2 font-semibold">
@@ -294,6 +301,7 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
         {current.description}
       </p>
+      {step === 0 && lastStep > 0 && <p className="mt-2 text-sm text-muted">Press Step forward to start.</p>}
 
       <PlaybackControls playback={playback} />
 
