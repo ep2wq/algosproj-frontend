@@ -51,7 +51,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   build pass. Recent work is unpushed.
 - Next: AI hint UI once the backend has one.
 - Decisions: oxlint, not ESLint. A 401 with a token clears it and goes to `/login`.
-  Leaderboard "me" row is matched on name, rank and points (no user ids).
+  Leaderboard "(you)" row comes from the server's `is_you` flag (no user ids).
   Visualization frame design: see README "Visualizations". Code blocks have tabIndex 0
   so keyboard users can scroll them.
 - Gotchas: Monaco loads from the jsDelivr CDN at runtime. Lint rules disabled on one line

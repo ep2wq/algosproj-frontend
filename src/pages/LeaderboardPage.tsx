@@ -32,18 +32,13 @@ export default function LeaderboardPage() {
   }, [userId, userPoints])
 
   const rank = user && myRank?.userId === user.id ? myRank.rank : null
-  // Entries have no user id, so the user's row is the one matching their name, rank and points.
-  const myIndex =
-    user && rank && entries
-      ? entries.findIndex((entry) => entry.name === user.name && entry.rank === rank.rank && entry.points === rank.points)
-      : -1
 
   return (
     <div className="max-w-2xl">
       <h1 className="text-3xl font-semibold tracking-tight">Leaderboard</h1>
       <p className="mt-2 text-muted">Points come from solving problems. Each problem counts once.</p>
 
-      {rank && myIndex === -1 && (
+      {rank && !entries?.some((entry) => entry.is_you) && (
         <p className="mt-4 rounded border border-line bg-white px-3 py-2">
           Your rank: <span className="font-semibold tabular-nums">{rank.rank}</span>{' '}
           <span className="text-muted tabular-nums">({rank.points} {rank.points === 1 ? 'point' : 'points'})</span>
@@ -78,7 +73,8 @@ export default function LeaderboardPage() {
             </thead>
             <tbody className="divide-y divide-line">
               {entries.map((entry, index) => {
-                const isMe = index === myIndex
+                // The server marks the requester's row; ignore it once the user has logged out.
+                const isMe = user !== null && entry.is_you
                 return (
                   <tr key={index} className={isMe ? 'bg-accent-soft' : undefined} aria-current={isMe ? 'true' : undefined}>
                     <td className="px-4 py-2 tabular-nums text-muted">{entry.rank}</td>

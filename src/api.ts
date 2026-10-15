@@ -88,6 +88,7 @@ export type LeaderboardEntry = {
   rank: number
   name: string
   points: number
+  is_you: boolean // true only on the row of the user whose token was sent
 }
 
 export type MyRank = {
