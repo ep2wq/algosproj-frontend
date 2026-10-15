@@ -61,8 +61,7 @@ as plain React elements. The format is documented in the backend README.
 ## Visualizations
 
 `src/visuals/index.ts` maps a lesson slug to a lazy-loaded component, shown between the
-lesson text and the problems. 21 of the 24 lessons have one; the three Trees and BSTs
-lessons have none yet:
+lesson text and the problems. All 24 lessons have one:
 
 - `warm-up`: read, compute, print for "Double the number": standard input, the program
   (Python, Java, JavaScript or C++, current line highlighted) and standard output
@@ -93,6 +92,11 @@ lessons have none yet:
   (`ComponentsVisual.tsx`, `componentsFrames.ts`, colours in `componentColors.ts`).
 - `number-of-islands`, `shortest-path-in-a-grid`: a grid with a stack and island colours, or
   a BFS queue and dist in each cell (`GridVisual.tsx` with a `mode` prop, `gridFrames.ts`).
+- `height-of-a-bst`, `lowest-common-ancestor-of-a-bst`, `delete-from-a-bst`: the tree grows
+  one insert per step, then the lesson's method runs on it: a stack of (value, depth) pairs,
+  the walk down to the split point, or delete x with the successor rule and print the
+  preorder (`TreeVisual.tsx` with a `mode` prop, `treeFrames.ts`; `treeLayout.ts` puts each
+  node in its value's sorted column and its depth's row, so nodes never overlap).
 
 Each visualization's steps come from a pure function. The player components share
 `usePlayback.ts` (state and timer) and `PlaybackControls.tsx` (Play/Pause, step buttons,
