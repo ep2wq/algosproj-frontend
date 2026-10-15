@@ -61,8 +61,11 @@ as plain React elements. The format is documented in the backend README.
 ## Visualizations
 
 `src/visuals/index.ts` maps a lesson slug to a lazy-loaded component, shown between the
-lesson text and the problems. So far:
+lesson text and the problems. All 12 lessons have one:
 
+- `warm-up`: read, compute, print for "Double the number": standard input, the program
+  (Python, Java, JavaScript or C++, current line highlighted) and standard output
+  (`WarmupVisual.tsx`, `warmupFrames.ts`).
 - `sum-of-an-array`, `maximum-of-an-array`: one pass with a running total or running best
   (`ArrayScanVisual.tsx` with a `mode` prop, `arrayScanFrames.ts`).
 - `reverse-a-string`, `check-for-a-palindrome`: two pointers moving inward
@@ -72,6 +75,9 @@ lesson text and the problems. So far:
   `stackFrames.ts`).
 - `sort-an-array`: bubble, insertion and merge sort (`sortFrames.ts`).
 - `binary-search`: low/mid/high over a sorted array with a target (`binarySearchFrames.ts`).
+- `two-sum`: one walk with a value -> position hash map (`TwoSumVisual.tsx`, `twoSumFrames.ts`).
+- `count-inversions`: merge sort with a running inversion count (`InversionsVisual.tsx`,
+  `inversionFrames.ts`).
 
 Each visualization's steps come from a pure function. The player components share
 `usePlayback.ts` (state and timer) and `PlaybackControls.tsx` (Play/Pause, step buttons,
@@ -94,7 +100,13 @@ Frame design decisions:
   postfix pops the right operand first and `/` truncates toward zero, and own input is
   rejected if it is malformed, divides by zero or leaves the 32-bit range; next greater
   means strictly bigger, and positions left on the stack get -1 in one final step. Own
-  postfix input allows numbers from -99 to 99 (the problem itself only uses 0 to 1000).
+  postfix input allows numbers from 0 to 1000, as the problem does.
+- Two Sum looks up target - value before storing the value, so 3 3 with target 6 gives
+  0 1; one step per position, stopping at the pair. Own input must have exactly one pair.
+- Count inversions follows the lesson: the left half gets the smaller half (2 4 | 1 3 5),
+  ties are taken from the left, and every frame's array is a permutation of the input.
+- Warm-up: the code shown per language lives in `warmupFrames.ts` and was run in the
+  sandbox; the prompt option adds a print line and ends with a failed verdict.
 
 ## Docker
 
