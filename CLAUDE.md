@@ -3,7 +3,7 @@
 ## Project overview
 
 AlgosProj teaches data structures and algorithms: lessons, visualizations, in-browser code
-(Python or Java) run against test cases, points on a leaderboard, AI tutor hints.
+(Python, Java, JavaScript, C++) run against test cases, points on a leaderboard, AI tutor hints.
 Three repos, three deployments. Flow: frontend -> backend -> sandbox.
 - **algosproj-frontend** (this repo) talks only to the backend.
 - **algosproj-backend**: Laravel API (Sanctum auth, lessons, problems, submissions, points,
