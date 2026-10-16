@@ -53,7 +53,8 @@ export default function Layout() {
     <div className="min-h-screen">
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
-          <Link to="/" className="rounded text-lg font-semibold tracking-tight text-ink">
+          {/* The name is English (and Latin script) in both languages. */}
+          <Link to="/" lang="en" className="rounded text-lg font-semibold tracking-tight text-ink">
             AlgosProj
           </Link>
           <nav aria-label="Main" className="flex items-center gap-1 text-sm">

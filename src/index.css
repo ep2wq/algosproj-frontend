@@ -41,6 +41,48 @@ body {
   color: var(--color-ink);
 }
 
+/* Arabic interface: Noto Sans Arabic (self-hosted, loaded by src/i18n.ts only when Arabic is
+   active) ahead of the system font, and slightly taller lines. In the base layer, so utilities
+   such as font-mono and leading-* still win. */
+@layer base {
+  :root[lang='ar'] {
+    line-height: 1.75;
+    --text-xs--line-height: 1.7;
+    --text-sm--line-height: 1.7;
+    --text-base--line-height: 1.75;
+    --text-lg--line-height: 1.7;
+    --text-xl--line-height: 1.6;
+    --text-2xl--line-height: 1.5;
+    --text-3xl--line-height: 1.4;
+  }
+
+  :root[lang='ar'] body {
+    font-family: 'Noto Sans Arabic Variable', var(--font-sans);
+  }
+
+  /* English passages inside an Arabic page (lesson text, visualizations, code, the admin area)
+     keep the English font and line heights. */
+  :root[lang='ar'] [lang='en'] {
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    --text-xs--line-height: calc(1 / 0.75);
+    --text-sm--line-height: calc(1.25 / 0.875);
+    --text-base--line-height: calc(1.5 / 1);
+    --text-lg--line-height: calc(1.75 / 1.125);
+    --text-xl--line-height: calc(1.75 / 1.25);
+    --text-2xl--line-height: calc(2 / 1.5);
+    --text-3xl--line-height: calc(2.25 / 1.875);
+  }
+}
+
+/* Letter spacing and case changes break the joining of Arabic letters, so they never apply to
+   Arabic text, whatever tracking-* or uppercase class an element has. Not in a layer, so it wins
+   over those utilities; English passages (:lang(en)) keep them. */
+:lang(ar) {
+  letter-spacing: normal;
+  text-transform: none;
+}
+
 /* Visible keyboard focus on every link, button and input, in both themes. */
 :focus-visible {
   outline: 2px solid var(--color-accent);
