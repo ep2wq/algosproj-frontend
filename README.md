@@ -61,9 +61,9 @@ as plain React elements. The format is documented in the backend README.
 ## Visualizations
 
 `src/visuals/index.ts` maps a lesson slug to a lazy-loaded component, shown between the
-lesson text and the problems. 24 of the 43 lessons have one; the Programming basics, Core
-programming, Object-oriented programming, Algorithm basics and Recursion and backtracking
-lessons (19 in all) have none yet:
+lesson text and the problems. 27 of the 43 lessons have one; the Programming basics, Core
+programming, Object-oriented programming and Algorithm basics lessons (16 in all) have none
+yet:
 
 - `warm-up`: read, compute, print for "Double the number": standard input, the program
   (Python, Java, JavaScript or C++, current line highlighted) and standard output
@@ -99,6 +99,14 @@ lessons (19 in all) have none yet:
   the walk down to the split point, or delete x with the successor rule and print the
   preorder (`TreeVisual.tsx` with a `mode` prop, `treeFrames.ts`; `treeLayout.ts` puts each
   node in its value's sorted column and its depth's row, so nodes never overlap).
+- `binary-strings`, `permutations`: the call tree grows one call per step with choose,
+  explore and undo, next to cur, the call stack and the printed results; n from 1 to 4, or
+  1 to 4 items of one letter or digit (`BinaryStringsVisual.tsx`, `binaryStringFrames.ts`,
+  `PermutationsVisual.tsx`, `permutationFrames.ts`; `CallTreeDiagram.tsx` draws the tree
+  and `callTree.ts` lays it out, one column per leaf).
+- `n-queens`: the board with the queens, the squares they attack, the square being tried
+  and the queen removed on a backtrack, a row-by-row trail of the columns tried, and the
+  solutions found; n from 4 to 5 (`QueensVisual.tsx`, `queensFrames.ts`).
 
 Each visualization's steps come from a pure function. The player components share
 `usePlayback.ts` (state and timer) and `PlaybackControls.tsx` (Play/Pause, step buttons,
