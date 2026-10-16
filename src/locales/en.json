@@ -1,0 +1,169 @@
+{
+  "nav": {
+    "main": "Main",
+    "lessons": "Lessons",
+    "challenges": "Challenges",
+    "leaderboard": "Leaderboard",
+    "admin": "Admin",
+    "logIn": "Log in",
+    "logOut": "Log out",
+    "register": "Register"
+  },
+  "header": {
+    "points_one": "{{count}} point",
+    "points_other": "{{count}} points"
+  },
+  "theme": {
+    "toDark": "Switch to dark theme",
+    "toLight": "Switch to light theme"
+  },
+  "language": {
+    "hint": "(switch the interface language)"
+  },
+  "common": {
+    "points_one": "{{count}} point",
+    "points_other": "{{count}} points",
+    "noTopic": "No topic",
+    "solved": "Solved",
+    "notSolved": "Not solved",
+    "genericError": "Something went wrong. Try again."
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "home": {
+    "title": "Lessons",
+    "intro": "Pick a lesson, read it, then solve its problems in the editor.",
+    "loading": "Loading lessons...",
+    "empty": "No lessons have been published yet.",
+    "moduleEmpty": "No lessons in this module yet.",
+    "loadFailed": "Could not load the lessons.",
+    "tracks": {
+      "basics": "Basics",
+      "data-structures": "Data structures",
+      "algorithms": "Algorithms"
+    }
+  },
+  "lesson": {
+    "loading": "Loading lesson...",
+    "notFound": "This lesson doesn't exist.",
+    "loadFailed": "Could not load the lesson.",
+    "backToLessons": "Back to the lessons",
+    "allLessons": "All lessons",
+    "visualization": "Visualization",
+    "loadingVisualization": "Loading visualization..."
+  },
+  "challenges": {
+    "title": "Challenges",
+    "intro": "Every problem in one place. Solving one here or in its lesson counts once.",
+    "loading": "Loading challenges...",
+    "empty": "No challenges have been published yet.",
+    "loadFailed": "Could not load the challenges.",
+    "search": "Search by title",
+    "difficulty": "Difficulty",
+    "allDifficulties": "All difficulties",
+    "topic": "Topic",
+    "allTopics": "All topics",
+    "status": "Status",
+    "all": "All",
+    "unsolved": "Unsolved",
+    "showing_one": "Showing {{shown}} of {{count}}",
+    "showing_other": "Showing {{shown}} of {{count}}",
+    "clearFilters": "Clear filters",
+    "noMatch": "No challenges match these filters.",
+    "columnTitle": "Title",
+    "columnPoints": "Points"
+  },
+  "challenge": {
+    "loading": "Loading challenge...",
+    "notFound": "This challenge doesn't exist.",
+    "loadFailed": "Could not load the challenge.",
+    "back": "Back to challenges",
+    "openLesson": "Open the lesson"
+  },
+  "solver": {
+    "examples": "Examples",
+    "input": "Input",
+    "expectedOutput": "Expected output",
+    "language": "Language",
+    "loadingEditor": "Loading editor...",
+    "editorLabel": "{{language}} code for {{title}}",
+    "javaMain": "The Java class must be named Main.",
+    "submit": "Submit",
+    "running": "Running tests...",
+    "logInToSubmit": "Log in to submit"
+  },
+  "result": {
+    "label": "Submission result",
+    "status": {
+      "passed": "Passed",
+      "failed": "Failed",
+      "error": "Error",
+      "timeout": "Timed out"
+    },
+    "testsPassed_one": "{{passed}} of {{count}} tests passed",
+    "testsPassed_other": "{{passed}} of {{count}} tests passed",
+    "milliseconds": "{{ms}} ms",
+    "pointsAwarded_one": "+{{count}} point",
+    "pointsAwarded_other": "+{{count}} points",
+    "alreadySolved": "Already solved, so no new points.",
+    "compileError": "Compile error",
+    "test": "Test {{number}}:",
+    "hiddenTest": "Hidden test:",
+    "passed": "passed",
+    "failed": "failed",
+    "input": "Input",
+    "expected": "Expected",
+    "actual": "Actual",
+    "empty": "(empty)"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "intro": "Points come from solving problems. Each problem counts once.",
+    "yourRank": "Your rank:",
+    "rankPoints_one": "({{count}} point)",
+    "rankPoints_other": "({{count}} points)",
+    "loading": "Loading leaderboard...",
+    "empty": "Nobody has scored yet. Solve a problem to take first place.",
+    "loadFailed": "Could not load the leaderboard.",
+    "rank": "Rank",
+    "name": "Name",
+    "points": "Points",
+    "you": "(you)"
+  },
+  "auth": {
+    "logInTitle": "Log in",
+    "logIn": "Log in",
+    "loggingIn": "Logging in...",
+    "noAccount": "No account yet?",
+    "register": "Register",
+    "registerTitle": "Create an account",
+    "createAccount": "Create account",
+    "creatingAccount": "Creating account...",
+    "haveAccount": "Already have an account?",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "newPassword": "Password (at least 8 characters)",
+    "sessionEnded": "Your session has ended. Please log in again.",
+    "bannedPrefix": "This account is banned. Reason:"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "There is nothing at this address.",
+    "home": "Go to the lessons"
+  },
+  "errors": {
+    "network": "Can't reach the server",
+    "sessionEnded": "Your session has ended. Please log in again.",
+    "validation": "Check the highlighted fields.",
+    "tooMany": "Too many requests, wait a minute",
+    "unavailable": "The service is unavailable, try again shortly",
+    "invalidCredentials": "Invalid credentials",
+    "forbidden": "You are not allowed to do this.",
+    "notFound": "This was not found.",
+    "status": "Request failed ({{status}})"
+  }
+}

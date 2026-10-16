@@ -1,0 +1,193 @@
+{
+  "nav": {
+    "main": "التنقل الرئيسي",
+    "lessons": "الدروس",
+    "challenges": "التحديات",
+    "leaderboard": "لوحة الصدارة",
+    "admin": "الإدارة",
+    "logIn": "تسجيل الدخول",
+    "logOut": "تسجيل الخروج",
+    "register": "إنشاء حساب"
+  },
+  "header": {
+    "points_zero": "{{count}} نقطة",
+    "points_one": "نقطة واحدة",
+    "points_two": "نقطتان",
+    "points_few": "{{count}} نقاط",
+    "points_many": "{{count}} نقطة",
+    "points_other": "{{count}} نقطة"
+  },
+  "theme": {
+    "toDark": "التبديل إلى المظهر الداكن",
+    "toLight": "التبديل إلى المظهر الفاتح"
+  },
+  "language": {
+    "hint": "(تبديل لغة الواجهة)"
+  },
+  "common": {
+    "points_zero": "{{count}} نقطة",
+    "points_one": "نقطة واحدة",
+    "points_two": "نقطتان",
+    "points_few": "{{count}} نقاط",
+    "points_many": "{{count}} نقطة",
+    "points_other": "{{count}} نقطة",
+    "noTopic": "بلا موضوع",
+    "solved": "تم الحل",
+    "notSolved": "لم يُحل بعد",
+    "genericError": "حدث خطأ ما. حاول مرة أخرى."
+  },
+  "difficulty": {
+    "easy": "سهل",
+    "medium": "متوسط",
+    "hard": "صعب"
+  },
+  "home": {
+    "title": "الدروس",
+    "intro": "اختر درسًا واقرأه، ثم حُلّ مسائله في المحرر.",
+    "loading": "جارٍ تحميل الدروس...",
+    "empty": "لم يُنشر أي درس بعد.",
+    "moduleEmpty": "لا توجد دروس في هذه الوحدة بعد.",
+    "loadFailed": "تعذّر تحميل الدروس.",
+    "tracks": {
+      "basics": "الأساسيات",
+      "data-structures": "هياكل البيانات",
+      "algorithms": "الخوارزميات"
+    }
+  },
+  "lesson": {
+    "loading": "جارٍ تحميل الدرس...",
+    "notFound": "هذا الدرس غير موجود.",
+    "loadFailed": "تعذّر تحميل الدرس.",
+    "backToLessons": "العودة إلى الدروس",
+    "allLessons": "كل الدروس",
+    "visualization": "التمثيل المرئي",
+    "loadingVisualization": "جارٍ تحميل التمثيل المرئي..."
+  },
+  "challenges": {
+    "title": "التحديات",
+    "intro": "كل المسائل في مكان واحد. حلّ المسألة هنا أو في درسها يُحتسب مرة واحدة.",
+    "loading": "جارٍ تحميل التحديات...",
+    "empty": "لم يُنشر أي تحدٍّ بعد.",
+    "loadFailed": "تعذّر تحميل التحديات.",
+    "search": "البحث بالعنوان",
+    "difficulty": "الصعوبة",
+    "allDifficulties": "كل المستويات",
+    "topic": "الموضوع",
+    "allTopics": "كل المواضيع",
+    "status": "الحالة",
+    "all": "الكل",
+    "unsolved": "لم يُحل بعد",
+    "showing_zero": "لا توجد تحديات",
+    "showing_one": "يُعرض {{shown}} من تحدٍّ واحد",
+    "showing_two": "يُعرض {{shown}} من تحديين",
+    "showing_few": "يُعرض {{shown}} من {{count}} تحديات",
+    "showing_many": "يُعرض {{shown}} من {{count}} تحديًا",
+    "showing_other": "يُعرض {{shown}} من {{count}} تحدٍّ",
+    "clearFilters": "مسح عوامل التصفية",
+    "noMatch": "لا توجد تحديات تطابق عوامل التصفية هذه.",
+    "columnTitle": "العنوان",
+    "columnPoints": "النقاط"
+  },
+  "challenge": {
+    "loading": "جارٍ تحميل التحدي...",
+    "notFound": "هذا التحدي غير موجود.",
+    "loadFailed": "تعذّر تحميل التحدي.",
+    "back": "العودة إلى التحديات",
+    "openLesson": "افتح الدرس"
+  },
+  "solver": {
+    "examples": "أمثلة",
+    "input": "Input",
+    "expectedOutput": "الـ Output المتوقع",
+    "language": "لغة البرمجة",
+    "loadingEditor": "جارٍ تحميل المحرر...",
+    "editorLabel": "كود {{language}} لمسألة {{title}}",
+    "javaMain": "يجب أن يكون اسم الـ class في Java هو Main.",
+    "submit": "إرسال",
+    "running": "جارٍ تشغيل الاختبارات...",
+    "logInToSubmit": "سجّل الدخول للإرسال"
+  },
+  "result": {
+    "label": "نتيجة الإرسال",
+    "status": {
+      "passed": "ناجح",
+      "failed": "فاشل",
+      "error": "خطأ",
+      "timeout": "انتهت المهلة"
+    },
+    "testsPassed_zero": "لا توجد اختبارات",
+    "testsPassed_one": "نجح {{passed}} من اختبار واحد",
+    "testsPassed_two": "نجح {{passed}} من اختبارين",
+    "testsPassed_few": "نجح {{passed}} من {{count}} اختبارات",
+    "testsPassed_many": "نجح {{passed}} من {{count}} اختبارًا",
+    "testsPassed_other": "نجح {{passed}} من {{count}} اختبار",
+    "milliseconds": "{{ms}} ms",
+    "pointsAwarded_zero": "+{{count}} نقطة",
+    "pointsAwarded_one": "+نقطة واحدة",
+    "pointsAwarded_two": "+نقطتان",
+    "pointsAwarded_few": "+{{count}} نقاط",
+    "pointsAwarded_many": "+{{count}} نقطة",
+    "pointsAwarded_other": "+{{count}} نقطة",
+    "alreadySolved": "حللت هذه المسألة من قبل، فلا نقاط جديدة.",
+    "compileError": "خطأ في الترجمة (Compile error)",
+    "test": "الاختبار {{number}}:",
+    "hiddenTest": "اختبار مخفي:",
+    "passed": "نجح",
+    "failed": "فشل",
+    "input": "Input",
+    "expected": "الـ Output المتوقع",
+    "actual": "الـ Output الفعلي",
+    "empty": "(فارغ)"
+  },
+  "leaderboard": {
+    "title": "لوحة الصدارة",
+    "intro": "تُكسب النقاط بحل المسائل، وتُحتسب كل مسألة مرة واحدة.",
+    "yourRank": "ترتيبك:",
+    "rankPoints_zero": "({{count}} نقطة)",
+    "rankPoints_one": "(نقطة واحدة)",
+    "rankPoints_two": "(نقطتان)",
+    "rankPoints_few": "({{count}} نقاط)",
+    "rankPoints_many": "({{count}} نقطة)",
+    "rankPoints_other": "({{count}} نقطة)",
+    "loading": "جارٍ تحميل لوحة الصدارة...",
+    "empty": "لم يحصل أحد على نقاط بعد. حُلّ مسألة لتتصدر القائمة.",
+    "loadFailed": "تعذّر تحميل لوحة الصدارة.",
+    "rank": "الترتيب",
+    "name": "الاسم",
+    "points": "النقاط",
+    "you": "(أنت)"
+  },
+  "auth": {
+    "logInTitle": "تسجيل الدخول",
+    "logIn": "تسجيل الدخول",
+    "loggingIn": "جارٍ تسجيل الدخول...",
+    "noAccount": "ليس لديك حساب؟",
+    "register": "إنشاء حساب",
+    "registerTitle": "إنشاء حساب",
+    "createAccount": "إنشاء الحساب",
+    "creatingAccount": "جارٍ إنشاء الحساب...",
+    "haveAccount": "لديك حساب بالفعل؟",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "newPassword": "كلمة المرور (8 أحرف على الأقل)",
+    "sessionEnded": "انتهت جلستك. يُرجى تسجيل الدخول مرة أخرى.",
+    "bannedPrefix": "هذا الحساب محظور. السبب:"
+  },
+  "notFound": {
+    "title": "الصفحة غير موجودة",
+    "body": "لا يوجد شيء على هذا العنوان.",
+    "home": "اذهب إلى الدروس"
+  },
+  "errors": {
+    "network": "تعذّر الوصول إلى الخادم",
+    "sessionEnded": "انتهت جلستك. يُرجى تسجيل الدخول مرة أخرى.",
+    "validation": "تحقّق من الحقول المحددة.",
+    "tooMany": "طلبات كثيرة جدًا، انتظر دقيقة",
+    "unavailable": "الخدمة غير متاحة الآن، حاول بعد قليل",
+    "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    "forbidden": "لا تملك صلاحية القيام بهذا.",
+    "notFound": "لم يُعثر على المطلوب.",
+    "status": "تعذّر إكمال الطلب (خطأ {{status}})"
+  }
+}

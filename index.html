@@ -6,16 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AlgosProj</title>
     <script>
-      // Sets the theme before the first paint, so a dark page never flashes light. Same rules as
-      // src/theme.ts: "light" or "dark" from localStorage, otherwise the OS setting.
+      // Sets the theme, lang and dir before the first paint, so a dark page never flashes light
+      // and an Arabic page never flashes left-to-right. Same rules as src/theme.ts and src/i18n.ts:
+      // a stored "light"/"dark" and "en"/"ar" win; otherwise the OS theme and the browser language.
       try {
-        var choice = null
+        var root = document.documentElement
+        var theme = null
+        var lang = null
         try {
-          choice = localStorage.getItem('theme')
+          theme = localStorage.getItem('theme')
+          lang = localStorage.getItem('lang')
         } catch (e) {}
-        var dark = choice === 'dark' || (choice !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
-        document.documentElement.classList.toggle('dark', dark)
-        document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+        var dark = theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        root.classList.toggle('dark', dark)
+        root.style.colorScheme = dark ? 'dark' : 'light'
+        if (lang !== 'en' && lang !== 'ar') {
+          var first = (navigator.languages && navigator.languages[0]) || navigator.language || ''
+          lang = first.toLowerCase().indexOf('ar') === 0 ? 'ar' : 'en'
+        }
+        root.lang = lang
+        root.dir = lang === 'ar' ? 'rtl' : 'ltr'
       } catch (e) {}
     </script>
   </head>
