@@ -1,16 +1,18 @@
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../auth'
+import { setThemeChoice, useTheme, type ThemeChoice } from '../theme'
 
 const navLink = ({ isActive }: { isActive: boolean }) =>
   `rounded px-2 py-1 hover:text-accent ${isActive ? 'text-ink font-medium' : 'text-muted'}`
 
 export default function Layout() {
   const { user, loading, logout } = useAuth()
+  const { choice: theme } = useTheme()
   const location = useLocation()
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-line bg-white">
+      <header className="border-b border-line bg-surface">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
           <Link to="/" className="rounded text-lg font-semibold tracking-tight text-ink">
             AlgosProj
@@ -31,7 +33,23 @@ export default function Layout() {
               </NavLink>
             )}
           </nav>
-          <div className="ml-auto flex items-center gap-3 text-sm">
+          {/* Wraps on narrow screens, so the theme control never pushes the page sideways. */}
+          <div className="ml-auto flex flex-wrap items-center gap-3 text-sm">
+            <div>
+              <label htmlFor="theme" className="sr-only">
+                Theme
+              </label>
+              <select
+                id="theme"
+                value={theme}
+                onChange={(event) => setThemeChoice(event.target.value as ThemeChoice)}
+                className="rounded border border-field bg-surface px-1.5 py-1 text-ink hover:border-muted"
+              >
+                <option value="system">System theme</option>
+                <option value="light">Light theme</option>
+                <option value="dark">Dark theme</option>
+              </select>
+            </div>
             {loading ? null : user ? (
               <>
                 <span className="text-ink">

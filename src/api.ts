@@ -235,15 +235,24 @@ export class ApiError extends Error {
   }
 }
 
+// With storage blocked these do nothing, so the app still loads (logged out) instead of crashing.
 export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY)
+  try {
+    return localStorage.getItem(TOKEN_KEY)
+  } catch {
+    return null
+  }
 }
 
 export function setToken(token: string | null) {
-  if (token) {
-    localStorage.setItem(TOKEN_KEY, token)
-  } else {
-    localStorage.removeItem(TOKEN_KEY)
+  try {
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, token)
+    } else {
+      localStorage.removeItem(TOKEN_KEY)
+    }
+  } catch {
+    // Storage blocked.
   }
 }
 

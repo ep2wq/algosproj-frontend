@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ApiError, LANGUAGES, submitSolution, type Language, type Problem, type SubmitResult } from '../api'
 import { useAuth } from '../auth'
+import { useTheme } from '../theme'
 import { LANGUAGE_LABELS, STARTER_CODE } from '../starters'
 import SubmitResultPanel from './SubmitResultPanel'
 
@@ -18,6 +19,7 @@ export default function ProblemSolver({
   onPassed?: (result: SubmitResult) => void
 }) {
   const { user, refreshUser } = useAuth()
+  const { dark } = useTheme()
   const location = useLocation()
   const [language, setLanguage] = useState<Language>('python')
   // Code is kept per language, so switching languages doesn't lose what was typed.
@@ -59,7 +61,7 @@ export default function ProblemSolver({
           <ExamplesHeading className="text-sm font-medium">Examples</ExamplesHeading>
           <div className="mt-2 grid gap-3 sm:grid-cols-2">
             {problem.test_cases.map((testCase) => (
-              <dl key={testCase.id} className="grid grid-cols-2 gap-2 rounded border border-line bg-white p-3">
+              <dl key={testCase.id} className="grid grid-cols-2 gap-2 rounded border border-line bg-surface p-3">
                 <div className="min-w-0">
                   <dt className="text-xs text-muted">Input</dt>
                   <dd>
@@ -86,7 +88,7 @@ export default function ProblemSolver({
           id={languageId}
           value={language}
           onChange={(event) => setLanguage(event.target.value as Language)}
-          className="ml-2 rounded border border-line bg-white px-2 py-1 text-sm hover:border-muted"
+          className="ml-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
         >
           {LANGUAGES.map((option) => (
             <option key={option} value={option}>
@@ -96,10 +98,12 @@ export default function ProblemSolver({
         </select>
       </div>
 
-      <div className="mt-3 overflow-hidden rounded border border-line bg-white">
+      <div className="mt-3 overflow-hidden rounded border border-line bg-surface">
         <Editor
           height="280px"
           language={language}
+          // Changing the theme restyles the open editor; it is not remounted, so the code stays.
+          theme={dark ? 'vs-dark' : 'vs'}
           value={code[language]}
           onChange={(value) => setCode((current) => ({ ...current, [language]: value ?? '' }))}
           loading={<p className="p-4 text-sm text-muted">Loading editor...</p>}
@@ -121,7 +125,7 @@ export default function ProblemSolver({
             type="button"
             onClick={handleSubmit}
             disabled={busy}
-            className="rounded bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded bg-accent px-4 py-2 font-medium text-inverse hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {busy ? 'Running tests...' : 'Submit'}
           </button>

@@ -5,6 +5,19 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AlgosProj</title>
+    <script>
+      // Sets the theme before the first paint, so a dark page never flashes light. Same rules as
+      // src/theme.ts: "light" or "dark" from localStorage, otherwise the OS setting.
+      try {
+        var choice = null
+        try {
+          choice = localStorage.getItem('theme')
+        } catch (e) {}
+        var dark = choice === 'dark' || (choice !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.classList.toggle('dark', dark)
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
