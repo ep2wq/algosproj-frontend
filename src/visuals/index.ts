@@ -21,6 +21,7 @@ export const VISUALS = new Map<string, LazyExoticComponent<ComponentType>>([
   ['lowest-common-ancestor-of-a-bst', lazy(() => import('./TreeVisual').then((m) => ({ default: m.LcaVisual })))],
   ['delete-from-a-bst', lazy(() => import('./TreeVisual').then((m) => ({ default: m.DeleteVisual })))],
   ['binary-strings', lazy(() => import('./BinaryStringsVisual'))],
+  ['permutations', lazy(() => import('./PermutationsVisual'))],
   ['count-connected-components', lazy(() => import('./ComponentsVisual'))],
   ['number-of-islands', lazy(() => import('./GridVisual').then((m) => ({ default: m.IslandsVisual })))],
   ['shortest-path-in-a-grid', lazy(() => import('./GridVisual').then((m) => ({ default: m.ShortestPathVisual })))],
