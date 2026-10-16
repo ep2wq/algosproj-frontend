@@ -17,8 +17,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
-  // Banned while logged in: the request that found out sent the user here with the reason.
-  const stateBanReason = (location.state as { banReason?: string } | null)?.banReason
+  // Sent here by a request that found the token dead (sessionEnded) or the account banned
+  // (banReason). Neither is set after a manual Log out.
+  const state = location.state as { banReason?: string; sessionEnded?: boolean } | null
+  const stateBanReason = state?.banReason
+  const sessionEnded = state?.sessionEnded === true
   const [error, setError] = useState(stateBanReason === undefined ? '' : banMessage(stateBanReason))
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
 
@@ -58,6 +61,11 @@ export default function LoginPage() {
         </>
       }
     >
+      {sessionEnded && (
+        <p role="status" className="rounded border border-line bg-accent-soft px-3 py-2 text-sm text-ink">
+          Your session has ended. Please log in again.
+        </p>
+      )}
       <Field id="email" label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" errors={fieldErrors.email} />
       <Field
         id="password"

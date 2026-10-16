@@ -106,8 +106,14 @@ Activity for owners.
 Banned accounts: login shows "This account is banned. Reason: ..." from the 403. A request
 with a token that gets that 403 is handled like a 401: the token is cleared and the user goes
 to `/login`, which shows the ban message. Banning deletes the user's tokens, so an open tab
-usually gets a 401 instead and lands on `/login` without the reason; the reason then shows
-when they try to log in.
+usually gets a 401 instead and lands on `/login` with the session notice below; the reason
+then shows when they try to log in.
+
+Session ended: when an authenticated request gets a 401 and a token was sent, the token is
+cleared and the user goes to `/login`, which shows "Your session has ended. Please log in
+again." It is not shown after clicking Log out (a 401 from `/logout` only clears the token),
+and the 401 of a wrong password on login or register keeps its own message. The notice
+lives in the navigation state, so it is gone after logging in.
 
 `src/components/AdminRoute.tsx` wraps these routes: guests and users who are neither admin
 nor owner get the same "Page not found" as an unknown path. That is only convenience; the backend answers every

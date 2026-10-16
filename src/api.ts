@@ -288,10 +288,12 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   const serverMessage = typeof data?.message === 'string' ? data.message : ''
 
-  if (response.status === 401 && token) {
+  // A dead token. Not for login and register (a wrong password keeps its own message) or logout
+  // (the user is leaving anyway, and auth.tsx clears the token).
+  if (response.status === 401 && token && !['/login', '/register', '/logout'].includes(path)) {
     setToken(null)
     onUnauthorized()
-    throw new ApiError(401, 'Your session has ended. Log in again.')
+    throw new ApiError(401, 'Your session has ended. Please log in again.')
   }
   // A banned account: {"message": "This account is banned.", "reason": ...}. With a token it is
   // handled like a 401; on login it is shown on the form.

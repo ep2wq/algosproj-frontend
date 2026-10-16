@@ -27,7 +27,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     api.setUnauthorizedHandler((banReason) => {
       setUser(null)
       if (location.pathname !== '/login' || banReason !== undefined) {
-        navigate('/login', { state: { from: location, banReason } })
+        // Login shows the ban reason, or else "Your session has ended".
+        navigate('/login', { state: { from: location, banReason, sessionEnded: banReason === undefined } })
       }
     })
   }, [navigate, location])
