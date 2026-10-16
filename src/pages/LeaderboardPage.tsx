@@ -57,7 +57,7 @@ export default function LeaderboardPage() {
 
       {entries !== null && entries.length > 0 && (
         <div className="mt-6 overflow-x-auto rounded border border-line bg-surface">
-          <table className="w-full text-left">
+          <table className="w-full text-start">
             <thead className="border-b border-line text-sm text-muted">
               <tr>
                 <th scope="col" className="w-20 px-4 py-2 font-medium">
@@ -66,7 +66,7 @@ export default function LeaderboardPage() {
                 <th scope="col" className="px-4 py-2 font-medium">
                   Name
                 </th>
-                <th scope="col" className="px-4 py-2 text-right font-medium">
+                <th scope="col" className="px-4 py-2 text-end font-medium">
                   Points
                 </th>
               </tr>
@@ -79,10 +79,11 @@ export default function LeaderboardPage() {
                   <tr key={index} className={isMe ? 'bg-accent-soft' : undefined} aria-current={isMe ? 'true' : undefined}>
                     <td className="px-4 py-2 tabular-nums text-muted">{entry.rank}</td>
                     <td className="px-4 py-2">
-                      {entry.name}
-                      {isMe && <span className="ml-2 text-sm text-accent">(you)</span>}
+                      {/* Names can be Arabic or English; dir="auto" lets each show in its own direction. */}
+                      <span dir="auto">{entry.name}</span>
+                      {isMe && <span className="ms-2 text-sm text-accent">(you)</span>}
                     </td>
-                    <td className="px-4 py-2 text-right tabular-nums">{entry.points}</td>
+                    <td className="px-4 py-2 text-end tabular-nums">{entry.points}</td>
                   </tr>
                 )
               })}

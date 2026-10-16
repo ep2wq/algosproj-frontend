@@ -169,7 +169,7 @@ export default function AdminAuditLogPage() {
           </ul>
 
           <div className="mt-6 hidden overflow-x-auto rounded border border-line bg-surface md:block">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-start text-sm">
               <thead className="border-b border-line text-muted">
                 <tr>
                   <th scope="col" className="px-3 py-2 font-medium">

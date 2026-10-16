@@ -96,7 +96,9 @@ export default function AdminUserPage() {
         Users
       </Link>
       <div className="mt-2 flex flex-wrap items-center gap-2">
-        <h1 className="min-w-0 break-words text-3xl font-semibold tracking-tight">{detail.name}</h1>
+        <h1 className="min-w-0 break-words text-3xl font-semibold tracking-tight" dir="auto">
+          {detail.name}
+        </h1>
         {detail.banned_at && <BannedBadge />}
       </div>
 

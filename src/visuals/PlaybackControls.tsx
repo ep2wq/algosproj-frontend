@@ -16,7 +16,7 @@ export function SpeedSelect({ playback }: { playback: Playback }) {
         id={`${id}-speed`}
         value={playback.speed}
         onChange={(event) => playback.setSpeed(event.target.value as Speed)}
-        className="ml-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
+        className="ms-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
       >
         <option value="slow">Slow</option>
         <option value="normal">Normal</option>

@@ -72,7 +72,7 @@ export default function WarmupVisual() {
             id={`${id}-language`}
             value={language}
             onChange={(event) => setLanguage(event.target.value as Language)}
-            className="ml-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
+            className="ms-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
           >
             {Object.entries(SOLUTIONS).map(([value, { label }]) => (
               <option key={value} value={value}>

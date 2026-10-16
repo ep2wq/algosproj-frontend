@@ -12,7 +12,7 @@ function ProblemRow({ problem }: { problem: ProblemSummary }) {
       <span className="min-w-0 break-words">{problem.title}</span>
       <DifficultyBadge difficulty={problem.difficulty} />
       <span className="text-sm text-muted tabular-nums">{problem.points} points</span>
-      <Link to={`/admin/problems/${problem.id}`} className={`${buttonLink} ml-auto`}>
+      <Link to={`/admin/problems/${problem.id}`} className={`${buttonLink} ms-auto`}>
         Edit<span className="sr-only"> problem {problem.title}</span>
       </Link>
     </li>
@@ -65,7 +65,7 @@ export default function AdminContentPage() {
                 <span className="text-sm text-muted">
                   {module.slug} · order {module.sort_order}
                 </span>
-                <div className="ml-auto flex flex-wrap gap-2">
+                <div className="ms-auto flex flex-wrap gap-2">
                   <Link to={`/admin/modules/${module.id}`} className={buttonLink}>
                     Edit<span className="sr-only"> module {module.title}</span>
                   </Link>
@@ -88,7 +88,7 @@ export default function AdminContentPage() {
                           <span className="text-sm text-muted">
                             {lesson.slug} · order {lesson.sort_order}
                           </span>
-                          <div className="ml-auto flex flex-wrap gap-2">
+                          <div className="ms-auto flex flex-wrap gap-2">
                             <Link to={`/admin/lessons/${lesson.id}`} className={buttonLink}>
                               Edit<span className="sr-only"> lesson {lesson.title}</span>
                             </Link>
@@ -98,7 +98,7 @@ export default function AdminContentPage() {
                           </div>
                         </div>
                         {lessonProblems.length > 0 && (
-                          <ul className="mt-1 pl-4">
+                          <ul className="mt-1 ps-4">
                             {lessonProblems.map((problem) => (
                               <ProblemRow key={problem.id} problem={problem} />
                             ))}
@@ -117,7 +117,7 @@ export default function AdminContentPage() {
               <h2 id="standalone-heading" className="text-xl font-semibold">
                 Standalone problems
               </h2>
-              <Link to="/admin/problems/new" className={`${buttonLink} ml-auto`}>
+              <Link to="/admin/problems/new" className={`${buttonLink} ms-auto`}>
                 Add standalone problem
               </Link>
             </div>

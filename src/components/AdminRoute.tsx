@@ -12,8 +12,9 @@ export default function AdminRoute() {
 
   if (loading) return <p className="text-muted">Loading...</p>
   if (user?.role !== 'admin' && user?.role !== 'owner') return <NotFoundPage />
+  // Staff only: always English and left to right, whatever the interface language.
   return (
-    <>
+    <div lang="en" dir="ltr">
       <nav aria-label="Admin" className="mb-6 flex flex-wrap gap-1 border-b border-line pb-3 text-sm">
         <NavLink to="/admin" end className={tabClass}>
           Content
@@ -33,6 +34,6 @@ export default function AdminRoute() {
         )}
       </nav>
       <Outlet />
-    </>
+    </div>
   )
 }

@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError, getLesson, type Lesson } from '../api'
+import Content from '../components/Content'
 import LessonBody from '../components/LessonBody'
 import ProblemCard from '../components/ProblemCard'
 import { VISUALS } from '../visuals'
@@ -55,8 +56,10 @@ export default function LessonPage() {
       <Link to="/" className="rounded text-sm text-muted hover:text-accent">
         All lessons
       </Link>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">{lesson.title}</h1>
-      {lesson.body && <LessonBody text={lesson.body} />}
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+        <Content lang="en">{lesson.title}</Content>
+      </h1>
+      {lesson.body && <LessonBody text={lesson.body} lang="en" />}
 
       {Visual && (
         <section className="mt-10 border-t border-line pt-8" aria-labelledby="visual-heading">
@@ -64,9 +67,12 @@ export default function LessonPage() {
             Visualization
           </h2>
           <Suspense fallback={<p className="mt-4 text-sm text-muted">Loading visualization...</p>}>
-            {/* Looked up from a module-level map, so it is the same component on every render. */}
-            {/* oxlint-disable-next-line react/static-components */}
-            <Visual />
+            {/* English and left-to-right in both interface languages (drawing, controls, step text). */}
+            <div lang="en" dir="ltr">
+              {/* Looked up from a module-level map, so it is the same component on every render. */}
+              {/* oxlint-disable-next-line react/static-components */}
+              <Visual />
+            </div>
           </Suspense>
         </section>
       )}

@@ -1,7 +1,10 @@
+import { formatDateTime } from '../../i18n'
+
 // Shared by the admin user, audit log and activity pages.
 
+// The admin area is English; Gregorian dates with Western digits, as everywhere.
 export function formatTime(iso: string): string {
-  return new Date(iso).toLocaleString()
+  return formatDateTime(iso, 'en')
 }
 
 export const EVENT_LABELS: Record<string, string> = {

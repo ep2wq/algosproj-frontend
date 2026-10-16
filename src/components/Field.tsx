@@ -21,6 +21,8 @@ export default function Field({ id, label, type = 'text', value, onChange, autoC
         id={id}
         name={id}
         type={type}
+        // Email addresses always read left to right, also on Arabic pages.
+        dir={type === 'email' ? 'ltr' : undefined}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         autoComplete={autoComplete}

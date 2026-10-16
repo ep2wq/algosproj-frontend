@@ -164,7 +164,7 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
           className="overflow-x-auto rounded border border-line bg-surface p-3"
         >
           <div role="img" aria-label={gridLabel(mode, current)} className="w-max">
-            <div className="flex gap-0.5 pl-5">
+            <div className="flex gap-0.5 ps-5">
               {Array.from({ length: cols }, (_, c) => (
                 <span key={c} className="w-8 text-center text-xs text-muted tabular-nums">
                   {c}
@@ -173,7 +173,7 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
             </div>
             {current.grid.map((row, r) => (
               <div key={r} className="mt-0.5 flex items-center gap-0.5">
-                <span className="w-4.5 text-right text-xs text-muted tabular-nums">{r}</span>
+                <span className="w-4.5 text-end text-xs text-muted tabular-nums">{r}</span>
                 {[...row].map((_, c) => {
                   const mark = current.marks[r][c]
                   const cellClass = mode === 'islands' ? islandCellClass(current, r, c) : shortestCellClass(current, r, c)
@@ -183,7 +183,7 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
                       key={c}
                       className={`relative flex size-8 items-center justify-center rounded border-2 text-sm font-semibold tabular-nums motion-safe:transition-colors motion-safe:duration-300 ${cellClass}`}
                     >
-                      {corner && <span className="absolute top-0 left-0.5 text-[9px] leading-none font-medium">{corner}</span>}
+                      {corner && <span className="absolute top-0 start-0.5 text-[9px] leading-none font-medium">{corner}</span>}
                       {mark ?? ''}
                     </span>
                   )

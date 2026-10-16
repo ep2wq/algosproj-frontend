@@ -1,10 +1,12 @@
 import { parseLessonText } from '../lessonText'
+import Content from './Content'
 
 // Renders lesson text as headings, lists, code blocks and paragraphs. Everything is a
-// React text node; the text is never treated as HTML.
-export default function LessonBody({ text }: { text: string }) {
+// React text node; the text is never treated as HTML. lang is the language of the text (see
+// Content); headings, paragraphs and lists follow its direction, code blocks are always LTR.
+export default function LessonBody({ text, lang }: { text: string; lang: string }) {
   return (
-    <div className="mt-4 max-w-prose leading-relaxed">
+    <Content lang={lang} as="div" className="mt-4 max-w-prose leading-relaxed">
       {parseLessonText(text).map((block, index) => {
         switch (block.type) {
           case 'heading':
@@ -15,7 +17,7 @@ export default function LessonBody({ text }: { text: string }) {
             )
           case 'list':
             return (
-              <ul key={index} className="mt-3 list-disc space-y-1 pl-5">
+              <ul key={index} className="mt-3 list-disc space-y-1 ps-5">
                 {block.items.map((item, itemIndex) => (
                   <li key={itemIndex}>{item}</li>
                 ))}
@@ -27,6 +29,8 @@ export default function LessonBody({ text }: { text: string }) {
               <pre
                 key={index}
                 tabIndex={0}
+                dir="ltr"
+                lang="en"
                 className="mt-3 overflow-x-auto rounded border border-line bg-surface p-3 font-mono text-sm leading-normal"
               >
                 <code>{block.text}</code>
@@ -40,6 +44,6 @@ export default function LessonBody({ text }: { text: string }) {
             )
         }
       })}
-    </div>
+    </Content>
   )
 }

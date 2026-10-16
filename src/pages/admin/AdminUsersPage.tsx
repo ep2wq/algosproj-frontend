@@ -117,7 +117,7 @@ export default function AdminUsersPage() {
               <li key={row.id} className="px-4 py-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <Link to={`/admin/users/${row.id}`} className="min-w-0 break-words rounded font-medium text-accent hover:underline">
-                    {row.name}
+                    <span dir="auto">{row.name}</span>
                   </Link>
                   {row.banned_at && <BannedBadge />}
                 </div>
@@ -130,7 +130,7 @@ export default function AdminUsersPage() {
           </ul>
 
           <div className="mt-6 hidden overflow-x-auto rounded border border-line bg-surface md:block">
-            <table className="w-full text-left">
+            <table className="w-full text-start">
               <thead className="border-b border-line text-sm text-muted">
                 <tr>
                   <th scope="col" className="px-4 py-2 font-medium">
@@ -145,10 +145,10 @@ export default function AdminUsersPage() {
                   <th scope="col" className="px-4 py-2 font-medium">
                     Status
                   </th>
-                  <th scope="col" className="px-4 py-2 text-right font-medium">
+                  <th scope="col" className="px-4 py-2 text-end font-medium">
                     Points
                   </th>
-                  <th scope="col" className="px-4 py-2 text-right font-medium">
+                  <th scope="col" className="px-4 py-2 text-end font-medium">
                     Solved
                   </th>
                   <th scope="col" className="px-4 py-2 font-medium">
@@ -161,14 +161,14 @@ export default function AdminUsersPage() {
                   <tr key={row.id}>
                     <td className="px-4 py-2">
                       <Link to={`/admin/users/${row.id}`} className="rounded text-accent hover:underline">
-                        {row.name}
+                        <span dir="auto">{row.name}</span>
                       </Link>
                     </td>
                     <td className="break-all px-4 py-2 text-sm">{row.email}</td>
                     <td className="px-4 py-2 text-sm">{ROLE_LABELS[row.role]}</td>
                     <td className="px-4 py-2">{row.banned_at ? <BannedBadge /> : <span className="text-sm text-muted">Active</span>}</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{row.points}</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{row.solved_count}</td>
+                    <td className="px-4 py-2 text-end tabular-nums">{row.points}</td>
+                    <td className="px-4 py-2 text-end tabular-nums">{row.solved_count}</td>
                     <td className="px-4 py-2 text-sm text-muted">{formatTime(row.created_at)}</td>
                   </tr>
                 ))}

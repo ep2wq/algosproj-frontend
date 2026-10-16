@@ -127,7 +127,7 @@ export default function TwoSumVisual() {
           <p className="text-sm font-medium">Hash map</p>
           <table aria-label={mapLabel(current)} className="mt-1 w-full border-collapse rounded border border-line bg-surface text-sm tabular-nums">
             <thead>
-              <tr className="border-b border-line text-left text-xs text-muted">
+              <tr className="border-b border-line text-start text-xs text-muted">
                 <th scope="col" className="px-2 py-1 font-medium">Value</th>
                 <th scope="col" className="px-2 py-1 font-medium">Position</th>
               </tr>

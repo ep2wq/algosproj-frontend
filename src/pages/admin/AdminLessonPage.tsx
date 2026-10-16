@@ -156,7 +156,7 @@ export default function AdminLessonPage() {
               Preview
             </h2>
             <div className="mt-1 rounded border border-line bg-paper p-4">
-              {form.body.trim() ? <LessonBody text={form.body} /> : <p className="text-sm text-muted">Nothing to preview yet.</p>}
+              {form.body.trim() ? <LessonBody text={form.body} lang="en" /> : <p className="text-sm text-muted">Nothing to preview yet.</p>}
             </div>
           </section>
         </div>

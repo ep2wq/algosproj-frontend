@@ -147,7 +147,7 @@ function TestCases({ problemId }: { problemId: number }) {
 
       {testCases.length > 0 && (
         <div className="mt-4 rounded border border-line bg-surface">
-          <table className="w-full table-fixed text-left text-sm">
+          <table className="w-full table-fixed text-start text-sm">
             <thead className="border-b border-line text-muted">
               <tr>
                 <th scope="col" className="w-8 px-2 py-2 font-medium sm:w-12 sm:px-3">

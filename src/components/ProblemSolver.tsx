@@ -5,6 +5,7 @@ import { ApiError, LANGUAGES, submitSolution, type Language, type Problem, type 
 import { useAuth } from '../auth'
 import { useTheme } from '../theme'
 import { LANGUAGE_LABELS, STARTER_CODE } from '../starters'
+import Content from './Content'
 import SubmitResultPanel from './SubmitResultPanel'
 
 // The statement, examples, editor and Submit for one problem. Shared by the lesson page
@@ -54,7 +55,9 @@ export default function ProblemSolver({
 
   return (
     <>
-      <p className="mt-3 max-w-prose whitespace-pre-wrap">{problem.description}</p>
+      <Content lang="en" as="p" className="mt-3 max-w-prose whitespace-pre-wrap">
+        {problem.description}
+      </Content>
 
       {problem.test_cases.length > 0 && (
         <div className="mt-5">
@@ -65,13 +68,13 @@ export default function ProblemSolver({
                 <div className="min-w-0">
                   <dt className="text-xs text-muted">Input</dt>
                   <dd>
-                    <pre className="mt-0.5 overflow-x-auto whitespace-pre-wrap font-mono text-sm">{testCase.input}</pre>
+                    <pre dir="ltr" lang="en" className="mt-0.5 overflow-x-auto whitespace-pre-wrap font-mono text-sm">{testCase.input}</pre>
                   </dd>
                 </div>
                 <div className="min-w-0">
                   <dt className="text-xs text-muted">Expected output</dt>
                   <dd>
-                    <pre className="mt-0.5 overflow-x-auto whitespace-pre-wrap font-mono text-sm">{testCase.expected_output}</pre>
+                    <pre dir="ltr" lang="en" className="mt-0.5 overflow-x-auto whitespace-pre-wrap font-mono text-sm">{testCase.expected_output}</pre>
                   </dd>
                 </div>
               </dl>
@@ -88,7 +91,7 @@ export default function ProblemSolver({
           id={languageId}
           value={language}
           onChange={(event) => setLanguage(event.target.value as Language)}
-          className="ml-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
+          className="ms-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
         >
           {LANGUAGES.map((option) => (
             <option key={option} value={option}>
@@ -98,7 +101,8 @@ export default function ProblemSolver({
         </select>
       </div>
 
-      <div className="mt-3 overflow-hidden rounded border border-line bg-surface">
+      {/* Code is always left to right, in both interface languages. */}
+      <div dir="ltr" className="mt-3 overflow-hidden rounded border border-line bg-surface">
         <Editor
           height="280px"
           language={language}

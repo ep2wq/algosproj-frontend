@@ -81,7 +81,7 @@ export default function SortingVisual() {
             id={`${id}-algorithm`}
             value={algorithm}
             onChange={(event) => restart(array, event.target.value as Algorithm)}
-            className="ml-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
+            className="ms-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
           >
             {Object.entries(ALGORITHMS).map(([value, { label }]) => (
               <option key={value} value={value}>

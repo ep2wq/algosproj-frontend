@@ -131,7 +131,7 @@ export default function SubarraySumVisual() {
         className="mt-3 overflow-x-auto rounded border border-line bg-surface p-3"
       >
         <div role="img" aria-label={diagramLabel(current)} className="flex w-max gap-1">
-          <div className="flex flex-col pr-1 text-xs text-muted">
+          <div className="flex flex-col pe-1 text-xs text-muted">
             <span className="mt-4 flex h-10 items-center">number</span>
             <span className="mt-1 flex h-10 items-center">sum</span>
           </div>
@@ -172,7 +172,7 @@ export default function SubarraySumVisual() {
         <table aria-label={mapLabel(current)} className="border-collapse text-sm tabular-nums">
           <tbody>
             <tr className="border-b border-line">
-              <th scope="row" className="px-2 py-1 text-left text-xs font-medium text-muted">
+              <th scope="row" className="px-2 py-1 text-start text-xs font-medium text-muted">
                 Total
               </th>
               {current.map.map((entry) => (
@@ -182,7 +182,7 @@ export default function SubarraySumVisual() {
               ))}
             </tr>
             <tr>
-              <th scope="row" className="px-2 py-1 text-left text-xs font-medium text-muted">
+              <th scope="row" className="px-2 py-1 text-start text-xs font-medium text-muted">
                 Times
               </th>
               {current.map.map((entry) => (

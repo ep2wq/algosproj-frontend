@@ -165,7 +165,7 @@ export default function AnagramVisual() {
         <table aria-label={countsLabel(current)} className="border-collapse text-sm tabular-nums">
           <tbody>
             <tr className="border-b border-line">
-              <th scope="row" className="px-2 py-1 text-left text-xs font-medium text-muted">
+              <th scope="row" className="px-2 py-1 text-start text-xs font-medium text-muted">
                 Letter
               </th>
               {current.counts.length === 0 && <td className="px-2 py-1 text-muted">empty</td>}
@@ -176,7 +176,7 @@ export default function AnagramVisual() {
               ))}
             </tr>
             <tr>
-              <th scope="row" className="px-2 py-1 text-left text-xs font-medium text-muted">
+              <th scope="row" className="px-2 py-1 text-start text-xs font-medium text-muted">
                 Count
               </th>
               {current.counts.length === 0 && <td className="px-2 py-1 text-muted">-</td>}

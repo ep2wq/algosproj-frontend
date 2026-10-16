@@ -73,7 +73,7 @@ export default function Layout() {
             )}
           </nav>
           {/* Wraps on narrow screens, so the theme control never pushes the page sideways. */}
-          <div className="ml-auto flex flex-wrap items-center gap-3 text-sm">
+          <div className="ms-auto flex flex-wrap items-center gap-3 text-sm">
             <div className="flex items-center">
               <ThemeToggle />
               <LanguageToggle />
@@ -81,8 +81,8 @@ export default function Layout() {
             {loading ? null : user ? (
               <>
                 <span className="text-ink">
-                  {user.name}{' '}
-                  <span className="ml-1 rounded bg-accent-soft px-1.5 py-0.5 text-accent tabular-nums">
+                  <span dir="auto">{user.name}</span>{' '}
+                  <span className="ms-1 rounded bg-accent-soft px-1.5 py-0.5 text-accent tabular-nums">
                     {user.points} {user.points === 1 ? 'point' : 'points'}
                   </span>
                 </span>

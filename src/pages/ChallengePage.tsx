@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError, getChallenge, type Challenge } from '../api'
 import { useAuth } from '../auth'
+import Content from '../components/Content'
 import DifficultyBadge from '../components/DifficultyBadge'
 import ProblemSolver from '../components/ProblemSolver'
 
@@ -62,9 +63,11 @@ export default function ChallengePage() {
       <Link to="/challenges" className="rounded text-sm text-muted hover:text-accent">
         Back to challenges
       </Link>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">{challenge.title}</h1>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+        <Content lang="en">{challenge.title}</Content>
+      </h1>
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-        <span>{challenge.topic ? challenge.topic.title : 'No topic'}</span>
+        {challenge.topic ? <Content lang="en">{challenge.topic.title}</Content> : <span>No topic</span>}
         <DifficultyBadge difficulty={challenge.difficulty} />
         <span className="tabular-nums">{challenge.points} points</span>
         {solved && (

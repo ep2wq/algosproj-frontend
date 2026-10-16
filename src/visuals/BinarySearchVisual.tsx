@@ -130,11 +130,11 @@ export default function BinarySearchVisual() {
             onChange={(event) => setTargetText(event.target.value)}
             aria-invalid={Boolean(targetError)}
             aria-describedby={targetError ? `${id}-target-error` : undefined}
-            className={`ml-2 w-16 rounded border bg-surface px-2 py-1 text-sm ${
+            className={`ms-2 w-16 rounded border bg-surface px-2 py-1 text-sm ${
               targetError ? 'border-fail' : 'border-field hover:border-muted'
             }`}
           />
-          <button type="submit" className={`${buttonClass} ml-2 py-1`}>
+          <button type="submit" className={`${buttonClass} ms-2 py-1`}>
             Search
           </button>
           {targetError && (

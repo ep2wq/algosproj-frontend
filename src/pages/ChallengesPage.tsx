@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ApiError, getChallenges, type ChallengeSummary } from '../api'
 import { useAuth } from '../auth'
+import Content from '../components/Content'
 import DifficultyBadge from '../components/DifficultyBadge'
 
 const DIFFICULTIES = ['easy', 'medium', 'hard']
@@ -130,7 +131,7 @@ export default function ChallengesPage() {
               >
                 <option value="">All topics</option>
                 {[...topics].map(([slug, title]) => (
-                  <option key={slug} value={slug}>
+                  <option key={slug} value={slug} lang="en">
                     {title}
                   </option>
                 ))}
@@ -183,20 +184,20 @@ export default function ChallengesPage() {
                     <div className="flex items-baseline gap-2">
                       {user && <SolvedMark solved={challenge.solved} />}
                       <Link to={`/challenges/${challenge.slug}`} className="rounded font-medium text-accent hover:underline">
-                        {challenge.title}
+                        <Content lang="en">{challenge.title}</Content>
                       </Link>
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
                       <DifficultyBadge difficulty={challenge.difficulty} />
                       <span className="tabular-nums">{challenge.points} points</span>
-                      <span>{challenge.topic?.title ?? 'No topic'}</span>
+                      {challenge.topic ? <Content lang="en">{challenge.topic.title}</Content> : <span>No topic</span>}
                     </div>
                   </li>
                 ))}
               </ul>
 
               <div className="mt-4 hidden overflow-x-auto rounded border border-line bg-surface md:block">
-                <table className="w-full text-left">
+                <table className="w-full text-start">
                   <thead className="border-b border-line text-sm text-muted">
                     <tr>
                       {user && (
@@ -213,7 +214,7 @@ export default function ChallengesPage() {
                       <th scope="col" className="px-4 py-2 font-medium">
                         Difficulty
                       </th>
-                      <th scope="col" className="px-4 py-2 text-right font-medium">
+                      <th scope="col" className="px-4 py-2 text-end font-medium">
                         Points
                       </th>
                     </tr>
@@ -228,14 +229,16 @@ export default function ChallengesPage() {
                         )}
                         <td className="px-4 py-2">
                           <Link to={`/challenges/${challenge.slug}`} className="rounded text-accent hover:underline">
-                            {challenge.title}
+                            <Content lang="en">{challenge.title}</Content>
                           </Link>
                         </td>
-                        <td className="px-4 py-2 text-sm text-muted">{challenge.topic?.title ?? 'No topic'}</td>
+                        <td className="px-4 py-2 text-sm text-muted">
+                          {challenge.topic ? <Content lang="en">{challenge.topic.title}</Content> : 'No topic'}
+                        </td>
                         <td className="px-4 py-2">
                           <DifficultyBadge difficulty={challenge.difficulty} />
                         </td>
-                        <td className="px-4 py-2 text-right tabular-nums">{challenge.points}</td>
+                        <td className="px-4 py-2 text-end tabular-nums">{challenge.points}</td>
                       </tr>
                     ))}
                   </tbody>

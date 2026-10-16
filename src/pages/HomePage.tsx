@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ApiError, getModules, type Module } from '../api'
+import Content from '../components/Content'
 
 // "data-structures" -> "Data structures"
 function trackName(track: string): string {
@@ -44,7 +45,9 @@ export default function HomePage() {
           </h2>
           {trackModules.map((module) => (
             <div key={module.id} className="mt-5">
-              <h3 className="font-medium text-ink">{module.title}</h3>
+              <h3 className="font-medium text-ink">
+                <Content lang="en">{module.title}</Content>
+              </h3>
               {module.lessons.length === 0 ? (
                 <p className="mt-1 text-sm text-muted">No lessons in this module yet.</p>
               ) : (
@@ -55,7 +58,7 @@ export default function HomePage() {
                         to={`/lessons/${lesson.slug}`}
                         className="block rounded px-4 py-3 text-accent hover:bg-accent-soft"
                       >
-                        {lesson.title}
+                        <Content lang="en">{lesson.title}</Content>
                       </Link>
                     </li>
                   ))}

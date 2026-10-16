@@ -109,7 +109,7 @@ export default function BinaryStringsVisual() {
           return (
             <li key={result} className={`rounded border px-1.5 py-0.5 font-mono text-sm ${isNew ? 'border-pass bg-pass text-inverse' : 'border-muted bg-surface'}`}>
               {result}
-              {isNew && <span className="ml-1 font-sans text-xs">new</span>}
+              {isNew && <span className="ms-1 font-sans text-xs">new</span>}
             </li>
           )
         })}

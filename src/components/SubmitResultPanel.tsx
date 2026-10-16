@@ -23,7 +23,7 @@ function Output({ label, value }: { label: string; value: string | null }) {
     <div className="min-w-0">
       <dt className="text-xs text-muted">{label}</dt>
       <dd>
-        <pre className="mt-0.5 overflow-x-auto whitespace-pre-wrap break-words rounded bg-paper px-2 py-1 font-mono text-sm">
+        <pre dir="ltr" lang="en" className="mt-0.5 overflow-x-auto whitespace-pre-wrap break-words rounded bg-paper px-2 py-1 font-mono text-sm">
           {value === null || value === '' ? <span className="text-muted">(empty)</span> : value}
         </pre>
       </dd>
@@ -55,7 +55,7 @@ export default function SubmitResultPanel({ result }: { result: SubmitResult }) 
       {result.compile_error && (
         <div className="mt-4">
           <h4 className="text-sm font-medium text-fail">Compile error</h4>
-          <pre className="mt-1 overflow-x-auto whitespace-pre-wrap rounded bg-paper p-3 font-mono text-sm text-ink">
+          <pre dir="ltr" lang="en" className="mt-1 overflow-x-auto whitespace-pre-wrap rounded bg-paper p-3 font-mono text-sm text-ink">
             {result.compile_error}
           </pre>
         </div>
@@ -66,7 +66,7 @@ export default function SubmitResultPanel({ result }: { result: SubmitResult }) 
           {result.results.map((test, index) => (
             <li
               key={index}
-              className={`rounded border border-line border-l-4 px-3 py-2 ${test.passed ? 'border-l-pass' : 'border-l-fail'}`}
+              className={`rounded border border-line border-s-4 px-3 py-2 ${test.passed ? 'border-s-pass' : 'border-s-fail'}`}
             >
               {isVisible(test) ? (
                 <>
@@ -79,7 +79,7 @@ export default function SubmitResultPanel({ result }: { result: SubmitResult }) 
                     <Output label="Actual" value={test.actual} />
                   </dl>
                   {test.error && (
-                    <pre className="mt-2 overflow-x-auto whitespace-pre-wrap rounded bg-fail/5 p-2 font-mono text-sm text-fail">
+                    <pre dir="ltr" lang="en" className="mt-2 overflow-x-auto whitespace-pre-wrap rounded bg-fail/5 p-2 font-mono text-sm text-fail">
                       {test.error}
                     </pre>
                   )}
