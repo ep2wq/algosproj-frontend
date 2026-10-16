@@ -54,6 +54,30 @@ export type Lesson = {
   problems: Problem[]
 }
 
+export type Topic = {
+  slug: string
+  title: string
+}
+
+// topic and lesson_slug are null for a standalone challenge (a problem without a lesson).
+// solved is only ever true for the user whose token was sent.
+export type ChallengeSummary = {
+  slug: string
+  title: string
+  difficulty: string
+  points: number
+  topic: Topic | null
+  lesson_slug: string | null
+  solved: boolean
+}
+
+export type Challenge = Problem & {
+  slug: string
+  topic: Topic | null
+  lesson_slug: string | null
+  solved: boolean
+}
+
 export const LANGUAGES = ['python', 'java', 'javascript', 'cpp'] as const
 export type Language = (typeof LANGUAGES)[number]
 
@@ -188,6 +212,14 @@ export function getModules() {
 
 export function getLesson(slug: string) {
   return request<Lesson>('GET', `/lessons/${encodeURIComponent(slug)}`)
+}
+
+export function getChallenges() {
+  return request<ChallengeSummary[]>('GET', '/challenges')
+}
+
+export function getChallenge(slug: string) {
+  return request<Challenge>('GET', `/challenges/${encodeURIComponent(slug)}`)
 }
 
 export function submitSolution(problemId: number, language: Language, code: string) {
