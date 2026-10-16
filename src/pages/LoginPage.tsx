@@ -6,6 +6,10 @@ import AuthForm from '../components/AuthForm'
 import Field from '../components/Field'
 import { redirectTarget } from '../redirect'
 
+function banMessage(reason: string): string {
+  return `This account is banned. Reason: ${reason}`
+}
+
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -13,7 +17,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
+  // Banned while logged in: the request that found out sent the user here with the reason.
+  const stateBanReason = (location.state as { banReason?: string } | null)?.banReason
+  const [error, setError] = useState(stateBanReason === undefined ? '' : banMessage(stateBanReason))
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
 
   async function handleSubmit() {
@@ -26,6 +32,8 @@ export default function LoginPage() {
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) {
         setFieldErrors(err.fieldErrors)
+      } else if (err instanceof ApiError && err.banReason !== undefined) {
+        setError(banMessage(err.banReason))
       } else {
         setError(err instanceof ApiError ? err.message : 'Something went wrong. Try again.')
       }

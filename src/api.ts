@@ -6,9 +6,11 @@ export type User = {
   name: string
   email: string
   points: number
-  // Only for showing the Admin link; the backend checks the role on every admin request.
-  role: 'user' | 'admin'
+  // Only for showing admin links and pages; the backend checks the role on every admin request.
+  role: Role
 }
+
+export type Role = 'user' | 'admin' | 'owner'
 
 export type AuthResponse = {
   token: string
@@ -150,6 +152,69 @@ export type AdminTestCase = {
   is_hidden: boolean
 }
 
+// Laravel's paginated response (only the fields the pages use).
+export type Page<T> = {
+  data: T[]
+  current_page: number
+  last_page: number
+  per_page: number
+  total: number
+}
+
+export type AdminUserRow = {
+  id: number
+  name: string
+  email: string
+  role: Role
+  points: number
+  banned_at: string | null
+  created_at: string
+  solved_count: number
+}
+
+export type AdminUserDetail = AdminUserRow & {
+  ban_reason: string | null
+  solved: { title: string; slug: string | null; solved_at: string }[]
+  submissions: {
+    id: number
+    problem: { title: string; slug: string | null }
+    language: string
+    status: string
+    passed_count: number
+    total_count: number
+    runtime_ms: number | null
+    created_at: string
+  }[]
+}
+
+export type ActivityEntry = {
+  id: number
+  user_id: number | null
+  email: string | null
+  event: string
+  ip: string | null
+  user_agent: string | null
+  created_at: string
+}
+
+// details.changes holds {old, new} per field, or "changed" for content that is not logged.
+export type AuditEntry = {
+  id: number
+  actor_id: number | null
+  actor_email: string
+  action: string
+  target_type: string | null
+  target_id: number | null
+  target_label: string | null
+  details: Record<string, unknown> | null
+  ip: string | null
+  created_at: string
+}
+
+export type UserFilters = { search?: string; role?: string; banned?: string; page?: string }
+export type AuditFilters = { action?: string; actor?: string; from?: string; to?: string; page?: string }
+export type ActivityFilters = { event?: string; user?: string; from?: string; to?: string; page?: string }
+
 // sort_order is sent as typed; the backend validates it as an integer.
 export type ModuleInput = { title: string; slug: string; sort_order: string }
 export type LessonInput = { module_id: number | null; title: string; slug: string; body: string; sort_order: string }
@@ -159,11 +224,14 @@ export type TestCaseInput = { input: string; expected_output: string; is_hidden:
 export class ApiError extends Error {
   status: number
   fieldErrors: Record<string, string[]>
+  // Set on a 403 for a banned account (login or any request with a token).
+  banReason?: string
 
-  constructor(status: number, message: string, fieldErrors: Record<string, string[]> = {}) {
+  constructor(status: number, message: string, fieldErrors: Record<string, string[]> = {}, banReason?: string) {
     super(message)
     this.status = status
     this.fieldErrors = fieldErrors
+    this.banReason = banReason
   }
 }
 
@@ -179,11 +247,22 @@ export function setToken(token: string | null) {
   }
 }
 
-// The auth provider sets this, so a 401 on an authenticated request logs the user out.
-let onUnauthorized: () => void = () => {}
+// The auth provider sets this, so a 401 on an authenticated request (or a 403 because the account
+// was banned) logs the user out. banReason is set only for a ban.
+let onUnauthorized: (banReason?: string) => void = () => {}
 
-export function setUnauthorizedHandler(handler: () => void) {
+export function setUnauthorizedHandler(handler: (banReason?: string) => void) {
   onUnauthorized = handler
+}
+
+// Query string from the filters that are set, e.g. "?role=admin&page=2".
+function query(params: Record<string, string | undefined>): string {
+  const search = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (value) search.set(key, value)
+  }
+  const text = search.toString()
+  return text ? `?${text}` : ''
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -213,6 +292,15 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     setToken(null)
     onUnauthorized()
     throw new ApiError(401, 'Your session has ended. Log in again.')
+  }
+  // A banned account: {"message": "This account is banned.", "reason": ...}. With a token it is
+  // handled like a 401; on login it is shown on the form.
+  if (response.status === 403 && typeof data?.reason === 'string') {
+    if (token) {
+      setToken(null)
+      onUnauthorized(data.reason)
+    }
+    throw new ApiError(403, serverMessage, {}, data.reason)
   }
   if (response.status === 422) {
     throw new ApiError(422, serverMessage || 'Check the highlighted fields.', data?.errors ?? {})
@@ -337,4 +425,56 @@ export function updateTestCase(problemId: number, id: number, data: TestCaseInpu
 
 export function deleteTestCase(problemId: number, id: number) {
   return request<null>('DELETE', `/admin/problems/${problemId}/test-cases/${id}`)
+}
+
+// Users (admins and owners; some actions are owner only, the backend decides).
+export function getAdminUsers(filters: UserFilters) {
+  return request<Page<AdminUserRow>>('GET', `/admin/users${query(filters)}`)
+}
+
+export function getAdminUser(id: number) {
+  return request<AdminUserDetail>('GET', `/admin/users/${id}`)
+}
+
+export function getUserActivity(id: number, page = 1) {
+  return request<Page<ActivityEntry>>('GET', `/admin/users/${id}/activity${query({ page: String(page) })}`)
+}
+
+export function banUser(id: number, reason: string) {
+  return request<AdminUserRow>('POST', `/admin/users/${id}/ban`, { reason })
+}
+
+export function unbanUser(id: number) {
+  return request<AdminUserRow>('POST', `/admin/users/${id}/unban`)
+}
+
+export function logoutUserEverywhere(id: number) {
+  return request<AdminUserRow>('POST', `/admin/users/${id}/logout-everywhere`)
+}
+
+export function setUserRole(id: number, role: 'user' | 'admin') {
+  return request<AdminUserRow>('PUT', `/admin/users/${id}/role`, { role })
+}
+
+// amount is sent as typed; the backend validates it as a non-zero integer.
+export function adjustUserPoints(id: number, amount: string, reason: string) {
+  return request<AdminUserRow>('POST', `/admin/users/${id}/points`, { amount, reason })
+}
+
+export function resetUserProgress(id: number) {
+  return request<AdminUserRow>('POST', `/admin/users/${id}/reset-progress`)
+}
+
+export function deleteUser(id: number, confirmEmail: string) {
+  return request<null>('DELETE', `/admin/users/${id}`, { confirm_email: confirmEmail })
+}
+
+// Owner only.
+export function getAuditLog(filters: AuditFilters) {
+  return request<Page<AuditEntry>>('GET', `/admin/audit-log${query(filters)}`)
+}
+
+// Owner only.
+export function getActivity(filters: ActivityFilters) {
+  return request<Page<ActivityEntry>>('GET', `/admin/activity${query(filters)}`)
 }

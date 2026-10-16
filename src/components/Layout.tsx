@@ -25,7 +25,7 @@ export default function Layout() {
             <NavLink to="/leaderboard" className={navLink}>
               Leaderboard
             </NavLink>
-            {user?.role === 'admin' && (
+            {(user?.role === 'admin' || user?.role === 'owner') && (
               <NavLink to="/admin" className={navLink}>
                 Admin
               </NavLink>

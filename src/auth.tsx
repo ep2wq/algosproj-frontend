@@ -21,12 +21,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // A 401 on an authenticated request clears the token (in api.ts) and sends the user to login.
+  // A 401 on an authenticated request, or a 403 because the account is banned, clears the token
+  // (in api.ts) and sends the user to login, which shows the ban reason if there is one.
   useEffect(() => {
-    api.setUnauthorizedHandler(() => {
+    api.setUnauthorizedHandler((banReason) => {
       setUser(null)
-      if (location.pathname !== '/login') {
-        navigate('/login', { state: { from: location } })
+      if (location.pathname !== '/login' || banReason !== undefined) {
+        navigate('/login', { state: { from: location, banReason } })
       }
     })
   }, [navigate, location])
