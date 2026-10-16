@@ -52,7 +52,7 @@ Only the auth token is stored in `localStorage`.
 ## Pages
 
 - `/` lessons grouped by track, `/lessons/:slug` lesson with editor and submit,
-  `/login`, `/register`, `/leaderboard`, `/admin/*` (admins only, see "Admin area").
+  `/login`, `/register`, `/leaderboard`, `/admin/*` (admins and owners, see "Admin area").
   Unknown paths show "Page not found".
 - `/challenges` every problem in one list: search by title, filters for difficulty, topic
   and (when logged in) solved status, all applied in the browser; "Showing X of Y" is
@@ -71,9 +71,14 @@ as plain React elements. The format is documented in the backend README.
 ## Admin area
 
 Content (modules, lessons, problems, test cases) lives in the backend database and is
-edited here. The user object has a `role` (`user` or `admin`); the "Admin" link in the main
-navigation shows only for admins. Make someone an admin on the backend with
-`php artisan user:make-admin <email>` (no page or endpoint can).
+edited here, and users are managed here. The user object has a `role` (`user`, `admin` or
+`owner`); the "Admin" link in the main navigation shows for admins and owners. Make someone
+an owner or admin on the backend with `php artisan user:make-admin <email> [--owner]`; an
+owner can then switch other accounts between user and admin on their user page. The
+backend README ("Roles") has the full permissions table.
+
+A tab row at the top of every admin page links Content and Users, plus Audit log and
+Activity for owners.
 
 - `/admin` lists every module with its lessons and their problems, then the standalone
   problems, with Edit and Add links.
@@ -85,8 +90,27 @@ navigation shows only for admins. Make someone an admin on the backend with
   a table of test cases with add, edit, delete and a Hidden checkbox. Long tests are cut to
   200 characters in the table; the edit form shows them in full.
 
-`src/components/AdminRoute.tsx` wraps these routes: guests and non-admins get the same
-"Page not found" as an unknown path. That is only convenience; the backend answers every
+- `/admin/users`: search by name or email, role and banned filters, 25 per page; search,
+  filters and page are in the address. A table from `md` up, cards below; banned accounts
+  show a "Banned" badge with text.
+- `/admin/users/:id`: details, solved problems, the last 20 submissions, "Recent activity"
+  (25 per page) and the actions the current role may use: ban (reason required), unban and
+  log out everywhere; for owners also change role, adjust points, reset progress and delete
+  (type the user's email to confirm). Each opens an in-page confirmation (`ConfirmAction`,
+  no browser dialog) and shows the server's 403 or 422 message under it. Nothing is shown
+  for your own account or an owner. The backend enforces all of it.
+- `/admin/audit-log` and `/admin/activity` (owners only, `OwnerRoute`; admins get "Page not
+  found"): filters for action or event, actor or user (id or email), and a UTC date range;
+  50 per page; audit details are shown as lines such as `title: Old → New`.
+
+Banned accounts: login shows "This account is banned. Reason: ..." from the 403. A request
+with a token that gets that 403 is handled like a 401: the token is cleared and the user goes
+to `/login`, which shows the ban message. Banning deletes the user's tokens, so an open tab
+usually gets a 401 instead and lands on `/login` without the reason; the reason then shows
+when they try to log in.
+
+`src/components/AdminRoute.tsx` wraps these routes: guests and users who are neither admin
+nor owner get the same "Page not found" as an unknown path. That is only convenience; the backend answers every
 admin request from a guest with 401 and from a non-admin with 403. Server validation errors
 show under their fields. Deleting asks "Delete ...?" in place (`DeleteButton`, no browser
 dialog), and a refusal (409: a module with lessons, a lesson with problems, a problem users

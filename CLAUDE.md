@@ -47,13 +47,14 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## Current status
 
 - Done: lessons, lesson page (Monaco, submit), auth, leaderboard, 404, `LessonBody`,
-  Challenges (`ProblemSolver` shared), admin `/admin/*` (`src/pages/admin/*`, README
-  "Admin area"). Visualizations on 27 of 65 seed lessons (none for Programming basics,
-  Core, OOP, Algorithm basics, Heaps, Greedy, both DP, Tries, Bits). Lint/build pass.
+  Challenges (`ProblemSolver` shared), admin `/admin/*` with users, audit log and activity
+  (`src/pages/admin/*`, README "Admin area"). Visualizations on 27 of 65 seed lessons (none
+  for Programming basics, Core, OOP, Algorithm basics, Heaps, Greedy, both DP, Tries, Bits).
 - Next: AI hint UI once the backend has one.
-- Decisions: oxlint. A 401 with a token clears it and goes to `/login`. "(you)" comes from
-  `is_you`. `user.role` only shows the Admin link; `AdminRoute` shows not-found to others;
-  the backend enforces it (401/403). Frames: README "Visualizations". Code blocks tabIndex 0.
+- Decisions: oxlint. Lint/build pass. A 401 with a token, or a 403 with `reason` (banned),
+  clears it and goes to `/login` (shows the ban). "(you)" is `is_you`. `user.role` (user/
+  admin/owner) only hides links and pages (`AdminRoute`, `OwnerRoute`); the backend enforces
+  it. `ConfirmAction` for destructive actions. Code blocks tabIndex 0. Frames: README.
 - Gotchas: Monaco loads from the jsDelivr CDN at runtime. Lint rules disabled on one line
   each: `react/only-export-components` (auth.tsx), `react/static-components`
   (`<Visual />`, which comes from a module-level map). Vite must run on port 5173 (CORS).
