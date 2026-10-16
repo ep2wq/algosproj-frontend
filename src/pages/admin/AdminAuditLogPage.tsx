@@ -146,12 +146,12 @@ export default function AdminAuditLogPage() {
       )}
       {!error && result === null && <p className="mt-6 text-muted">Loading the audit log...</p>}
       {result !== null && result.data.length === 0 && (
-        <p className="mt-6 rounded border border-line bg-white px-4 py-6 text-center text-muted">No entries match these filters.</p>
+        <p className="mt-6 rounded border border-line bg-surface px-4 py-6 text-center text-muted">No entries match these filters.</p>
       )}
 
       {result !== null && result.data.length > 0 && (
         <>
-          <ul className="mt-6 divide-y divide-line rounded border border-line bg-white md:hidden">
+          <ul className="mt-6 divide-y divide-line rounded border border-line bg-surface md:hidden">
             {result.data.map((entry) => (
               <li key={entry.id} className="px-4 py-3 text-sm">
                 <p className="font-mono font-medium">{entry.action}</p>
@@ -168,7 +168,7 @@ export default function AdminAuditLogPage() {
             ))}
           </ul>
 
-          <div className="mt-6 hidden overflow-x-auto rounded border border-line bg-white md:block">
+          <div className="mt-6 hidden overflow-x-auto rounded border border-line bg-surface md:block">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-line text-muted">
                 <tr>

@@ -57,7 +57,7 @@ export default function AdminContentPage() {
           </div>
 
           {modules.map((module) => (
-            <section key={module.id} className="mt-8 rounded border border-line bg-white p-4" aria-labelledby={`module-${module.id}`}>
+            <section key={module.id} className="mt-8 rounded border border-line bg-surface p-4" aria-labelledby={`module-${module.id}`}>
               <div className="flex flex-wrap items-center gap-2">
                 <h2 id={`module-${module.id}`} className="min-w-0 break-words text-xl font-semibold">
                   {module.title}
@@ -112,7 +112,7 @@ export default function AdminContentPage() {
             </section>
           ))}
 
-          <section className="mt-8 rounded border border-line bg-white p-4" aria-labelledby="standalone-heading">
+          <section className="mt-8 rounded border border-line bg-surface p-4" aria-labelledby="standalone-heading">
             <div className="flex flex-wrap items-center gap-2">
               <h2 id="standalone-heading" className="text-xl font-semibold">
                 Standalone problems

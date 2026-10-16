@@ -48,7 +48,7 @@ export default function HomePage() {
               {module.lessons.length === 0 ? (
                 <p className="mt-1 text-sm text-muted">No lessons in this module yet.</p>
               ) : (
-                <ul className="mt-2 divide-y divide-line rounded border border-line bg-white">
+                <ul className="mt-2 divide-y divide-line rounded border border-line bg-surface">
                   {module.lessons.map((lesson) => (
                     <li key={lesson.id}>
                       <Link

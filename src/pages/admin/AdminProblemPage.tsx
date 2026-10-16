@@ -146,7 +146,7 @@ function TestCases({ problemId }: { problemId: number }) {
       </p>
 
       {testCases.length > 0 && (
-        <div className="mt-4 rounded border border-line bg-white">
+        <div className="mt-4 rounded border border-line bg-surface">
           <table className="w-full table-fixed text-left text-sm">
             <thead className="border-b border-line text-muted">
               <tr>
@@ -201,7 +201,7 @@ function TestCases({ problemId }: { problemId: number }) {
       )}
 
       {editing && (
-        <section className="mt-6 rounded border border-line bg-white p-4" aria-labelledby="edit-test-heading">
+        <section className="mt-6 rounded border border-line bg-surface p-4" aria-labelledby="edit-test-heading">
           <h3 id="edit-test-heading" className="font-semibold">
             Edit test {testCases.indexOf(editing) + 1}
           </h3>
@@ -222,7 +222,7 @@ function TestCases({ problemId }: { problemId: number }) {
         </section>
       )}
 
-      <section className="mt-6 rounded border border-line bg-white p-4" aria-labelledby="add-test-heading">
+      <section className="mt-6 rounded border border-line bg-surface p-4" aria-labelledby="add-test-heading">
         <h3 id="add-test-heading" className="font-semibold">
           Add a test case
         </h3>
@@ -348,7 +348,7 @@ export default function AdminProblemPage() {
               onChange={(event) => setForm({ ...form, lesson_id: event.target.value ? Number(event.target.value) : null })}
               aria-invalid={Boolean(lessonErrors)}
               aria-describedby={lessonErrors ? 'lesson_id-error' : undefined}
-              className={`${selectClass} ${lessonErrors ? 'border-fail' : 'border-line hover:border-muted'}`}
+              className={`${selectClass} ${lessonErrors ? 'border-fail' : 'border-field hover:border-muted'}`}
             >
               <option value="">None (standalone, Challenges only)</option>
               {modules.map((module) => (
@@ -377,7 +377,7 @@ export default function AdminProblemPage() {
               onChange={(event) => setForm({ ...form, difficulty: event.target.value })}
               aria-invalid={Boolean(difficultyErrors)}
               aria-describedby={difficultyErrors ? 'difficulty-error' : 'difficulty-points'}
-              className={`${selectClass} ${difficultyErrors ? 'border-fail' : 'border-line hover:border-muted'}`}
+              className={`${selectClass} ${difficultyErrors ? 'border-fail' : 'border-field hover:border-muted'}`}
             >
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>

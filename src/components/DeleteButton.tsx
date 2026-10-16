@@ -29,7 +29,7 @@ export default function DeleteButton({ what, onConfirm }: { what: string; onConf
             type="button"
             onClick={handleConfirm}
             disabled={busy}
-            className="rounded bg-fail px-3 py-1 text-sm font-medium text-white hover:bg-fail/90 disabled:opacity-60"
+            className="rounded bg-fail px-3 py-1 text-sm font-medium text-inverse hover:bg-fail/90 disabled:opacity-60"
           >
             {busy ? 'Deleting...' : 'Yes, delete'}
           </button>
@@ -37,7 +37,7 @@ export default function DeleteButton({ what, onConfirm }: { what: string; onConf
             type="button"
             onClick={() => setConfirming(false)}
             disabled={busy}
-            className="rounded border border-line bg-white px-3 py-1 text-sm hover:border-muted"
+            className="rounded border border-line bg-surface px-3 py-1 text-sm hover:border-muted"
           >
             Cancel
           </button>
@@ -46,7 +46,7 @@ export default function DeleteButton({ what, onConfirm }: { what: string; onConf
         <button
           type="button"
           onClick={() => setConfirming(true)}
-          className="rounded border border-fail/40 bg-white px-3 py-1 text-sm text-fail hover:bg-fail/5"
+          className="rounded border border-fail/40 bg-surface px-3 py-1 text-sm text-fail hover:bg-fail/5"
         >
           Delete
         </button>

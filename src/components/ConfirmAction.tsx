@@ -49,11 +49,11 @@ export default function ConfirmAction({
   }
 
   const confirmClass = danger
-    ? 'rounded bg-fail px-3 py-1 text-sm font-medium text-white hover:bg-fail/90 disabled:opacity-60'
-    : 'rounded bg-accent px-3 py-1 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-60'
+    ? 'rounded bg-fail px-3 py-1 text-sm font-medium text-inverse hover:bg-fail/90 disabled:opacity-60'
+    : 'rounded bg-accent px-3 py-1 text-sm font-medium text-inverse hover:bg-accent/90 disabled:opacity-60'
 
   return (
-    <div className="rounded border border-line bg-white p-3">
+    <div className="rounded border border-line bg-surface p-3">
       {open ? (
         <form onSubmit={handleSubmit} noValidate className="space-y-3">
           <p className="text-sm font-medium">{question}</p>
@@ -66,7 +66,7 @@ export default function ConfirmAction({
               type="button"
               onClick={close}
               disabled={busy}
-              className="rounded border border-line bg-white px-3 py-1 text-sm hover:border-muted"
+              className="rounded border border-line bg-surface px-3 py-1 text-sm hover:border-muted"
             >
               Cancel
             </button>
@@ -78,8 +78,8 @@ export default function ConfirmAction({
           onClick={() => setOpen(true)}
           className={
             danger
-              ? 'rounded border border-fail/40 bg-white px-3 py-1 text-sm text-fail hover:bg-fail/5'
-              : 'rounded border border-line bg-white px-3 py-1 text-sm text-accent hover:border-muted'
+              ? 'rounded border border-fail/40 bg-surface px-3 py-1 text-sm text-fail hover:bg-fail/5'
+              : 'rounded border border-line bg-surface px-3 py-1 text-sm text-accent hover:border-muted'
           }
         >
           {label}

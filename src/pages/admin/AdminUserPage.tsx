@@ -100,7 +100,7 @@ export default function AdminUserPage() {
         {detail.banned_at && <BannedBadge />}
       </div>
 
-      <dl className="mt-4 grid gap-x-6 gap-y-2 rounded border border-line bg-white p-4 sm:grid-cols-[auto_1fr]">
+      <dl className="mt-4 grid gap-x-6 gap-y-2 rounded border border-line bg-surface p-4 sm:grid-cols-[auto_1fr]">
         <dt className="text-sm text-muted">Email</dt>
         <dd className="break-all">{detail.email}</dd>
         <dt className="text-sm text-muted">Role</dt>
@@ -294,7 +294,7 @@ export default function AdminUserPage() {
         {detail.solved.length === 0 ? (
           <p className="mt-2 text-sm text-muted">None yet.</p>
         ) : (
-          <ul className="mt-2 divide-y divide-line rounded border border-line bg-white">
+          <ul className="mt-2 divide-y divide-line rounded border border-line bg-surface">
             {detail.solved.map((problem) => (
               <li key={`${problem.slug}-${problem.solved_at}`} className="flex flex-wrap justify-between gap-x-4 px-4 py-2">
                 <span className="min-w-0 break-words">{problem.title}</span>
@@ -312,7 +312,7 @@ export default function AdminUserPage() {
         {detail.submissions.length === 0 ? (
           <p className="mt-2 text-sm text-muted">None yet.</p>
         ) : (
-          <ul className="mt-2 divide-y divide-line rounded border border-line bg-white">
+          <ul className="mt-2 divide-y divide-line rounded border border-line bg-surface">
             {detail.submissions.map((submission) => (
               <li key={submission.id} className="px-4 py-2">
                 <div className="flex flex-wrap justify-between gap-x-4">
@@ -340,7 +340,7 @@ export default function AdminUserPage() {
           <p className="mt-2 text-sm text-muted">No activity recorded.</p>
         ) : (
           <>
-            <ul className="mt-2 divide-y divide-line rounded border border-line bg-white">
+            <ul className="mt-2 divide-y divide-line rounded border border-line bg-surface">
               {activity.data.map((entry) => (
                 <li key={entry.id} className="px-4 py-2">
                   <div className="flex flex-wrap justify-between gap-x-4">

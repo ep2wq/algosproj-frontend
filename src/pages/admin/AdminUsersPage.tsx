@@ -106,13 +106,13 @@ export default function AdminUsersPage() {
       )}
       {!error && result === null && <p className="mt-6 text-muted">Loading users...</p>}
       {result !== null && result.data.length === 0 && (
-        <p className="mt-6 rounded border border-line bg-white px-4 py-6 text-center text-muted">No users match these filters.</p>
+        <p className="mt-6 rounded border border-line bg-surface px-4 py-6 text-center text-muted">No users match these filters.</p>
       )}
 
       {result !== null && result.data.length > 0 && (
         <>
           {/* Cards on narrow screens, a table from md up. */}
-          <ul className="mt-6 divide-y divide-line rounded border border-line bg-white md:hidden">
+          <ul className="mt-6 divide-y divide-line rounded border border-line bg-surface md:hidden">
             {result.data.map((row) => (
               <li key={row.id} className="px-4 py-3">
                 <div className="flex flex-wrap items-center gap-2">
@@ -129,7 +129,7 @@ export default function AdminUsersPage() {
             ))}
           </ul>
 
-          <div className="mt-6 hidden overflow-x-auto rounded border border-line bg-white md:block">
+          <div className="mt-6 hidden overflow-x-auto rounded border border-line bg-surface md:block">
             <table className="w-full text-left">
               <thead className="border-b border-line text-sm text-muted">
                 <tr>

@@ -26,8 +26,8 @@ export default function TextAreaField({ id, label, value, onChange, rows = 4, er
         spellCheck={false}
         aria-invalid={hasError}
         aria-describedby={hasError ? errorId : undefined}
-        className={`mt-1 block w-full rounded border bg-white px-3 py-2 font-mono text-sm text-ink ${
-          hasError ? 'border-fail' : 'border-line hover:border-muted'
+        className={`mt-1 block w-full rounded border bg-surface px-3 py-2 font-mono text-sm text-ink ${
+          hasError ? 'border-fail' : 'border-field hover:border-muted'
         }`}
       />
       {hasError && (

@@ -33,7 +33,7 @@ function Output({ label, value }: { label: string; value: string | null }) {
 
 export default function SubmitResultPanel({ result }: { result: SubmitResult }) {
   return (
-    <section aria-label="Submission result" aria-live="polite" className="mt-4 rounded border border-line bg-white p-4">
+    <section aria-label="Submission result" aria-live="polite" className="mt-4 rounded border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <span className={`rounded border px-2 py-0.5 text-sm font-semibold ${STATUS_STYLES[result.status]}`}>
           {STATUS_LABELS[result.status]}

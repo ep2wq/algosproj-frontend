@@ -39,7 +39,7 @@ export default function LeaderboardPage() {
       <p className="mt-2 text-muted">Points come from solving problems. Each problem counts once.</p>
 
       {rank && !entries?.some((entry) => entry.is_you) && (
-        <p className="mt-4 rounded border border-line bg-white px-3 py-2">
+        <p className="mt-4 rounded border border-line bg-surface px-3 py-2">
           Your rank: <span className="font-semibold tabular-nums">{rank.rank}</span>{' '}
           <span className="text-muted tabular-nums">({rank.points} {rank.points === 1 ? 'point' : 'points'})</span>
         </p>
@@ -56,7 +56,7 @@ export default function LeaderboardPage() {
       )}
 
       {entries !== null && entries.length > 0 && (
-        <div className="mt-6 overflow-x-auto rounded border border-line bg-white">
+        <div className="mt-6 overflow-x-auto rounded border border-line bg-surface">
           <table className="w-full text-left">
             <thead className="border-b border-line text-sm text-muted">
               <tr>

@@ -31,7 +31,7 @@ export default function AuthForm({ title, submitLabel, busyLabel, busy, error, o
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded bg-accent px-4 py-2 font-medium text-inverse hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {busy ? busyLabel : submitLabel}
         </button>

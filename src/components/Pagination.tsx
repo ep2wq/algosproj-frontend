@@ -11,7 +11,7 @@ export default function Pagination({
   onPage: (page: number) => void
 }) {
   const buttonClass =
-    'rounded border border-line bg-white px-3 py-1 text-sm hover:border-muted disabled:cursor-not-allowed disabled:opacity-60'
+    'rounded border border-line bg-surface px-3 py-1 text-sm hover:border-muted disabled:cursor-not-allowed disabled:opacity-60'
 
   return (
     <nav aria-label="Pages" className="mt-4 flex flex-wrap items-center gap-3">

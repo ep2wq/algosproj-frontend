@@ -27,7 +27,7 @@ export default function LessonBody({ text }: { text: string }) {
               <pre
                 key={index}
                 tabIndex={0}
-                className="mt-3 overflow-x-auto rounded border border-line bg-white p-3 font-mono text-sm leading-normal"
+                className="mt-3 overflow-x-auto rounded border border-line bg-surface p-3 font-mono text-sm leading-normal"
               >
                 <code>{block.text}</code>
               </pre>

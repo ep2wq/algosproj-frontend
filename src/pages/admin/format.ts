@@ -17,4 +17,4 @@ export const EVENT_LABELS: Record<string, string> = {
 export const ROLE_LABELS: Record<string, string> = { user: 'User', admin: 'Admin', owner: 'Owner' }
 
 // Shared class for the filter inputs.
-export const controlClass = 'mt-1 block w-full rounded border border-line bg-white px-3 py-2 text-ink hover:border-muted'
+export const controlClass = 'mt-1 block w-full rounded border border-field bg-surface px-3 py-2 text-ink hover:border-muted'

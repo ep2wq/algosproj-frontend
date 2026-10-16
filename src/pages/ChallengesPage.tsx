@@ -8,7 +8,7 @@ const DIFFICULTIES = ['easy', 'medium', 'hard']
 // Topic filter value for problems that belong to no lesson.
 const STANDALONE = '-standalone'
 
-const controlClass = 'mt-1 w-full rounded border border-line bg-white px-2 py-1.5 text-sm hover:border-muted'
+const controlClass = 'mt-1 w-full rounded border border-field bg-surface px-2 py-1.5 text-sm hover:border-muted'
 
 function SolvedMark({ solved }: { solved: boolean }) {
   return solved ? (
@@ -164,20 +164,20 @@ export default function ChallengesPage() {
               type="button"
               onClick={clearFilters}
               disabled={!filtered}
-              className="rounded border border-line bg-white px-3 py-1 text-sm hover:border-muted disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded border border-line bg-surface px-3 py-1 text-sm hover:border-muted disabled:cursor-not-allowed disabled:opacity-60"
             >
               Clear filters
             </button>
           </div>
 
           {shown.length === 0 ? (
-            <p className="mt-4 rounded border border-line bg-white px-4 py-6 text-center text-muted">
+            <p className="mt-4 rounded border border-line bg-surface px-4 py-6 text-center text-muted">
               No challenges match these filters.
             </p>
           ) : (
             <>
               {/* Cards on narrow screens, a table from md up. */}
-              <ul className="mt-4 divide-y divide-line rounded border border-line bg-white md:hidden">
+              <ul className="mt-4 divide-y divide-line rounded border border-line bg-surface md:hidden">
                 {shown.map((challenge) => (
                   <li key={challenge.slug} className="px-4 py-3">
                     <div className="flex items-baseline gap-2">
@@ -195,7 +195,7 @@ export default function ChallengesPage() {
                 ))}
               </ul>
 
-              <div className="mt-4 hidden overflow-x-auto rounded border border-line bg-white md:block">
+              <div className="mt-4 hidden overflow-x-auto rounded border border-line bg-surface md:block">
                 <table className="w-full text-left">
                   <thead className="border-b border-line text-sm text-muted">
                     <tr>

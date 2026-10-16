@@ -106,7 +106,7 @@ export default function AdminLessonPage() {
               onChange={(event) => setForm({ ...form, module_id: event.target.value ? Number(event.target.value) : null })}
               aria-invalid={Boolean(moduleErrors)}
               aria-describedby={moduleErrors ? 'module_id-error' : undefined}
-              className={`${selectClass} ${moduleErrors ? 'border-fail' : 'border-line hover:border-muted'}`}
+              className={`${selectClass} ${moduleErrors ? 'border-fail' : 'border-field hover:border-muted'}`}
             >
               <option value="">Choose a module</option>
               {modules.map((module) => (
