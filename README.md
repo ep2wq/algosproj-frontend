@@ -61,9 +61,10 @@ as plain React elements. The format is documented in the backend README.
 ## Visualizations
 
 `src/visuals/index.ts` maps a lesson slug to a lazy-loaded component, shown between the
-lesson text and the problems. 27 of the 53 lessons have one; the Programming basics, Core
+lesson text and the problems. 27 of the 57 lessons have one; the Programming basics, Core
 programming, Object-oriented programming, Algorithm basics, Heaps and priority queues, Greedy
-algorithms and Dynamic programming basics lessons (26 in all) have none yet:
+algorithms, Dynamic programming basics and Dynamic programming: tables lessons (30 in all) have
+none yet:
 
 - `warm-up`: read, compute, print for "Double the number": standard input, the program
   (Python, Java, JavaScript or C++, current line highlighted) and standard output
