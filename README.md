@@ -53,6 +53,15 @@ Only the auth token is stored in `localStorage`.
 
 - `/` lessons grouped by track, `/lessons/:slug` lesson with editor and submit,
   `/login`, `/register`, `/leaderboard`. Unknown paths show "Page not found".
+- `/challenges` every problem in one list: search by title, filters for difficulty, topic
+  and (when logged in) solved status, all applied in the browser; "Showing X of Y" is
+  announced with `aria-live`. Below `md` the rows become cards. `/challenges/:slug` solves one
+  problem, with links back to the list and to its lesson.
+
+`src/components/ProblemSolver.tsx` holds the statement, examples, language picker, editor,
+Submit and result for one problem. The lesson page uses it through `ProblemCard` (which adds
+the problem heading) and the challenge page uses it directly; its `onPassed` callback lets
+the challenge page mark the problem solved without reloading.
 
 Lesson text is parsed by `src/lessonText.ts` (a pure function: headings `## `, `- ` lists,
 4-space-indented code blocks, paragraphs) and rendered by `src/components/LessonBody.tsx`
