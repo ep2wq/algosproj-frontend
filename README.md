@@ -52,7 +52,8 @@ Only the auth token is stored in `localStorage`.
 ## Pages
 
 - `/` lessons grouped by track, `/lessons/:slug` lesson with editor and submit,
-  `/login`, `/register`, `/leaderboard`. Unknown paths show "Page not found".
+  `/login`, `/register`, `/leaderboard`, `/admin/*` (admins only, see "Admin area").
+  Unknown paths show "Page not found".
 - `/challenges` every problem in one list: search by title, filters for difficulty, topic
   and (when logged in) solved status, all applied in the browser; "Showing X of Y" is
   announced with `aria-live`. Below `md` the rows become cards. `/challenges/:slug` solves one
@@ -66,6 +67,30 @@ the challenge page mark the problem solved without reloading.
 Lesson text is parsed by `src/lessonText.ts` (a pure function: headings `## `, `- ` lists,
 4-space-indented code blocks, paragraphs) and rendered by `src/components/LessonBody.tsx`
 as plain React elements. The format is documented in the backend README.
+
+## Admin area
+
+Content (modules, lessons, problems, test cases) lives in the backend database and is
+edited here. The user object has a `role` (`user` or `admin`); the "Admin" link in the main
+navigation shows only for admins. Make someone an admin on the backend with
+`php artisan user:make-admin <email>` (no page or endpoint can).
+
+- `/admin` lists every module with its lessons and their problems, then the standalone
+  problems, with Edit and Add links.
+- `/admin/modules/new`, `/admin/modules/:id`: title, slug, order.
+- `/admin/lessons/new?module=<id>`, `/admin/lessons/:id`: module, title, slug, order and the
+  body in a textarea with a live preview rendered by the real `LessonBody`.
+- `/admin/problems/new?lesson=<id>`, `/admin/problems/:id`: title, slug, lesson (or none for
+  a standalone challenge), difficulty (points follow it, set by the server), description, and
+  a table of test cases with add, edit, delete and a Hidden checkbox. Long tests are cut to
+  200 characters in the table; the edit form shows them in full.
+
+`src/components/AdminRoute.tsx` wraps these routes: guests and non-admins get the same
+"Page not found" as an unknown path. That is only convenience; the backend answers every
+admin request from a guest with 401 and from a non-admin with 403. Server validation errors
+show under their fields. Deleting asks "Delete ...?" in place (`DeleteButton`, no browser
+dialog), and a refusal (409: a module with lessons, a lesson with problems, a problem users
+have solved) is shown next to the button. Edits show on the public pages at once.
 
 ## Visualizations
 

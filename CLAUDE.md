@@ -46,15 +46,14 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 ## Current status
 
-- Done: lessons list, lesson page with Monaco and submit, login/register, leaderboard, 404,
-  `LessonBody`, Challenges list and solve page (`ProblemSolver` shared with lessons).
-  Visualizations on 27 of 65 lessons (none for Programming basics, Core programming, OOP,
-  Algorithm basics, Heaps, Greedy, both DP, Tries and union-find, Bits and math). Lint/build pass.
+- Done: lessons, lesson page (Monaco, submit), auth, leaderboard, 404, `LessonBody`,
+  Challenges (`ProblemSolver` shared), admin `/admin/*` (`src/pages/admin/*`, README
+  "Admin area"). Visualizations on 27 of 65 seed lessons (none for Programming basics,
+  Core, OOP, Algorithm basics, Heaps, Greedy, both DP, Tries, Bits). Lint/build pass.
 - Next: AI hint UI once the backend has one.
-- Decisions: oxlint, not ESLint. A 401 with a token clears it and goes to `/login`.
-  Leaderboard "(you)" row comes from the server's `is_you` flag (no user ids).
-  Visualization frame design: see README "Visualizations". Code blocks have tabIndex 0
-  so keyboard users can scroll them.
+- Decisions: oxlint. A 401 with a token clears it and goes to `/login`. "(you)" comes from
+  `is_you`. `user.role` only shows the Admin link; `AdminRoute` shows not-found to others;
+  the backend enforces it (401/403). Frames: README "Visualizations". Code blocks tabIndex 0.
 - Gotchas: Monaco loads from the jsDelivr CDN at runtime. Lint rules disabled on one line
   each: `react/only-export-components` (auth.tsx), `react/static-components`
   (`<Visual />`, which comes from a module-level map). Vite must run on port 5173 (CORS).
