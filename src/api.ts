@@ -6,6 +6,8 @@ export type User = {
   name: string
   email: string
   points: number
+  // Only for showing the Admin link; the backend checks the role on every admin request.
+  role: 'user' | 'admin'
 }
 
 export type AuthResponse = {
@@ -120,6 +122,40 @@ export type MyRank = {
   points: number
 }
 
+// Admin area. These responses include hidden test cases; they are only returned to admins.
+export type AdminLesson = {
+  id: number
+  module_id: number
+  slug: string
+  title: string
+  body: string | null
+  sort_order: number
+}
+
+export type AdminProblem = {
+  id: number
+  lesson_id: number | null
+  slug: string | null
+  title: string
+  description: string
+  difficulty: string
+  points: number
+}
+
+export type AdminTestCase = {
+  id: number
+  problem_id: number
+  input: string
+  expected_output: string
+  is_hidden: boolean
+}
+
+// sort_order is sent as typed; the backend validates it as an integer.
+export type ModuleInput = { title: string; slug: string; sort_order: string }
+export type LessonInput = { module_id: number | null; title: string; slug: string; body: string; sort_order: string }
+export type ProblemInput = { lesson_id: number | null; title: string; slug: string; description: string; difficulty: string }
+export type TestCaseInput = { input: string; expected_output: string; is_hidden: boolean }
+
 export class ApiError extends Error {
   status: number
   fieldErrors: Record<string, string[]>
@@ -232,4 +268,73 @@ export function getLeaderboard(limit = 50) {
 
 export function getMyRank() {
   return request<MyRank>('GET', '/leaderboard/me')
+}
+
+// Modules with their lessons (no body).
+export function getAdminModules() {
+  return request<Module[]>('GET', '/admin/modules')
+}
+
+export function createModule(data: ModuleInput) {
+  return request<Module>('POST', '/admin/modules', data)
+}
+
+export function updateModule(id: number, data: ModuleInput) {
+  return request<Module>('PUT', `/admin/modules/${id}`, data)
+}
+
+export function deleteModule(id: number) {
+  return request<null>('DELETE', `/admin/modules/${id}`)
+}
+
+export function getAdminLesson(id: number) {
+  return request<AdminLesson>('GET', `/admin/lessons/${id}`)
+}
+
+export function createLesson(data: LessonInput) {
+  return request<AdminLesson>('POST', '/admin/lessons', data)
+}
+
+export function updateLesson(id: number, data: LessonInput) {
+  return request<AdminLesson>('PUT', `/admin/lessons/${id}`, data)
+}
+
+export function deleteLesson(id: number) {
+  return request<null>('DELETE', `/admin/lessons/${id}`)
+}
+
+export function getAdminProblems() {
+  return request<Omit<AdminProblem, 'description'>[]>('GET', '/admin/problems')
+}
+
+export function getAdminProblem(id: number) {
+  return request<AdminProblem>('GET', `/admin/problems/${id}`)
+}
+
+export function createProblem(data: ProblemInput) {
+  return request<AdminProblem>('POST', '/admin/problems', data)
+}
+
+export function updateProblem(id: number, data: ProblemInput) {
+  return request<AdminProblem>('PUT', `/admin/problems/${id}`, data)
+}
+
+export function deleteProblem(id: number) {
+  return request<null>('DELETE', `/admin/problems/${id}`)
+}
+
+export function getTestCases(problemId: number) {
+  return request<AdminTestCase[]>('GET', `/admin/problems/${problemId}/test-cases`)
+}
+
+export function createTestCase(problemId: number, data: TestCaseInput) {
+  return request<AdminTestCase>('POST', `/admin/problems/${problemId}/test-cases`, data)
+}
+
+export function updateTestCase(problemId: number, id: number, data: TestCaseInput) {
+  return request<AdminTestCase>('PUT', `/admin/problems/${problemId}/test-cases/${id}`, data)
+}
+
+export function deleteTestCase(problemId: number, id: number) {
+  return request<null>('DELETE', `/admin/problems/${problemId}/test-cases/${id}`)
 }

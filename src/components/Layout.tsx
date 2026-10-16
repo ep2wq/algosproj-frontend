@@ -25,6 +25,11 @@ export default function Layout() {
             <NavLink to="/leaderboard" className={navLink}>
               Leaderboard
             </NavLink>
+            {user?.role === 'admin' && (
+              <NavLink to="/admin" className={navLink}>
+                Admin
+              </NavLink>
+            )}
           </nav>
           <div className="ml-auto flex items-center gap-3 text-sm">
             {loading ? null : user ? (
