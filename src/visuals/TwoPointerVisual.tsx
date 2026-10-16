@@ -45,11 +45,11 @@ function randomSample(samples: string[], current?: string) {
 
 function cellStyle(mode: PointerMode, frame: PointerFrame, index: number) {
   if (frame.active.includes(index)) {
-    if (mode === 'reverse') return 'border-accent bg-accent text-white'
-    return frame.mismatch ? 'border-fail bg-fail text-white' : 'border-warn bg-warn text-white'
+    if (mode === 'reverse') return 'border-accent bg-accent text-inverse'
+    return frame.mismatch ? 'border-fail bg-fail text-inverse' : 'border-warn bg-warn text-inverse'
   }
-  if (frame.settled.includes(index)) return 'border-pass bg-pass text-white'
-  return 'border-muted bg-white text-ink'
+  if (frame.settled.includes(index)) return 'border-pass bg-pass text-inverse'
+  return 'border-muted bg-surface text-ink'
 }
 
 function pointerLabels(frame: PointerFrame, index: number) {
@@ -95,7 +95,7 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
       <div
         role="img"
         aria-label={`Text: "${current.chars.join('')}".`}
-        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-white p-3"
+        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
       >
         {current.chars.map((char, index) => (
           <div key={index} className="flex w-10 flex-col items-center">
@@ -121,7 +121,7 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
       </ul>
 
       {current.result && (
-        <p className="mt-3 inline-block rounded border border-line bg-white px-3 py-2 font-semibold">{current.result}</p>
+        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">{current.result}</p>
       )}
 
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
@@ -149,8 +149,8 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
               placeholder={config.placeholder}
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-text-hint${inputError ? ` ${id}-text-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-white px-3 py-1.5 text-sm ${
-                inputError ? 'border-fail' : 'border-line hover:border-muted'
+              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
+                inputError ? 'border-fail' : 'border-field hover:border-muted'
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>

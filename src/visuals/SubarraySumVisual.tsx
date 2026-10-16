@@ -38,22 +38,22 @@ function parseInput(valuesText: string, kText: string): { values: number[]; k: n
 }
 
 function numberStyle(frame: SumFrame, index: number) {
-  if (frame.read === index) return 'border-warn bg-warn text-white'
+  if (frame.read === index) return 'border-warn bg-warn text-inverse'
   if (frame.read !== null && index < frame.read) return 'border-line bg-paper text-muted'
   if (frame.read === null && frame.output !== null) return 'border-line bg-paper text-muted'
-  return 'border-muted bg-white text-ink'
+  return 'border-muted bg-surface text-ink'
 }
 
 // Prefix j is the total of the first j numbers: j = 0 is the empty prefix.
 function prefixStyle(frame: SumFrame, j: number) {
-  if (frame.matches.includes(j)) return 'border-pass bg-pass text-white'
-  if (frame.read !== null && j === frame.read + 1) return 'border-warn bg-white text-ink'
-  if (frame.prefixes[j] === null) return 'border-dashed border-line bg-white text-muted'
-  return 'border-muted bg-white text-ink'
+  if (frame.matches.includes(j)) return 'border-pass bg-pass text-inverse'
+  if (frame.read !== null && j === frame.read + 1) return 'border-warn bg-surface text-ink'
+  if (frame.prefixes[j] === null) return 'border-dashed border-line bg-surface text-muted'
+  return 'border-muted bg-surface text-ink'
 }
 
 function mapStyle(frame: SumFrame, sum: number) {
-  if (frame.matches.length > 0 && frame.lookup === sum) return 'bg-pass text-white'
+  if (frame.matches.length > 0 && frame.lookup === sum) return 'bg-pass text-inverse'
   if (frame.stored === sum) return 'bg-accent-soft'
   return ''
 }
@@ -99,8 +99,8 @@ export default function SubarraySumVisual() {
 
   const describedBy = (field: Field) => `${id}-hint${inputError?.field === field ? ` ${id}-error` : ''}`
   const inputClass = (field: Field) =>
-    `block w-full min-w-0 rounded border bg-white px-3 py-1.5 font-mono text-sm ${
-      inputError?.field === field ? 'border-fail' : 'border-line hover:border-muted'
+    `block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${
+      inputError?.field === field ? 'border-fail' : 'border-field hover:border-muted'
     }`
   const sum = current.read !== null ? current.prefixes[current.read + 1] : current.output !== null ? current.prefixes[current.values.length] : 0
 
@@ -117,7 +117,7 @@ export default function SubarraySumVisual() {
           ['sum - k', current.lookup ?? '-'],
           ['count', current.count],
         ].map(([name, value]) => (
-          <p key={name} className="inline-flex items-baseline gap-2 rounded border border-line bg-white px-3 py-1.5">
+          <p key={name} className="inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-1.5">
             <span className="font-mono text-sm text-muted">{name}</span>
             <span className="text-lg font-semibold tabular-nums">{value}</span>
           </p>
@@ -128,7 +128,7 @@ export default function SubarraySumVisual() {
         tabIndex={0}
         role="region"
         aria-label="Numbers and running totals, scrolls sideways when wider than the screen"
-        className="mt-3 overflow-x-auto rounded border border-line bg-white p-3"
+        className="mt-3 overflow-x-auto rounded border border-line bg-surface p-3"
       >
         <div role="img" aria-label={diagramLabel(current)} className="flex w-max gap-1">
           <div className="flex flex-col pr-1 text-xs text-muted">
@@ -167,7 +167,7 @@ export default function SubarraySumVisual() {
         tabIndex={0}
         role="region"
         aria-label="Map of totals, scrolls sideways when wider than the screen"
-        className="mt-1 overflow-x-auto rounded border border-line bg-white"
+        className="mt-1 overflow-x-auto rounded border border-line bg-surface"
       >
         <table aria-label={mapLabel(current)} className="border-collapse text-sm tabular-nums">
           <tbody>
@@ -201,7 +201,7 @@ export default function SubarraySumVisual() {
           Number being read
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border-2 border-warn bg-white" aria-hidden="true" />
+          <span className="inline-block size-3 rounded-sm border-2 border-warn bg-surface" aria-hidden="true" />
           Its running total
         </li>
         <li className="flex items-center gap-1.5">
@@ -216,7 +216,7 @@ export default function SubarraySumVisual() {
       </ul>
 
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-white px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
           Output: <span className="font-mono">{current.output}</span>
         </p>
       )}

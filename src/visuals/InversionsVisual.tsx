@@ -24,9 +24,9 @@ function parseNumbers(text: string): number[] | string {
 const cellClass = 'flex h-10 min-w-10 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300'
 
 function arrayCellStyle(frame: InversionFrame, index: number) {
-  if (frame.done && frame.array.length > 0) return 'border-pass bg-white text-ink'
+  if (frame.done && frame.array.length > 0) return 'border-pass bg-surface text-ink'
   if (frame.range && index >= frame.range[0] && index < frame.range[1]) return 'border-accent bg-accent-soft text-ink'
-  return 'border-line bg-white text-muted'
+  return 'border-line bg-surface text-muted'
 }
 
 // One sorted run with its pointer: taken numbers are dimmed, the next one is marked.
@@ -38,14 +38,14 @@ function Run({ label, values, pointer, mark }: { label: string; values: number[]
       <div
         role="img"
         aria-label={`${label}: ${values.join(' ')}. ${rest.length === 0 ? 'All taken.' : `Waiting: ${rest.join(' ')}.`}`}
-        className="mt-1 flex flex-wrap gap-x-1.5 gap-y-2 rounded border border-line bg-white p-2"
+        className="mt-1 flex flex-wrap gap-x-1.5 gap-y-2 rounded border border-line bg-surface p-2"
       >
         {values.map((value, index) => (
           <div key={index} className="flex min-w-10 flex-col items-center">
             <span className="h-4 text-xs font-semibold text-ink">{index === pointer ? mark : ''}</span>
             <span
               className={`mt-0.5 ${cellClass} ${
-                index < pointer ? 'border-line bg-paper text-muted' : index === pointer ? 'border-warn bg-white text-ink' : 'border-muted bg-white text-ink'
+                index < pointer ? 'border-line bg-paper text-muted' : index === pointer ? 'border-warn bg-surface text-ink' : 'border-muted bg-surface text-ink'
               }`}
             >
               {value}
@@ -100,7 +100,7 @@ export default function InversionsVisual() {
       <div
         role="img"
         aria-label={`Array: ${current.array.join(' ') || 'empty'}.${merging ? ` Merging positions ${current.range![0]} to ${current.range![1] - 1}.` : ''}`}
-        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-white p-3"
+        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
       >
         {current.array.length === 0 && <p className="text-sm text-muted">No numbers.</p>}
         {current.array.map((value, index) => (
@@ -121,14 +121,14 @@ export default function InversionsVisual() {
           <div
             role="img"
             aria-label={`Merged so far: ${current.merged.join(' ') || 'nothing yet'}.`}
-            className="mt-1 flex min-h-14 flex-wrap gap-x-1.5 gap-y-2 rounded border border-line bg-white p-2"
+            className="mt-1 flex min-h-14 flex-wrap gap-x-1.5 gap-y-2 rounded border border-line bg-surface p-2"
           >
             {current.merged.length === 0 && <p className="self-center text-sm text-muted">Nothing yet.</p>}
             {current.merged.map((value, index) => (
               <span
                 key={index}
                 className={`${cellClass} ${
-                  current.took && index === current.merged.length - 1 ? 'border-accent bg-accent text-white' : 'border-muted bg-white text-ink'
+                  current.took && index === current.merged.length - 1 ? 'border-accent bg-accent text-inverse' : 'border-muted bg-surface text-ink'
                 }`}
               >
                 {value}
@@ -144,7 +144,7 @@ export default function InversionsVisual() {
           Range being merged
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border-2 border-warn bg-white" aria-hidden="true" />
+          <span className="inline-block size-3 rounded-sm border-2 border-warn bg-surface" aria-hidden="true" />
           Next in each half (i, j)
         </li>
         <li className="flex items-center gap-1.5">
@@ -154,14 +154,14 @@ export default function InversionsVisual() {
         <li>Small numbers: positions.</li>
       </ul>
 
-      <p className="mt-3 inline-flex items-baseline gap-2 rounded border border-line bg-white px-3 py-2">
+      <p className="mt-3 inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-2">
         <span className="text-sm text-muted">Inversions so far</span>
         <span className={`text-xl font-semibold tabular-nums ${current.done ? 'text-pass' : 'text-ink'}`}>{current.total}</span>
       </p>
 
       {current.done && (
         <div className="mt-3">
-          <p className="inline-block rounded border border-line bg-white px-3 py-2 font-semibold">Inversions: {current.total}</p>
+          <p className="inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">Inversions: {current.total}</p>
           <p className="mt-1 text-sm text-muted">Brute force would check {pairs(current.array.length)}.</p>
         </div>
       )}
@@ -190,8 +190,8 @@ export default function InversionsVisual() {
               placeholder="e.g. 2 4 1 3 5"
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-numbers-hint${inputError ? ` ${id}-numbers-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-white px-3 py-1.5 text-sm ${
-                inputError ? 'border-fail' : 'border-line hover:border-muted'
+              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
+                inputError ? 'border-fail' : 'border-field hover:border-muted'
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>

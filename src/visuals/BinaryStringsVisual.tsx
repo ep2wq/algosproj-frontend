@@ -81,7 +81,7 @@ export default function BinaryStringsVisual() {
 
       <div className="mt-4 flex flex-wrap gap-2">
         {vars.map(({ name, value }) => (
-          <p key={name} className="inline-flex items-baseline gap-2 rounded border border-line bg-white px-3 py-1.5">
+          <p key={name} className="inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-1.5">
             <span className="text-sm text-muted">{name}</span>
             <span className="font-mono text-lg font-semibold tabular-nums">{value}</span>
           </p>
@@ -102,12 +102,12 @@ export default function BinaryStringsVisual() {
       <p className="mt-3 text-sm font-medium">
         Results so far ({current.results.length} of {2 ** n})
       </p>
-      <ol aria-label={`Results so far: ${current.results.length === 0 ? 'none' : current.results.join(', ')}.`} className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-white p-1.5">
+      <ol aria-label={`Results so far: ${current.results.length === 0 ? 'none' : current.results.join(', ')}.`} className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-surface p-1.5">
         {current.results.length === 0 && <li className="px-1 text-sm text-muted">none yet</li>}
         {current.results.map((result, index) => {
           const isNew = current.kind === 'print' && index === current.results.length - 1
           return (
-            <li key={result} className={`rounded border px-1.5 py-0.5 font-mono text-sm ${isNew ? 'border-pass bg-pass text-white' : 'border-muted bg-white'}`}>
+            <li key={result} className={`rounded border px-1.5 py-0.5 font-mono text-sm ${isNew ? 'border-pass bg-pass text-inverse' : 'border-muted bg-surface'}`}>
               {result}
               {isNew && <span className="ml-1 font-sans text-xs">new</span>}
             </li>
@@ -140,8 +140,8 @@ export default function BinaryStringsVisual() {
               placeholder="e.g. 3"
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-n-hint${inputError ? ` ${id}-n-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-white px-3 py-1.5 text-sm ${
-                inputError ? 'border-fail' : 'border-line hover:border-muted'
+              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
+                inputError ? 'border-fail' : 'border-field hover:border-muted'
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>

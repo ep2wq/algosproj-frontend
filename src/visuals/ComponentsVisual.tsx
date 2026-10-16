@@ -68,7 +68,7 @@ function position(node: number, n: number) {
 
 function nodeClass(frame: ComponentsFrame, node: number) {
   const id = frame.component[node]
-  if (id === null) return 'fill-white stroke-muted'
+  if (id === null) return 'fill-surface stroke-muted'
   const color = componentColor(id)
   return frame.current === node ? `${color.fill} stroke-warn` : `${color.fill} ${color.stroke}`
 }
@@ -160,8 +160,8 @@ export default function ComponentsVisual() {
 
   const describedBy = (field: 'n' | 'edges') => `${id}-hint${inputError?.field === field ? ` ${id}-error` : ''}`
   const inputClass = (field: 'n' | 'edges') =>
-    `block w-full min-w-0 rounded border bg-white px-3 py-1.5 font-mono text-sm ${
-      inputError?.field === field ? 'border-fail' : 'border-line hover:border-muted'
+    `block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${
+      inputError?.field === field ? 'border-fail' : 'border-field hover:border-muted'
     }`
 
   return (
@@ -176,7 +176,7 @@ export default function ComponentsVisual() {
           ['loop at node', current.checked ?? '-'],
           ['popped', current.current ?? '-'],
         ].map(([name, value]) => (
-          <p key={name} className="inline-flex items-baseline gap-2 rounded border border-line bg-white px-3 py-1.5">
+          <p key={name} className="inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-1.5">
             <span className="text-sm text-muted">{name}</span>
             <span className="text-lg font-semibold tabular-nums">{value}</span>
           </p>
@@ -188,7 +188,7 @@ export default function ComponentsVisual() {
           tabIndex={0}
           role="region"
           aria-label="Graph drawing, scrolls sideways when wider than the screen"
-          className="overflow-x-auto rounded border border-line bg-white p-2"
+          className="overflow-x-auto rounded border border-line bg-surface p-2"
         >
           <div role="img" aria-label={graphLabel(current)} className="w-max">
             <Diagram frame={current} />
@@ -197,12 +197,12 @@ export default function ComponentsVisual() {
 
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium">Stack (top on the right)</p>
-          <div aria-label={`Stack: ${current.stack.length === 0 ? 'empty' : current.stack.join(', ')}.`} className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-white p-1.5">
+          <div aria-label={`Stack: ${current.stack.length === 0 ? 'empty' : current.stack.join(', ')}.`} className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-surface p-1.5">
             {current.stack.length === 0 && <span className="px-1 text-sm text-muted">empty</span>}
             {current.stack.map((node) => (
               <span
                 key={node}
-                className={`flex size-7 items-center justify-center rounded border text-sm font-semibold tabular-nums ${current.pushed.includes(node) ? 'border-accent bg-accent-soft' : 'border-muted bg-white'}`}
+                className={`flex size-7 items-center justify-center rounded border text-sm font-semibold tabular-nums ${current.pushed.includes(node) ? 'border-accent bg-accent-soft' : 'border-muted bg-surface'}`}
               >
                 {node}
               </span>
@@ -224,11 +224,11 @@ export default function ComponentsVisual() {
 
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-full border-2 border-muted bg-white" aria-hidden="true" />
+          <span className="inline-block size-3 rounded-full border-2 border-muted bg-surface" aria-hidden="true" />
           Not visited
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-full border-2 border-warn bg-white" aria-hidden="true" />
+          <span className="inline-block size-3 rounded-full border-2 border-warn bg-surface" aria-hidden="true" />
           Just popped, with its edges
         </li>
         <li className="flex items-center gap-1.5">
@@ -239,7 +239,7 @@ export default function ComponentsVisual() {
       </ul>
 
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-white px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
           Output: <span className="font-mono">{current.output}</span>
         </p>
       )}

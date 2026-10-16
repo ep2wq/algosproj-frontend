@@ -39,11 +39,11 @@ function inWindow(frame: WindowFrame, index: number) {
 }
 
 function cellStyle(frame: WindowFrame, index: number) {
-  if (inBest(frame, index)) return 'border-pass bg-pass text-white'
-  if (frame.right === index) return 'border-warn bg-warn text-white'
-  if (frame.earlier === index) return 'border-dashed border-warn bg-white text-ink'
+  if (inBest(frame, index)) return 'border-pass bg-pass text-inverse'
+  if (frame.right === index) return 'border-warn bg-warn text-inverse'
+  if (frame.earlier === index) return 'border-dashed border-warn bg-surface text-ink'
   if (inWindow(frame, index)) return 'border-accent bg-accent-soft text-ink'
-  return 'border-muted bg-white text-ink'
+  return 'border-muted bg-surface text-ink'
 }
 
 function pointerNames(frame: WindowFrame, index: number) {
@@ -109,7 +109,7 @@ export default function LongestSubstringVisual() {
           ['right', current.right ?? '-'],
           ['best', current.best],
         ].map(([name, value]) => (
-          <p key={name} className="inline-flex items-baseline gap-2 rounded border border-line bg-white px-3 py-1.5">
+          <p key={name} className="inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-1.5">
             <span className="font-mono text-sm text-muted">{name}</span>
             <span className="text-lg font-semibold tabular-nums">{value}</span>
           </p>
@@ -120,7 +120,7 @@ export default function LongestSubstringVisual() {
         tabIndex={0}
         role="region"
         aria-label="The letters, scrolls sideways when wider than the screen"
-        className="mt-3 overflow-x-auto rounded border border-line bg-white p-3"
+        className="mt-3 overflow-x-auto rounded border border-line bg-surface p-3"
       >
         <div role="img" aria-label={stringLabel(current)} className="w-max">
           {current.s === '' ? (
@@ -152,7 +152,7 @@ export default function LongestSubstringVisual() {
         tabIndex={0}
         role="region"
         aria-label="Last-seen map, scrolls sideways when wider than the screen"
-        className="mt-1 overflow-x-auto rounded border border-line bg-white"
+        className="mt-1 overflow-x-auto rounded border border-line bg-surface"
       >
         <table aria-label={mapLabel(current)} className="border-collapse text-sm tabular-nums">
           <tbody>
@@ -165,7 +165,7 @@ export default function LongestSubstringVisual() {
                 <th
                   key={entry.letter}
                   scope="col"
-                  className={`min-w-9 px-2 py-1 text-center font-mono font-semibold motion-safe:transition-colors motion-safe:duration-300 ${updated === entry.letter ? 'bg-warn text-white' : ''}`}
+                  className={`min-w-9 px-2 py-1 text-center font-mono font-semibold motion-safe:transition-colors motion-safe:duration-300 ${updated === entry.letter ? 'bg-warn text-inverse' : ''}`}
                 >
                   {entry.letter}
                 </th>
@@ -179,7 +179,7 @@ export default function LongestSubstringVisual() {
               {current.last.map((entry) => (
                 <td
                   key={entry.letter}
-                  className={`min-w-9 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-300 ${updated === entry.letter ? 'bg-warn text-white' : ''}`}
+                  className={`min-w-9 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-300 ${updated === entry.letter ? 'bg-warn text-inverse' : ''}`}
                 >
                   {entry.index}
                 </td>
@@ -195,7 +195,7 @@ export default function LongestSubstringVisual() {
           Letter at right, and its map entry
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border border-dashed border-warn bg-white" aria-hidden="true" />
+          <span className="inline-block size-3 rounded-sm border border-dashed border-warn bg-surface" aria-hidden="true" />
           Where that letter was last seen
         </li>
         <li className="flex items-center gap-1.5">
@@ -210,7 +210,7 @@ export default function LongestSubstringVisual() {
       </ul>
 
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-white px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
           Output: <span className="font-mono">{current.output}</span>
         </p>
       )}
@@ -241,7 +241,7 @@ export default function LongestSubstringVisual() {
                 placeholder="e.g. abba"
                 aria-invalid={Boolean(inputError)}
                 aria-describedby={describedBy}
-                className={`mt-1 block w-full min-w-0 rounded border bg-white px-3 py-1.5 font-mono text-sm ${inputError ? 'border-fail' : 'border-line hover:border-muted'}`}
+                className={`mt-1 block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${inputError ? 'border-fail' : 'border-field hover:border-muted'}`}
               />
             </div>
             <button type="submit" className={`${buttonClass} shrink-0`}>

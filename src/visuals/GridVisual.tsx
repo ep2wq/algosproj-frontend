@@ -83,17 +83,17 @@ function islandCellClass(frame: GridFrame, r: number, c: number) {
     return `${color.bg} ${same(frame.current, r, c) ? 'border-warn' : color.border} ${dashed} text-ink`
   }
   if (frame.grid[r][c] === '1') return 'border-muted bg-line text-ink'
-  return 'border-line bg-white text-muted'
+  return 'border-line bg-surface text-muted'
 }
 
 function shortestCellClass(frame: GridFrame, r: number, c: number) {
-  if (frame.grid[r][c] === '1') return 'border-ink bg-ink text-white'
+  if (frame.grid[r][c] === '1') return 'border-ink bg-ink text-inverse'
   const isEnd = r === frame.grid.length - 1 && c === frame.grid[0].length - 1
-  if (frame.output !== null && isEnd && frame.marks[r][c] !== null) return 'border-pass bg-pass text-white'
-  if (same(frame.current, r, c)) return 'border-warn bg-warn text-white'
-  if (has(frame.pending, r, c)) return 'border-warn bg-amber-100 text-ink'
+  if (frame.output !== null && isEnd && frame.marks[r][c] !== null) return 'border-pass bg-pass text-inverse'
+  if (same(frame.current, r, c)) return 'border-warn bg-warn text-inverse'
+  if (has(frame.pending, r, c)) return 'border-warn bg-amber-100 dark:bg-amber-950 text-ink'
   if (frame.marks[r][c] !== null) return 'border-line bg-paper text-muted'
-  return 'border-line bg-white text-ink'
+  return 'border-line bg-surface text-ink'
 }
 
 function gridLabel(mode: GridMode, frame: GridFrame) {
@@ -150,7 +150,7 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
       </div>
 
       {mode === 'islands' && (
-        <p className="mt-4 inline-flex items-baseline gap-2 rounded border border-line bg-white px-3 py-1.5">
+        <p className="mt-4 inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-1.5">
           <span className="text-sm text-muted">count</span>
           <span className="text-lg font-semibold tabular-nums">{current.count}</span>
         </p>
@@ -161,7 +161,7 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
           tabIndex={0}
           role="region"
           aria-label="Grid, scrolls sideways when wider than the screen"
-          className="overflow-x-auto rounded border border-line bg-white p-3"
+          className="overflow-x-auto rounded border border-line bg-surface p-3"
         >
           <div role="img" aria-label={gridLabel(mode, current)} className="w-max">
             <div className="flex gap-0.5 pl-5">
@@ -197,13 +197,13 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
           <p className="text-sm font-medium">{config.pendingLabel}</p>
           <div
             aria-label={`${mode === 'islands' ? 'Stack' : 'Queue'}: ${current.pending.length === 0 ? 'empty' : current.pending.map(cellText).join(', ')}.`}
-            className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-white p-1.5"
+            className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-surface p-1.5"
           >
             {current.pending.length === 0 && <span className="px-1 text-sm text-muted">empty</span>}
             {current.pending.map((cell) => (
               <span
                 key={cellText(cell)}
-                className={`rounded border px-1.5 py-0.5 text-xs font-medium tabular-nums ${has(current.added, cell[0], cell[1]) ? 'border-accent bg-accent-soft' : 'border-muted bg-white'}`}
+                className={`rounded border px-1.5 py-0.5 text-xs font-medium tabular-nums ${has(current.added, cell[0], cell[1]) ? 'border-accent bg-accent-soft' : 'border-muted bg-surface'}`}
               >
                 {cellText(cell)}
               </span>
@@ -220,15 +220,15 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
               A 1 not marked yet
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-sm border border-line bg-white" aria-hidden="true" />A 0
+              <span className="inline-block size-3 rounded-sm border border-line bg-surface" aria-hidden="true" />A 0
             </li>
             <li>Coloured: marked, with its island number; one colour per island.</li>
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-sm border-2 border-warn bg-white" aria-hidden="true" />
+              <span className="inline-block size-3 rounded-sm border-2 border-warn bg-surface" aria-hidden="true" />
               Found or popped
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-sm border-2 border-dashed border-muted bg-white" aria-hidden="true" />
+              <span className="inline-block size-3 rounded-sm border-2 border-dashed border-muted bg-surface" aria-hidden="true" />
               On the stack
             </li>
           </>
@@ -243,7 +243,7 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
               Taken from the front
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-sm border border-warn bg-amber-100" aria-hidden="true" />
+              <span className="inline-block size-3 rounded-sm border border-warn bg-amber-100 dark:bg-amber-950" aria-hidden="true" />
               In the queue
             </li>
             <li className="flex items-center gap-1.5">
@@ -257,7 +257,7 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
       </ul>
 
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-white px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
           Output: <span className="font-mono">{current.output}</span>
         </p>
       )}
@@ -288,7 +288,7 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
                 placeholder={config.placeholder}
                 aria-invalid={Boolean(inputError)}
                 aria-describedby={describedBy}
-                className={`mt-1 block w-full min-w-0 rounded border bg-white px-3 py-1.5 font-mono text-sm ${inputError ? 'border-fail' : 'border-line hover:border-muted'}`}
+                className={`mt-1 block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${inputError ? 'border-fail' : 'border-field hover:border-muted'}`}
               />
             </div>
             <button type="submit" className={`${buttonClass} shrink-0`}>

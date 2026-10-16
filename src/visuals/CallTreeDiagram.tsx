@@ -6,16 +6,16 @@ import { CALL_BOX_H, CALL_BOX_W, callTreeLayout, callTreeSize, type CallNode } f
 export type CallMark = 'running' | 'open' | 'printed' | 'returned'
 
 const BOX_CLASS: Record<CallMark, string> = {
-  running: 'fill-white stroke-warn',
+  running: 'fill-surface stroke-warn',
   open: 'fill-accent-soft stroke-accent',
   printed: 'fill-pass stroke-pass',
-  returned: 'fill-white stroke-line',
+  returned: 'fill-surface stroke-field',
 }
 
 const TEXT_CLASS: Record<CallMark, string> = {
   running: 'fill-ink',
   open: 'fill-ink',
-  printed: 'fill-white',
+  printed: 'fill-surface',
   returned: 'fill-muted',
 }
 
@@ -44,7 +44,7 @@ export default function CallTreeDiagram({ nodes, shown, markOf, label }: { nodes
       tabIndex={0}
       role="region"
       aria-label="Call tree, scrolls sideways when it is wider than the screen"
-      className="mt-3 overflow-x-auto rounded border border-line bg-white p-2"
+      className="mt-3 overflow-x-auto rounded border border-line bg-surface p-2"
     >
       <div role="img" aria-label={label} className="w-max">
         <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block" aria-hidden="true">
@@ -61,7 +61,7 @@ export default function CallTreeDiagram({ nodes, shown, markOf, label }: { nodes
                 x2={b.x}
                 y2={b.y - CALL_BOX_H / 2}
                 strokeWidth={onStack ? 2.5 : 1.5}
-                className={onStack ? 'stroke-accent' : 'stroke-line'}
+                className={onStack ? 'stroke-accent' : 'stroke-field'}
               />
             )
           })}
@@ -101,7 +101,7 @@ export function CallTreeLegend() {
   return (
     <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
       <li className="flex items-center gap-1.5">
-        <span className="inline-block h-3 w-4 rounded-sm border-2 border-warn bg-white" aria-hidden="true" />
+        <span className="inline-block h-3 w-4 rounded-sm border-2 border-warn bg-surface" aria-hidden="true" />
         <span aria-hidden="true" className="font-semibold text-warn">
           ▲
         </span>
@@ -119,7 +119,7 @@ export function CallTreeLegend() {
         Base case, printed
       </li>
       <li className="flex items-center gap-1.5">
-        <span className="inline-block h-3 w-4 rounded-sm border border-line bg-white" aria-hidden="true" />
+        <span className="inline-block h-3 w-4 rounded-sm border border-line bg-surface" aria-hidden="true" />
         Returned
       </li>
     </ul>

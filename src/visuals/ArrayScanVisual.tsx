@@ -63,14 +63,14 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
       <div
         role="img"
         aria-label={`Array: ${current.array.join(', ')}. ${valueLabel}: ${current.value}.`}
-        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-white p-3"
+        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
       >
         {current.array.map((value, index) => (
           <div key={index} className="flex w-10 flex-col items-center">
             <span className="h-4 text-xs font-semibold text-ink">{current.current === index ? 'i' : ''}</span>
             <span
               className={`mt-0.5 flex size-10 items-center justify-center rounded border-2 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 ${
-                current.current === index ? 'border-warn bg-warn text-white' : 'border-muted bg-white text-ink'
+                current.current === index ? 'border-warn bg-warn text-inverse' : 'border-muted bg-surface text-ink'
               }`}
             >
               {value}
@@ -88,7 +88,7 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
         <li>Small numbers: indices.</li>
       </ul>
 
-      <p className="mt-3 inline-flex items-baseline gap-2 rounded border border-line bg-white px-3 py-2">
+      <p className="mt-3 inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-2">
         <span className="text-sm text-muted">{valueLabel}</span>
         <span className={`text-xl font-semibold tabular-nums ${current.done ? 'text-pass' : 'text-ink'}`}>{current.value}</span>
       </p>
@@ -116,8 +116,8 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
               placeholder="e.g. 10 -2 7 0 5"
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-numbers-hint${inputError ? ` ${id}-numbers-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-white px-3 py-1.5 text-sm ${
-                inputError ? 'border-fail' : 'border-line hover:border-muted'
+              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
+                inputError ? 'border-fail' : 'border-field hover:border-muted'
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>

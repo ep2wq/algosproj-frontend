@@ -48,16 +48,16 @@ function parseWord(text: string, name: string): string | { message: string } {
 
 function letterStyle(frame: AnagramFrame, word: Field, index: number) {
   const active = frame.pass === word && frame.index === index
-  if (active) return frame.below !== null ? 'border-fail bg-fail text-white' : 'border-warn bg-warn text-white'
+  if (active) return frame.below !== null ? 'border-fail bg-fail text-inverse' : 'border-warn bg-warn text-inverse'
   const read = frame.pass === 'done' || (frame.pass === 't' && (word === 's' || index < frame.index!)) || (frame.pass === 's' && word === 's' && index < frame.index!)
   if (read) return 'border-line bg-paper text-muted'
-  return 'border-muted bg-white text-ink'
+  return 'border-muted bg-surface text-ink'
 }
 
 function countStyle(frame: AnagramFrame, letter: string) {
-  if (frame.below === letter) return 'bg-fail text-white'
-  if (frame.changed === letter) return 'bg-warn text-white'
-  if (frame.pass === 'done') return 'bg-pass text-white'
+  if (frame.below === letter) return 'bg-fail text-inverse'
+  if (frame.changed === letter) return 'bg-warn text-inverse'
+  if (frame.pass === 'done') return 'bg-pass text-inverse'
   return ''
 }
 
@@ -133,8 +133,8 @@ export default function AnagramVisual() {
 
   const describedBy = (field: Field) => `${id}-hint${inputError?.field === field ? ` ${id}-error` : ''}`
   const inputClass = (field: Field) =>
-    `block w-full min-w-0 rounded border bg-white px-3 py-1.5 font-mono text-sm ${
-      inputError?.field === field ? 'border-fail' : 'border-line hover:border-muted'
+    `block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${
+      inputError?.field === field ? 'border-fail' : 'border-field hover:border-muted'
     }`
 
   return (
@@ -147,7 +147,7 @@ export default function AnagramVisual() {
         tabIndex={0}
         role="region"
         aria-label="The two words, scrolls sideways when wider than the screen"
-        className="mt-4 overflow-x-auto rounded border border-line bg-white p-3"
+        className="mt-4 overflow-x-auto rounded border border-line bg-surface p-3"
       >
         <div role="img" aria-label={wordsLabel(current)} className="flex w-max flex-col gap-2">
           <WordRow frame={current} word="s" />
@@ -160,7 +160,7 @@ export default function AnagramVisual() {
         tabIndex={0}
         role="region"
         aria-label="Letter counts, scrolls sideways when wider than the screen"
-        className="mt-1 overflow-x-auto rounded border border-line bg-white"
+        className="mt-1 overflow-x-auto rounded border border-line bg-surface"
       >
         <table aria-label={countsLabel(current)} className="border-collapse text-sm tabular-nums">
           <tbody>
@@ -207,7 +207,7 @@ export default function AnagramVisual() {
       </ul>
 
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-white px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
           Output: <span className="font-mono">{current.output}</span>
         </p>
       )}

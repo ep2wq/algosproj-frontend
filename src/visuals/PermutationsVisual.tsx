@@ -103,7 +103,7 @@ export default function PermutationsVisual() {
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div className="min-w-0 rounded border border-line bg-white p-3">
+        <div className="min-w-0 rounded border border-line bg-surface p-3">
           <p className="text-sm font-medium">Items and their used markers</p>
           <ul
             aria-label={`Items: ${items.map((item, index) => `${item} ${itemNote(current, index)}`).join(', ')}.`}
@@ -116,7 +116,7 @@ export default function PermutationsVisual() {
                   <span
                     className={`flex size-10 items-center justify-center rounded font-mono text-lg font-semibold motion-safe:transition-colors motion-safe:duration-300 ${
                       current.focus === index ? 'border-4 border-warn' : 'border-2'
-                    } ${current.used[index] ? 'border-accent bg-accent-soft text-ink' : 'border-muted bg-white text-ink'}`}
+                    } ${current.used[index] ? 'border-accent bg-accent-soft text-ink' : 'border-muted bg-surface text-ink'}`}
                   >
                     {item}
                   </span>
@@ -126,7 +126,7 @@ export default function PermutationsVisual() {
             })}
           </ul>
         </div>
-        <div className="min-w-0 rounded border border-line bg-white p-3">
+        <div className="min-w-0 rounded border border-line bg-surface p-3">
           <p className="text-sm font-medium">cur, the partial permutation</p>
           <ol aria-label={`cur: ${current.cur.length === 0 ? 'empty' : current.cur.map((i) => items[i]).join(', ')}.`} className="mt-2 flex flex-wrap gap-2">
             {items.map((_, position) => {
@@ -161,12 +161,12 @@ export default function PermutationsVisual() {
       <p className="mt-3 text-sm font-medium">
         Results so far ({current.results.length} of {total})
       </p>
-      <ol aria-label={`Results so far: ${current.results.length === 0 ? 'none' : current.results.join(', ')}.`} className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-white p-1.5">
+      <ol aria-label={`Results so far: ${current.results.length === 0 ? 'none' : current.results.join(', ')}.`} className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-surface p-1.5">
         {current.results.length === 0 && <li className="px-1 text-sm text-muted">none yet</li>}
         {current.results.map((result, index) => {
           const isNew = current.kind === 'print' && index === current.results.length - 1
           return (
-            <li key={result} className={`rounded border px-1.5 py-0.5 font-mono text-sm ${isNew ? 'border-pass bg-pass text-white' : 'border-muted bg-white'}`}>
+            <li key={result} className={`rounded border px-1.5 py-0.5 font-mono text-sm ${isNew ? 'border-pass bg-pass text-inverse' : 'border-muted bg-surface'}`}>
               {result}
               {isNew && <span className="ml-1 font-sans text-xs">new</span>}
             </li>
@@ -199,8 +199,8 @@ export default function PermutationsVisual() {
               placeholder="e.g. A B C"
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-items-hint${inputError ? ` ${id}-items-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-white px-3 py-1.5 font-mono text-sm ${
-                inputError ? 'border-fail' : 'border-line hover:border-muted'
+              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${
+                inputError ? 'border-fail' : 'border-field hover:border-muted'
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>

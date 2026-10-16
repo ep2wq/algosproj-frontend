@@ -151,7 +151,7 @@ function Diagram({ frame }: { frame: ListFrame }) {
   function nullBox(x: number, key: string) {
     return (
       <g key={key}>
-        <rect x={x + 1} y={BOX_TOP + 1} width={NULL_W - 2} height={BOX_H - 2} rx={4} className="fill-paper stroke-line" strokeDasharray="4 3" strokeWidth={2} />
+        <rect x={x + 1} y={BOX_TOP + 1} width={NULL_W - 2} height={BOX_H - 2} rx={4} className="fill-paper stroke-field" strokeDasharray="4 3" strokeWidth={2} />
         <text x={x + NULL_W / 2} y={BOX_MID + 4} textAnchor="middle" className="fill-muted font-mono text-xs">
           null
         </text>
@@ -180,12 +180,12 @@ function Diagram({ frame }: { frame: ListFrame }) {
           frame.highlight === i
             ? 'fill-pass stroke-pass'
             : watched.has(i)
-              ? 'fill-white stroke-warn'
-              : 'fill-white stroke-muted'
+              ? 'fill-surface stroke-warn'
+              : 'fill-surface stroke-muted'
         return (
           <g key={i}>
             <rect x={x + 1} y={BOX_TOP + 1} width={nodeW - 2} height={BOX_H - 2} rx={4} strokeWidth={2} className={`${box} motion-safe:transition-colors motion-safe:duration-300`} />
-            <text x={center} y={BOX_MID + 5} textAnchor="middle" className={`font-mono text-sm font-medium ${frame.highlight === i ? 'fill-white' : 'fill-ink'}`}>
+            <text x={center} y={BOX_MID + 5} textAnchor="middle" className={`font-mono text-sm font-medium ${frame.highlight === i ? 'fill-inverse' : 'fill-ink'}`}>
               {value}
             </text>
             <text x={center} y={INDEX_Y} textAnchor="middle" className="fill-muted text-xs tabular-nums">
@@ -275,8 +275,8 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
   const describedBy = (field: 'values' | 'pos') =>
     `${id}-input-hint${inputError?.field === field ? ` ${id}-input-error` : ''}`
   const inputClass = (field: 'values' | 'pos') =>
-    `block w-full min-w-0 rounded border bg-white px-3 py-1.5 font-mono text-sm ${
-      inputError?.field === field ? 'border-fail' : 'border-line hover:border-muted'
+    `block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${
+      inputError?.field === field ? 'border-fail' : 'border-field hover:border-muted'
     }`
 
   return (
@@ -289,7 +289,7 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
         tabIndex={0}
         role="region"
         aria-label="Linked list diagram, scrolls sideways when it is wider than the screen"
-        className="mt-4 overflow-x-auto rounded border border-line bg-white p-3"
+        className="mt-4 overflow-x-auto rounded border border-line bg-surface p-3"
       >
         <div role="img" aria-label={listLabel(current)} className="w-max">
           <Diagram frame={current} />
@@ -298,7 +298,7 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
 
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border-2 border-warn bg-white" aria-hidden="true" />
+          <span className="inline-block size-3 rounded-sm border-2 border-warn bg-surface" aria-hidden="true" />
           {mode === 'reverse' ? 'Node under curr or next' : 'Node under slow or fast'}
         </li>
         {mode === 'reverse' ? (
@@ -322,7 +322,7 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
       </ul>
 
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-white px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
           Output: {current.output === '' ? <span className="font-normal text-muted">(an empty line)</span> : <span className="font-mono">{current.output}</span>}
         </p>
       )}

@@ -13,7 +13,7 @@ function parseNumber(text: string): number | string {
   return Number(trimmed) || 0 // turns -0 into 0
 }
 
-const boxClass = 'flex min-w-0 flex-col rounded border border-line bg-white p-3'
+const boxClass = 'flex min-w-0 flex-col rounded border border-line bg-surface p-3'
 
 function Variables({ frame }: { frame: WarmupFrame }) {
   const rows: [string, string | null][] = [
@@ -72,7 +72,7 @@ export default function WarmupVisual() {
             id={`${id}-language`}
             value={language}
             onChange={(event) => setLanguage(event.target.value as Language)}
-            className="ml-2 rounded border border-line bg-white px-2 py-1 text-sm hover:border-muted"
+            className="ml-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
           >
             {Object.entries(SOLUTIONS).map(([value, { label }]) => (
               <option key={value} value={value}>
@@ -89,7 +89,7 @@ export default function WarmupVisual() {
           <p className="text-sm font-medium">Input (standard input)</p>
           <p
             className={`mt-2 rounded border-2 px-2 py-1 font-mono text-sm break-all motion-safe:transition-colors motion-safe:duration-300 ${
-              inputRead ? 'border-line bg-paper text-muted' : 'border-warn bg-white text-ink'
+              inputRead ? 'border-line bg-paper text-muted' : 'border-warn bg-surface text-ink'
             }`}
           >
             {current.input}
@@ -104,7 +104,7 @@ export default function WarmupVisual() {
               <code
                 key={index}
                 className={`block px-2 whitespace-pre motion-safe:transition-colors motion-safe:duration-300 ${
-                  key !== '' && key === current.line ? 'bg-warn text-white' : ''
+                  key !== '' && key === current.line ? 'bg-warn text-inverse' : ''
                 }`}
               >
                 {text || ' '}
@@ -136,7 +136,7 @@ export default function WarmupVisual() {
       </ul>
 
       {current.verdict && (
-        <p className={`mt-3 inline-block rounded border border-line bg-white px-3 py-2 font-semibold ${current.passed ? 'text-pass' : 'text-fail'}`}>
+        <p className={`mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold ${current.passed ? 'text-pass' : 'text-fail'}`}>
           {current.verdict}
         </p>
       )}
@@ -162,8 +162,8 @@ export default function WarmupVisual() {
               placeholder="e.g. 21"
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-number-hint${inputError ? ` ${id}-number-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-white px-3 py-1.5 text-sm ${
-                inputError ? 'border-fail' : 'border-line hover:border-muted'
+              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
+                inputError ? 'border-fail' : 'border-field hover:border-muted'
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>

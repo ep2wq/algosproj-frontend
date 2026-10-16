@@ -104,10 +104,10 @@ const MODES = {
 
 // Node colours by mark. Class names are written out in full so Tailwind generates them.
 const NODE_CLASS: Record<Mark | 'plain', string> = {
-  plain: 'fill-white stroke-muted',
+  plain: 'fill-surface stroke-muted',
   path: 'fill-accent-soft stroke-accent',
-  current: 'fill-white stroke-warn',
-  focus: 'fill-white stroke-pass',
+  current: 'fill-surface stroke-warn',
+  focus: 'fill-surface stroke-pass',
   answer: 'fill-pass stroke-pass',
 }
 
@@ -152,7 +152,7 @@ function Diagram({ frame, rows }: { frame: TreeFrame; rows: number }) {
         return (
           <g key={node.id}>
             <circle cx={x} cy={y} r={NODE_R} strokeWidth={thick ? 4 : 2} className={`${NODE_CLASS[mark ?? 'plain']} motion-safe:transition-colors motion-safe:duration-300`} />
-            <text x={x} y={y + 4} textAnchor="middle" className={`font-mono text-xs font-semibold ${mark === 'answer' ? 'fill-white' : 'fill-ink'}`}>
+            <text x={x} y={y + 4} textAnchor="middle" className={`font-mono text-xs font-semibold ${mark === 'answer' ? 'fill-inverse' : 'fill-ink'}`}>
               {node.value}
             </text>
           </g>
@@ -206,8 +206,8 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
 
   const describedBy = (field: Field) => `${id}-input-hint${inputError?.field === field ? ` ${id}-input-error` : ''}`
   const inputClass = (field: Field) =>
-    `block w-full min-w-0 rounded border bg-white px-3 py-1.5 font-mono text-sm ${
-      inputError?.field === field ? 'border-fail' : 'border-line hover:border-muted'
+    `block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${
+      inputError?.field === field ? 'border-fail' : 'border-field hover:border-muted'
     }`
   const marks = new Set(frames.flatMap((frame) => frame.marks.map(({ mark }) => mark)))
   const hasEdge = frames.some((frame) => frame.edge !== null)
@@ -220,7 +220,7 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
 
       <div className="mt-4 flex flex-wrap gap-2">
         {current.vars.map(({ name, value }) => (
-          <p key={name} className="inline-flex items-baseline gap-2 rounded border border-line bg-white px-3 py-1.5">
+          <p key={name} className="inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-1.5">
             <span className="text-sm text-muted">{name}</span>
             <span className="text-lg font-semibold tabular-nums">{value}</span>
           </p>
@@ -231,7 +231,7 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
         tabIndex={0}
         role="region"
         aria-label="Tree drawing, scrolls sideways when it is wider than the screen"
-        className="relative mt-3 overflow-x-auto rounded border border-line bg-white p-2"
+        className="relative mt-3 overflow-x-auto rounded border border-line bg-surface p-2"
       >
         <div role="img" aria-label={treeLabel(current, mode)} className="w-max">
           <Diagram frame={current} rows={rows} />
@@ -246,10 +246,10 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
       {current.stack !== null && (
         <>
           <p className="mt-3 text-sm font-medium">Stack of (value, depth) pairs (top on the right)</p>
-          <div aria-label={`Stack: ${current.stack.length === 0 ? 'empty' : current.stack.join(', ')}.`} className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-white p-1.5">
+          <div aria-label={`Stack: ${current.stack.length === 0 ? 'empty' : current.stack.join(', ')}.`} className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-surface p-1.5">
             {current.stack.length === 0 && <span className="px-1 text-sm text-muted">empty</span>}
             {current.stack.map((pair, index) => (
-              <span key={index} className="rounded border border-muted bg-white px-1.5 py-0.5 font-mono text-sm tabular-nums">
+              <span key={index} className="rounded border border-muted bg-surface px-1.5 py-0.5 font-mono text-sm tabular-nums">
                 {pair}
               </span>
             ))}
@@ -267,13 +267,13 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
           )}
           {marks.has('current') && (
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-full border-2 border-warn bg-white" aria-hidden="true" />
+              <span className="inline-block size-3 rounded-full border-2 border-warn bg-surface" aria-hidden="true" />
               {mode === 'height' ? 'Just popped' : mode === 'lca' ? 'node' : 'cur'}
             </li>
           )}
           {marks.has('focus') && (
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-full border-2 border-pass bg-white" aria-hidden="true" />
+              <span className="inline-block size-3 rounded-full border-2 border-pass bg-surface" aria-hidden="true" />
               {mode === 'delete' ? 'Just inserted, the successor, or the child that moved up' : 'Just inserted'}
             </li>
           )}
@@ -293,7 +293,7 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
       )}
 
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-white px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
           Output: {current.output === '' ? <span className="font-normal text-muted">(an empty line)</span> : <span className="font-mono">{current.output}</span>}
         </p>
       )}

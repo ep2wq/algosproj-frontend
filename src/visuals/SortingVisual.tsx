@@ -81,7 +81,7 @@ export default function SortingVisual() {
             id={`${id}-algorithm`}
             value={algorithm}
             onChange={(event) => restart(array, event.target.value as Algorithm)}
-            className="ml-2 rounded border border-line bg-white px-2 py-1 text-sm hover:border-muted"
+            className="ml-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
           >
             {Object.entries(ALGORITHMS).map(([value, { label }]) => (
               <option key={value} value={value}>
@@ -96,7 +96,7 @@ export default function SortingVisual() {
       <div
         role="img"
         aria-label={`Array: ${current.array.join(', ') || 'empty'}`}
-        className="mt-4 flex h-56 items-end gap-1 rounded border border-line bg-white p-2 sm:gap-2 sm:p-3"
+        className="mt-4 flex h-56 items-end gap-1 rounded border border-line bg-surface p-2 sm:gap-2 sm:p-3"
       >
         {current.array.length === 0 && <p className="self-center text-sm text-muted">The array is empty.</p>}
         {current.array.map((value, index) => (
@@ -143,8 +143,8 @@ export default function SortingVisual() {
               placeholder="e.g. 5 3 8 1"
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-numbers-hint${inputError ? ` ${id}-numbers-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-white px-3 py-1.5 text-sm ${
-                inputError ? 'border-fail' : 'border-line hover:border-muted'
+              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
+                inputError ? 'border-fail' : 'border-field hover:border-muted'
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>

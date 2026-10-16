@@ -46,9 +46,9 @@ function inRange(frame: SearchFrame, index: number) {
 }
 
 function cellStyle(frame: SearchFrame, index: number) {
-  if (frame.result === index) return 'border-pass bg-pass text-white'
-  if (frame.mid === index) return 'border-warn bg-warn text-white'
-  if (inRange(frame, index)) return 'border-muted bg-white text-ink'
+  if (frame.result === index) return 'border-pass bg-pass text-inverse'
+  if (frame.mid === index) return 'border-warn bg-warn text-inverse'
+  if (inRange(frame, index)) return 'border-muted bg-surface text-ink'
   return 'border-line bg-paper text-muted'
 }
 
@@ -63,7 +63,7 @@ function pointerLabels(frame: SearchFrame, index: number) {
 const LEGEND = [
   { label: 'Middle being checked', style: 'border-warn bg-warn' },
   { label: 'Found', style: 'border-pass bg-pass' },
-  { label: 'Still possible', style: 'border-muted bg-white' },
+  { label: 'Still possible', style: 'border-muted bg-surface' },
   { label: 'Ruled out', style: 'border-muted/40 bg-paper' },
 ]
 
@@ -130,8 +130,8 @@ export default function BinarySearchVisual() {
             onChange={(event) => setTargetText(event.target.value)}
             aria-invalid={Boolean(targetError)}
             aria-describedby={targetError ? `${id}-target-error` : undefined}
-            className={`ml-2 w-16 rounded border bg-white px-2 py-1 text-sm ${
-              targetError ? 'border-fail' : 'border-line hover:border-muted'
+            className={`ml-2 w-16 rounded border bg-surface px-2 py-1 text-sm ${
+              targetError ? 'border-fail' : 'border-field hover:border-muted'
             }`}
           />
           <button type="submit" className={`${buttonClass} ml-2 py-1`}>
@@ -149,7 +149,7 @@ export default function BinarySearchVisual() {
       <div
         role="img"
         aria-label={`Sorted array: ${current.array.join(', ')}. Target: ${target}.`}
-        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-white p-3"
+        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
       >
         {current.array.map((value, index) => (
           <div key={index} className="flex w-10 flex-col items-center">
@@ -198,8 +198,8 @@ export default function BinarySearchVisual() {
               placeholder="e.g. 4 15 8 23"
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-numbers-hint${inputError ? ` ${id}-numbers-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-white px-3 py-1.5 text-sm ${
-                inputError ? 'border-fail' : 'border-line hover:border-muted'
+              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
+                inputError ? 'border-fail' : 'border-field hover:border-muted'
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>

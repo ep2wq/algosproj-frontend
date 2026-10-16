@@ -39,7 +39,7 @@ function squareOf(frame: QueensFrame, attacked: Set<string>, row: number, col: n
 // Class names are written out in full so Tailwind generates them.
 const SQUARE_CLASS: Record<Square, string> = {
   queen: 'border border-line text-ink',
-  solution: 'border border-pass bg-pass text-white',
+  solution: 'border border-pass bg-pass text-inverse',
   attacker: 'border-4 border-fail text-ink',
   placed: 'border-4 border-warn text-ink',
   conflict: 'border-4 border-fail bg-fail/15 text-fail',
@@ -116,18 +116,18 @@ export default function QueensVisual() {
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        <p className="inline-flex items-baseline gap-2 rounded border border-line bg-white px-3 py-1.5">
+        <p className="inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-1.5">
           <span className="text-sm text-muted">solutions found</span>
           <span className="text-lg font-semibold tabular-nums">{current.solutions}</span>
         </p>
-        <p className="inline-flex items-baseline gap-2 rounded border border-line bg-white px-3 py-1.5">
+        <p className="inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-1.5">
           <span className="text-sm text-muted">first solution</span>
           <span className="font-mono text-lg font-semibold">{current.first === null ? '-' : current.first.map((c) => c + 1).join(' ')}</span>
         </p>
       </div>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-[auto_1fr]">
-        <div className="justify-self-start rounded border border-line bg-white p-2">
+        <div className="justify-self-start rounded border border-line bg-surface p-2">
           <div role="img" aria-label={boardLabel(current)}>
             <div aria-hidden="true" className="flex">
               <span className="w-5" />
@@ -147,7 +147,7 @@ export default function QueensVisual() {
                     <span
                       key={col}
                       className={`flex size-10 items-center justify-center text-xl leading-none motion-safe:transition-colors motion-safe:duration-300 ${
-                        square === 'solution' || square === 'conflict' ? '' : dark ? 'bg-paper' : 'bg-white'
+                        square === 'solution' || square === 'conflict' ? '' : dark ? 'bg-paper' : 'bg-surface'
                       } ${SQUARE_CLASS[square]}`}
                     >
                       <span className={square === 'conflict' ? 'font-bold motion-safe:animate-pulse' : ''}>{SQUARE_TEXT[square]}</span>
@@ -160,7 +160,7 @@ export default function QueensVisual() {
           <p className="mt-1 text-xs text-muted">Small numbers: rows and columns.</p>
         </div>
 
-        <div className="min-w-0 rounded border border-line bg-white p-3">
+        <div className="min-w-0 rounded border border-line bg-surface p-3">
           <p className="text-sm font-medium">Columns tried in each row</p>
           <ol className="mt-2 space-y-1.5">
             {current.trail.map((tries, row) => {
@@ -169,7 +169,8 @@ export default function QueensVisual() {
                 <li
                   key={row}
                   aria-label={`Row ${row + 1}: ${tries.length === 0 ? 'nothing tried yet' : tries.map((t) => `column ${t.col + 1} ${TRY_TEXT[t.outcome].name}`).join(', ')}${earlier ? ' (an earlier branch, abandoned)' : ''}.`}
-                  className={`flex flex-wrap items-center gap-1 ${earlier ? 'opacity-50' : ''} ${current.row === row ? 'font-semibold' : ''}`}
+                  // An abandoned row is muted (not faded, which fell below 4.5:1) and says "earlier branch".
+                  className={`flex flex-wrap items-center gap-1 ${earlier ? 'text-muted' : ''} ${current.row === row ? 'font-semibold' : ''}`}
                 >
                   <span aria-hidden="true" className="w-12 text-sm">
                     Row {row + 1}
@@ -200,19 +201,19 @@ export default function QueensVisual() {
 
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
-          <span aria-hidden="true" className="flex size-4 items-center justify-center border border-line bg-white text-ink">
+          <span aria-hidden="true" className="flex size-4 items-center justify-center border border-line bg-surface text-ink">
             ♛
           </span>
           Queen
         </li>
         <li className="flex items-center gap-1.5">
-          <span aria-hidden="true" className="flex size-4 items-center justify-center border border-line bg-white">
+          <span aria-hidden="true" className="flex size-4 items-center justify-center border border-line bg-surface">
             •
           </span>
           Attacked by a queen
         </li>
         <li className="flex items-center gap-1.5">
-          <span aria-hidden="true" className="flex size-4 items-center justify-center border-2 border-warn bg-white text-ink">
+          <span aria-hidden="true" className="flex size-4 items-center justify-center border-2 border-warn bg-surface text-ink">
             ♛
           </span>
           Queen just placed
@@ -224,19 +225,19 @@ export default function QueensVisual() {
           Tried square, attacked
         </li>
         <li className="flex items-center gap-1.5">
-          <span aria-hidden="true" className="flex size-4 items-center justify-center border-2 border-fail bg-white text-ink">
+          <span aria-hidden="true" className="flex size-4 items-center justify-center border-2 border-fail bg-surface text-ink">
             ♛
           </span>
           The queen that attacks it
         </li>
         <li className="flex items-center gap-1.5">
-          <span aria-hidden="true" className="flex size-4 items-center justify-center border-2 border-dashed border-warn bg-white text-warn">
+          <span aria-hidden="true" className="flex size-4 items-center justify-center border-2 border-dashed border-warn bg-surface text-warn">
             ↩
           </span>
           Queen just removed
         </li>
         <li className="flex items-center gap-1.5">
-          <span aria-hidden="true" className="flex size-4 items-center justify-center border border-pass bg-pass text-white">
+          <span aria-hidden="true" className="flex size-4 items-center justify-center border border-pass bg-pass text-inverse">
             ♛
           </span>
           Queens of a solution
@@ -244,10 +245,10 @@ export default function QueensVisual() {
       </ul>
 
       {current.kind === 'solution' && (
-        <p className="mt-3 inline-block rounded border border-pass bg-white px-3 py-2 font-semibold text-pass">✓ Solution {current.solutions}</p>
+        <p className="mt-3 inline-block rounded border border-pass bg-surface px-3 py-2 font-semibold text-pass">✓ Solution {current.solutions}</p>
       )}
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-white px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
           Output: <span className="font-mono whitespace-pre-line">{current.output}</span>
         </p>
       )}
@@ -277,8 +278,8 @@ export default function QueensVisual() {
               placeholder="e.g. 4"
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-n-hint${inputError ? ` ${id}-n-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-white px-3 py-1.5 text-sm ${
-                inputError ? 'border-fail' : 'border-line hover:border-muted'
+              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
+                inputError ? 'border-fail' : 'border-field hover:border-muted'
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>

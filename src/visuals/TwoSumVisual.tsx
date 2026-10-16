@@ -44,14 +44,14 @@ function parseInput(numbersText: string, targetText: string): { values: number[]
 }
 
 function cellStyle(frame: TwoSumFrame, index: number) {
-  if (frame.answer?.includes(index)) return 'border-pass bg-pass text-white'
-  if (frame.current === index) return 'border-warn bg-warn text-white'
+  if (frame.answer?.includes(index)) return 'border-pass bg-pass text-inverse'
+  if (frame.current === index) return 'border-warn bg-warn text-inverse'
   if (frame.current !== null && index < frame.current) return 'border-line bg-paper text-muted'
-  return 'border-muted bg-white text-ink'
+  return 'border-muted bg-surface text-ink'
 }
 
 function rowStyle(frame: TwoSumFrame, value: number) {
-  if (frame.foundAt !== null && frame.partner === value) return 'bg-pass text-white'
+  if (frame.foundAt !== null && frame.partner === value) return 'bg-pass text-inverse'
   if (frame.stored === value) return 'bg-accent-soft'
   return ''
 }
@@ -91,7 +91,7 @@ export default function TwoSumVisual() {
   }
 
   const describedBy = `${id}-hint${inputError ? ` ${id}-error` : ''}`
-  const inputClass = `block w-full min-w-0 rounded border bg-white px-3 py-1.5 text-sm ${inputError ? 'border-fail' : 'border-line hover:border-muted'}`
+  const inputClass = `block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${inputError ? 'border-fail' : 'border-field hover:border-muted'}`
 
   return (
     <div className="mt-4 max-w-2xl">
@@ -99,7 +99,7 @@ export default function TwoSumVisual() {
         <SpeedSelect playback={playback} />
       </div>
 
-      <p className="mt-4 inline-flex items-baseline gap-2 rounded border border-line bg-white px-3 py-2">
+      <p className="mt-4 inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-2">
         <span className="text-sm text-muted">Target</span>
         <span className="text-xl font-semibold tabular-nums">{current.target}</span>
       </p>
@@ -108,7 +108,7 @@ export default function TwoSumVisual() {
         <div
           role="img"
           aria-label={`Numbers: ${current.values.join(' ')}.`}
-          className="flex min-w-0 flex-1 flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-white p-3"
+          className="flex min-w-0 flex-1 flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
         >
           {current.values.map((value, index) => (
             <div key={index} className="flex min-w-10 flex-col items-center">
@@ -125,7 +125,7 @@ export default function TwoSumVisual() {
 
         <div className="sm:w-44">
           <p className="text-sm font-medium">Hash map</p>
-          <table aria-label={mapLabel(current)} className="mt-1 w-full border-collapse rounded border border-line bg-white text-sm tabular-nums">
+          <table aria-label={mapLabel(current)} className="mt-1 w-full border-collapse rounded border border-line bg-surface text-sm tabular-nums">
             <thead>
               <tr className="border-b border-line text-left text-xs text-muted">
                 <th scope="col" className="px-2 py-1 font-medium">Value</th>
@@ -168,7 +168,7 @@ export default function TwoSumVisual() {
       </ul>
 
       {current.answer && (
-        <p className="mt-3 inline-block rounded border border-line bg-white px-3 py-2 font-semibold">Answer: {current.answer.join(' ')}</p>
+        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">Answer: {current.answer.join(' ')}</p>
       )}
 
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">

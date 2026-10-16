@@ -114,9 +114,9 @@ const MODES = {
 }
 
 function itemStyle(frame: StackFrame, index: number) {
-  if (frame.current === index) return 'border-warn bg-warn text-white'
+  if (frame.current === index) return 'border-warn bg-warn text-inverse'
   const read = frame.current === null ? frame.result !== null : index < frame.current
-  return read ? 'border-line bg-paper text-muted' : 'border-muted bg-white text-ink'
+  return read ? 'border-line bg-paper text-muted' : 'border-muted bg-surface text-ink'
 }
 
 function stackLabel(frame: StackFrame) {
@@ -170,7 +170,7 @@ export default function StackVisual({ mode }: { mode: StackMode }) {
         <div
           role="img"
           aria-label={`${config.itemsLabel}: ${current.items.join(' ') || 'none'}.`}
-          className="flex min-w-0 flex-1 flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-white p-3"
+          className="flex min-w-0 flex-1 flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
         >
           {current.items.length === 0 && <p className="text-sm text-muted">No characters.</p>}
           {current.items.map((item, index) => (
@@ -186,10 +186,10 @@ export default function StackVisual({ mode }: { mode: StackMode }) {
                 <span
                   className={`mt-1 flex h-8 w-10 items-center justify-center rounded border text-sm tabular-nums motion-safe:transition-colors motion-safe:duration-300 ${
                     current.filled.includes(index)
-                      ? 'border-pass bg-pass text-white'
+                      ? 'border-pass bg-pass text-inverse'
                       : current.answers![index] === null
                         ? 'border-dashed border-line text-muted'
-                        : 'border-line bg-white text-ink'
+                        : 'border-line bg-surface text-ink'
                   }`}
                 >
                   {current.answers![index] ?? '?'}
@@ -240,7 +240,7 @@ export default function StackVisual({ mode }: { mode: StackMode }) {
       </ul>
 
       {current.result && (
-        <p className={`mt-3 inline-block rounded border border-line bg-white px-3 py-2 font-semibold ${current.failed ? 'text-fail' : 'text-ink'}`}>
+        <p className={`mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold ${current.failed ? 'text-fail' : 'text-ink'}`}>
           {current.result}
         </p>
       )}
@@ -270,8 +270,8 @@ export default function StackVisual({ mode }: { mode: StackMode }) {
               placeholder={config.placeholder}
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-input-hint${inputError ? ` ${id}-input-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-white px-3 py-1.5 font-mono text-sm ${
-                inputError ? 'border-fail' : 'border-line hover:border-muted'
+              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${
+                inputError ? 'border-fail' : 'border-field hover:border-muted'
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>

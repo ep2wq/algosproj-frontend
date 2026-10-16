@@ -3,7 +3,7 @@ import type { Speed, usePlayback } from './usePlayback'
 
 type Playback = ReturnType<typeof usePlayback>
 
-export const buttonClass = 'rounded border border-line bg-white px-3 py-1.5 text-sm hover:border-muted aria-disabled:cursor-not-allowed aria-disabled:opacity-50'
+export const buttonClass = 'rounded border border-line bg-surface px-3 py-1.5 text-sm hover:border-muted aria-disabled:cursor-not-allowed aria-disabled:opacity-50'
 
 export function SpeedSelect({ playback }: { playback: Playback }) {
   const id = useId()
@@ -16,7 +16,7 @@ export function SpeedSelect({ playback }: { playback: Playback }) {
         id={`${id}-speed`}
         value={playback.speed}
         onChange={(event) => playback.setSpeed(event.target.value as Speed)}
-        className="ml-2 rounded border border-line bg-white px-2 py-1 text-sm hover:border-muted"
+        className="ml-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
       >
         <option value="slow">Slow</option>
         <option value="normal">Normal</option>
@@ -35,7 +35,7 @@ export default function PlaybackControls({ playback }: { playback: Playback }) {
         type="button"
         onClick={togglePlay}
         aria-disabled={lastStep === 0}
-        className="min-w-20 rounded bg-accent px-4 py-1.5 text-sm font-medium text-white hover:bg-accent/90 aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
+        className="min-w-20 rounded bg-accent px-4 py-1.5 text-sm font-medium text-inverse hover:bg-accent/90 aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
       >
         {playing ? 'Pause' : 'Play'}
       </button>
