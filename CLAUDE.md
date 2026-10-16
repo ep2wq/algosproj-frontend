@@ -52,9 +52,9 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   for Programming basics, Core, OOP, Algorithm basics, Heaps, Greedy, both DP, Tries, Bits).
 - Next: AI hint UI once the backend has one.
 - Decisions: oxlint. Lint/build pass. A 401 with a token (not login/register/logout), or a
-  403 with `reason`, clears it; `/login` shows "session ended" or the ban. "(you)" is `is_you`. `user.role` (user/
-  admin/owner) only hides links and pages (`AdminRoute`, `OwnerRoute`); the backend enforces
-  it. `ConfirmAction` for destructive actions. Code blocks tabIndex 0. Frames: README.
+  403 with `reason`, clears it; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
+  `user.role` (user/admin/owner) only hides links and pages (`AdminRoute`, `OwnerRoute`); the
+  backend enforces it. `ConfirmAction` for destructive actions. Code blocks tabIndex 0.
 - Gotchas: Monaco loads from the jsDelivr CDN at runtime. Lint rules disabled on one line
   each: `react/only-export-components` (auth.tsx), `react/static-components`
   (`<Visual />`, which comes from a module-level map). Vite must run on port 5173 (CORS).
