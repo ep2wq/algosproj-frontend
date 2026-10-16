@@ -47,7 +47,37 @@ Put these in `.env` (copy `.env.example`; `.env` is not committed):
 - `VITE_API_URL` — base URL of the backend, default `http://localhost:8000`. The app
   calls `${VITE_API_URL}/api/...`.
 
-Only the auth token is stored in `localStorage`.
+Only the auth token and the theme choice are stored in `localStorage`.
+
+## Themes
+
+The "Theme" select in the main navigation offers System (the default), Light and Dark.
+System follows the OS setting (`prefers-color-scheme`) and changes live when the OS setting
+changes. The choice is stored in `localStorage` under `theme` (System removes the key); every
+read and write is in `try`/`catch`, so with storage blocked the app still loads and behaves as
+System.
+
+- `src/theme.ts` puts a `dark` class and `color-scheme` (so scrollbars, form controls and the
+  browser UI match) on `<html>`, and exposes `useTheme()`. A small inline script in
+  `index.html` does the same before the first paint, so a dark page never flashes light; keep
+  the two in step.
+- Colors are tokens in `src/index.css` (`paper`, `surface`, `ink`, `muted`, `line`, `field`,
+  `accent`, `accent-soft`, `pass`, `fail`, `warn`, `inverse`). `.dark` redefines them, so a
+  token class such as `bg-surface` or `text-muted` is right in both themes with no `dark:`
+  class. `surface` is the card and input background, `inverse` the text on a solid `accent`,
+  `pass`, `fail`, `warn` or `ink` fill, `field` the border of inputs and of shapes that must
+  stay visible, and `line` only for decorative borders.
+- Rule for new components: use the tokens. Any other color (a Tailwind palette color such as
+  the component colors in `src/visuals/componentColors.ts`, or `bg-amber-100` in the grid
+  visual) needs its own `dark:` class, which works through `@custom-variant dark` in
+  `src/index.css`. Never `white`, `black` or a hex value in a component.
+- Contrast rule, in both themes: normal text at least 4.5:1 against its background; large
+  text and things that carry meaning without text (input borders, icons, the shapes and
+  outlines of the visualizations) at least 3:1. Never tell states apart by color alone; keep
+  a label, symbol, shape or text cue. Check new colors with axe-core's `color-contrast` rule
+  in both themes.
+- The Monaco editor uses `vs` or `vs-dark` from `useTheme()`; switching restyles the open
+  editor without remounting it, so typed code stays.
 
 ## Pages
 

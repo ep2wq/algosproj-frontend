@@ -22,8 +22,11 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Visualizations: `src/visuals/index.ts` maps a lesson slug to a lazy component. Steps are
   pure "frames" functions; `usePlayback` + `PlaybackControls` are shared. No chart library.
 - `VITE_API_URL` in `.env` (default `http://localhost:8000`); a build arg in the Dockerfile.
-- Only the token goes in `localStorage`. Render server text as plain text; never use
-  `dangerouslySetInnerHTML`.
+- Only the token and `theme` go in `localStorage`. Render server text as plain text; never
+  use `dangerouslySetInnerHTML`.
+- Themes (README "Themes"): `src/theme.ts` + inline script in `index.html`. Use the tokens in
+  `src/index.css` (`.dark` swaps them); other colors need a `dark:` class; never white/black/
+  hex. Both themes: text 4.5:1, input borders and meaningful shapes 3:1, never color alone.
 - Commands: `npm install`, `npm run dev`, `npm run build`, `npm run lint`.
 
 ## Working rules
@@ -46,15 +49,12 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 ## Current status
 
-- Done: lessons, lesson page (Monaco, submit), auth, leaderboard, 404, `LessonBody`,
-  Challenges (`ProblemSolver` shared), admin `/admin/*` with users, audit log and activity
-  (`src/pages/admin/*`, README "Admin area"). Visualizations on 27 of 65 seed lessons (none
-  for Programming basics, Core, OOP, Algorithm basics, Heaps, Greedy, both DP, Tries, Bits).
-- Next: AI hint UI once the backend has one.
+- Done: lessons, Monaco + submit, auth, leaderboard, 404, Challenges (`ProblemSolver`), admin
+  `/admin/*` with users, audit log, activity; dark mode. Visualizations on 27 of 65 lessons.
+  Next: AI hint UI once the backend has one.
 - Decisions: oxlint. Lint/build pass. A 401 with a token (not login/register/logout), or a
   403 with `reason`, clears it; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
-  `user.role` (user/admin/owner) only hides links and pages (`AdminRoute`, `OwnerRoute`); the
-  backend enforces it. `ConfirmAction` for destructive actions. Code blocks tabIndex 0.
-- Gotchas: Monaco loads from the jsDelivr CDN at runtime. Lint rules disabled on one line
-  each: `react/only-export-components` (auth.tsx), `react/static-components`
-  (`<Visual />`, which comes from a module-level map). Vite must run on port 5173 (CORS).
+  `user.role` only hides links and pages (`AdminRoute`, `OwnerRoute`); the backend enforces
+  it. `ConfirmAction` for destructive actions. Code blocks tabIndex 0.
+- Gotchas: Monaco loads from jsDelivr at runtime. Vite must run on port 5173 (CORS). One-line
+  lint disables: `react/only-export-components` (auth.tsx), `react/static-components` (`<Visual />`).
