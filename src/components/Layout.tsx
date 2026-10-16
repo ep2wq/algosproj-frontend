@@ -1,13 +1,52 @@
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth'
-import { setThemeChoice, useTheme, type ThemeChoice } from '../theme'
+import { setLanguage } from '../i18n'
+import { toggleTheme, useTheme } from '../theme'
 
 const navLink = ({ isActive }: { isActive: boolean }) =>
   `rounded px-2 py-1 hover:text-accent ${isActive ? 'text-ink font-medium' : 'text-muted'}`
 
+// 44 px touch targets, like the rest of the header controls on a phone.
+const toggleClass = 'inline-flex min-h-11 min-w-11 items-center justify-center rounded px-2 text-muted hover:text-accent'
+
+// Shows the sun in dark mode and the moon in light mode: the theme a click switches to.
+function ThemeToggle() {
+  const { t } = useTranslation()
+  const { dark } = useTheme()
+
+  return (
+    <button type="button" onClick={toggleTheme} aria-label={dark ? t('theme.toLight') : t('theme.toDark')} className={toggleClass}>
+      {dark ? (
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+        </svg>
+      ) : (
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinejoin="round">
+          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
+        </svg>
+      )}
+    </button>
+  )
+}
+
+// Shows the name of the other language, in that language. The hidden hint says what the button
+// does, in the current language, so the accessible name contains the visible label.
+function LanguageToggle() {
+  const { t, i18n } = useTranslation()
+  const arabic = i18n.language === 'ar'
+
+  return (
+    <button type="button" onClick={() => setLanguage(arabic ? 'en' : 'ar')} className={toggleClass}>
+      <span lang={arabic ? 'en' : 'ar'}>{arabic ? 'English' : 'العربية'}</span>
+      <span className="sr-only"> {t('language.hint')}</span>
+    </button>
+  )
+}
+
 export default function Layout() {
   const { user, loading, logout } = useAuth()
-  const { choice: theme } = useTheme()
   const location = useLocation()
 
   return (
@@ -35,20 +74,9 @@ export default function Layout() {
           </nav>
           {/* Wraps on narrow screens, so the theme control never pushes the page sideways. */}
           <div className="ml-auto flex flex-wrap items-center gap-3 text-sm">
-            <div>
-              <label htmlFor="theme" className="sr-only">
-                Theme
-              </label>
-              <select
-                id="theme"
-                value={theme}
-                onChange={(event) => setThemeChoice(event.target.value as ThemeChoice)}
-                className="rounded border border-field bg-surface px-1.5 py-1 text-ink hover:border-muted"
-              >
-                <option value="system">System theme</option>
-                <option value="light">Light theme</option>
-                <option value="dark">Dark theme</option>
-              </select>
+            <div className="flex items-center">
+              <ThemeToggle />
+              <LanguageToggle />
             </div>
             {loading ? null : user ? (
               <>

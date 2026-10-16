@@ -1,29 +1,29 @@
 import { useSyncExternalStore } from 'react'
 
-// The theme: "system" (default) follows the OS, "light" and "dark" are fixed. The choice is the
-// only thing besides the token kept in localStorage. index.html applies it before the first paint
-// with the same rules, so keep the two in step.
-export type ThemeChoice = 'system' | 'light' | 'dark'
-
+// Light or dark. Until the user clicks the theme button the app follows the OS
+// (prefers-color-scheme) and updates live when it changes; after the first click the choice is
+// stored under `theme` ('light' or 'dark') and wins. Any other stored value, such as the old
+// 'system', is ignored. index.html applies the same rules before the first paint, so keep the
+// two in step.
 const KEY = 'theme'
 const media = window.matchMedia('(prefers-color-scheme: dark)')
 const listeners = new Set<() => void>()
 
-// Blocked or throwing storage behaves as "system".
-function readChoice(): ThemeChoice {
+// Blocked or throwing storage behaves as "follow the OS".
+function readStored(): 'light' | 'dark' | null {
   try {
     const value = localStorage.getItem(KEY)
     if (value === 'light' || value === 'dark') return value
   } catch {
     // Storage blocked.
   }
-  return 'system'
+  return null
 }
 
-let choice = readChoice()
+let stored = readStored()
 
 function isDark(): boolean {
-  return choice === 'dark' || (choice === 'system' && media.matches)
+  return stored === null ? media.matches : stored === 'dark'
 }
 
 // The dark class drives Tailwind's dark: variant and the dark token values in index.css;
@@ -35,14 +35,12 @@ function apply() {
   listeners.forEach((listener) => listener())
 }
 
-// The OS setting can change while the page is open; "system" follows it live.
 media.addEventListener('change', apply)
 
-export function setThemeChoice(next: ThemeChoice) {
-  choice = next
+export function toggleTheme() {
+  stored = isDark() ? 'light' : 'dark'
   try {
-    if (next === 'system') localStorage.removeItem(KEY)
-    else localStorage.setItem(KEY, next)
+    localStorage.setItem(KEY, stored)
   } catch {
     // Storage blocked: the choice lasts until the page is reloaded.
   }
@@ -56,9 +54,7 @@ function subscribe(listener: () => void) {
   }
 }
 
-// The current choice and whether dark is in effect (for the Monaco editor theme).
+// Whether dark is in effect (for the toggle icon and the Monaco editor theme).
 export function useTheme() {
-  const current = useSyncExternalStore(subscribe, () => choice)
-  const dark = useSyncExternalStore(subscribe, isDark)
-  return { choice: current, dark }
+  return { dark: useSyncExternalStore(subscribe, isDark) }
 }
