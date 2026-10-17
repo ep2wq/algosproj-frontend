@@ -88,7 +88,9 @@ is ignored and the OS is followed.
 The interface is English or Arabic (right to left). Course text (module, lesson and problem
 titles, lesson bodies, problem descriptions) comes from the backend in the app language, field
 by field: whatever is not translated yet comes in English and is shown left to right inside the
-Arabic page. Six modules are translated so far (see the backend README, "Content languages").
+Arabic page. The translated modules are listed in the backend's Arabic seed files
+(`database/seeders/data/ar/*.php`) and the `GLOSSARY.md` next to them (rules: the backend
+README, "Content languages").
 Visualizations stay English.
 
 - **Translation:** i18next with react-i18next, with the strings bundled (no network loading,
