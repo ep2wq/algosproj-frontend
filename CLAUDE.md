@@ -26,8 +26,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - English/Arabic (README "Languages"): every user-visible string through `t()`, in `en.json`
   and `ar.json` (six Arabic plural forms). Logical Tailwind classes only. Course text comes in
   the app language (`Accept-Language`) via `Content`: `body_lang`/`description_lang`, titles
-  `lang="auto"`, `` `inline code` `` LTR (`TextWithCode`). Content pages refetch on a language
-  switch without remounting the editor. Code, visuals, emails, `/admin/*` (with `*_ar` fields)
+  `lang="auto"`, `` `inline code` `` LTR, `~term~` = English `<bdi>` (`TextWithCode`). Pages
+  refetch on a language switch, editor kept. Code, visuals, emails, `/admin/*` (with `*_ar`)
   stay English LTR. Western digits; dates via `formatDateTime`. No letter-spacing on Arabic.
 - Commands: `npm install`, `npm run dev`, `npm run build`, `npm run lint`.
 
@@ -52,7 +52,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## Current status
 
 - Done: lessons, Monaco + submit, auth, leaderboard, 404, Challenges, admin, dark mode, Arabic
-  interface + content (phase 2, first module translated). Next: more modules, AI hint UI.
+  interface + content (6 modules translated, `~term~` markers). Next: more modules, AI hint UI.
 - Decisions: oxlint. Lint/build pass. A 401 with a token (not login/register/logout), or a
   403 with `reason`, clears it; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.

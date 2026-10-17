@@ -88,7 +88,8 @@ is ignored and the OS is followed.
 The interface is English or Arabic (right to left). Course text (module, lesson and problem
 titles, lesson bodies, problem descriptions) comes from the backend in the app language, field
 by field: whatever is not translated yet comes in English and is shown left to right inside the
-Arabic page. Only the first module is translated so far. Visualizations stay English.
+Arabic page. Six modules are translated so far (see the backend README, "Content languages").
+Visualizations stay English.
 
 - **Translation:** i18next with react-i18next, with the strings bundled (no network loading,
   no detector or backend plugins). `src/i18n.ts` sets it up; the strings are in
@@ -128,6 +129,14 @@ Arabic page. Only the first module is translated so far. Visualizations stay Eng
   stay LTR. `` `inline code` `` in lesson text and problem descriptions is a left-to-right
   isolate (`TextWithCode` in `LessonBody.tsx`), so expressions keep their order inside Arabic;
   it wraps as one unit, with a word joiner keeping touching punctuation on its line.
+- **English terms in Arabic text:** Arabic lessons keep technical terms in English as
+  `~term~` markers (`الـ~array~` for the definite form). `splitTerms` in `src/lessonText.ts`
+  finds them in prose only, after code blocks and inline code are split off, and `TextWithCode`
+  renders each as plain text in `<bdi dir="ltr" lang="en">` (English font, read in English by
+  screen readers), in paragraphs, list items, headings and problem descriptions. A marker starts
+  and ends with a non-space character; a lone or empty `~` stays as text. English text has no
+  markers, so it renders exactly as before. `~` is not mirrored, so it stays readable in the
+  right-to-left admin textarea.
 - **Numbers and dates:** always Western digits (0-9) in both languages, so they match the code
   and test data. Dates and times go through `formatDateTime()` in `src/i18n.ts`: Intl with
   the Gregorian calendar and Latin digits (`ar-u-ca-gregory-nu-latn` for Arabic), never Hijri.
@@ -166,8 +175,8 @@ Submit and result for one problem. The lesson page uses it through `ProblemCard`
 the problem heading) and the challenge page uses it directly; its `onPassed` callback lets
 the challenge page mark the problem solved without reloading.
 
-Lesson text is parsed by `src/lessonText.ts` (a pure function: headings `## `, `- ` lists,
-4-space-indented code blocks, paragraphs) and rendered by `src/components/LessonBody.tsx`
+Lesson text is parsed by `src/lessonText.ts` (pure functions: headings `## `, `- ` lists,
+4-space-indented code blocks, paragraphs, then `` `inline code` `` and `~term~` markers) and rendered by `src/components/LessonBody.tsx`
 as plain React elements. The format is documented in the backend README.
 
 ## Admin area
@@ -187,7 +196,8 @@ Activity for owners.
 - `/admin/modules/new`, `/admin/modules/:id`: title, Title (Arabic), slug, order.
 - `/admin/lessons/new?module=<id>`, `/admin/lessons/:id`: module, title, Title (Arabic), slug,
   order, and the body and Body (Arabic) in textareas, each with a live preview rendered by the
-  real `LessonBody` (the Arabic one with `lang="ar"`, right to left).
+  real `LessonBody` (the Arabic one with `lang="ar"`, right to left). A one-line hint under the
+  Arabic body explains the `~term~` marker.
 - `/admin/problems/new?lesson=<id>`, `/admin/problems/:id`: title, Title (Arabic), slug, lesson
   (or none for a standalone challenge), difficulty (points follow it, set by the server),
   description, Description (Arabic), and
