@@ -85,9 +85,10 @@ is ignored and the OS is followed.
 
 ## Languages (English and Arabic)
 
-The interface is English or Arabic (right to left). This is phase 1: only the interface is
-translated. Lesson text, problem text, module and topic titles and the visualizations stay
-English until later phases translate them.
+The interface is English or Arabic (right to left). Course text (module, lesson and problem
+titles, lesson bodies, problem descriptions) comes from the backend in the app language, field
+by field: whatever is not translated yet comes in English and is shown left to right inside the
+Arabic page. Only the first module is translated so far. Visualizations stay English.
 
 - **Translation:** i18next with react-i18next, with the strings bundled (no network loading,
   no detector or backend plugins). `src/i18n.ts` sets it up; the strings are in
@@ -113,11 +114,20 @@ English until later phases translate them.
   outputs, every visualization (wrapped in `lang="en" dir="ltr"`), email inputs (`dir="ltr"`)
   and the whole admin area (`/admin/*`, staff only, wrapped in `lang="en" dir="ltr"` in
   `AdminRoute`). Names people chose (header, leaderboard, admin lists) use `dir="auto"`.
-- **Content wrapper:** text from the course content (lesson body, lesson and problem titles,
-  problem descriptions, module and topic titles) is rendered through
-  `src/components/Content.tsx` with a `lang` prop (`LessonBody` takes one too). It is `"en"`
-  everywhere today; `"ar"` gives `dir="rtl"`. The next phases pass the language the API
-  returns. Lists, headings and paragraphs follow that direction; code blocks stay LTR.
+- **Course text language:** every request sends `Accept-Language` with the app language (`ar`
+  or `en`; admin requests always `en`). Both values are CORS-safelisted, so no extra preflight.
+  The home page, lesson page, Challenges list and challenge page load again when the language
+  changes, without a reload: the old text stays until the new arrives, so the editor is not
+  remounted and keeps the typed code, and the Challenges filters are kept. Search matches the
+  title as shown (Arabic where translated).
+- **Content wrapper:** course text is rendered through `src/components/Content.tsx` with a
+  `lang` prop (`LessonBody` takes one too). Lesson bodies and problem descriptions pass the
+  `body_lang` / `description_lang` the API returns (`"ar"` gives `dir="rtl"`, `"en"`
+  `dir="ltr"`); titles pass `"auto"`: `dir="auto"` and `lang` from the text (`src/textLang.ts`,
+  Arabic letters mean `ar`). Lists, headings and paragraphs follow that direction; code blocks
+  stay LTR. `` `inline code` `` in lesson text and problem descriptions is a left-to-right
+  isolate (`TextWithCode` in `LessonBody.tsx`), so expressions keep their order inside Arabic;
+  it wraps as one unit, with a word joiner keeping touching punctuation on its line.
 - **Numbers and dates:** always Western digits (0-9) in both languages, so they match the code
   and test data. Dates and times go through `formatDateTime()` in `src/i18n.ts`: Intl with
   the Gregorian calendar and Latin digits (`ar-u-ca-gregory-nu-latn` for Arabic), never Hijri.
@@ -174,13 +184,17 @@ Activity for owners.
 
 - `/admin` lists every module with its lessons and their problems, then the standalone
   problems, with Edit and Add links.
-- `/admin/modules/new`, `/admin/modules/:id`: title, slug, order.
-- `/admin/lessons/new?module=<id>`, `/admin/lessons/:id`: module, title, slug, order and the
-  body in a textarea with a live preview rendered by the real `LessonBody`.
-- `/admin/problems/new?lesson=<id>`, `/admin/problems/:id`: title, slug, lesson (or none for
-  a standalone challenge), difficulty (points follow it, set by the server), description, and
+- `/admin/modules/new`, `/admin/modules/:id`: title, Title (Arabic), slug, order.
+- `/admin/lessons/new?module=<id>`, `/admin/lessons/:id`: module, title, Title (Arabic), slug,
+  order, and the body and Body (Arabic) in textareas, each with a live preview rendered by the
+  real `LessonBody` (the Arabic one with `lang="ar"`, right to left).
+- `/admin/problems/new?lesson=<id>`, `/admin/problems/:id`: title, Title (Arabic), slug, lesson
+  (or none for a standalone challenge), difficulty (points follow it, set by the server),
+  description, Description (Arabic), and
   a table of test cases with add, edit, delete and a Hidden checkbox. Long tests are cut to
   200 characters in the table; the edit form shows them in full.
+- The Arabic fields are optional and right to left (`dir="rtl"`) inside the English admin
+  area; an empty one is saved as "not translated" and the site shows the English.
 
 - `/admin/users`: search by name or email, role and banned filters, 25 per page; search,
   filters and page are in the address. A table from `md` up, cards below; banned accounts
