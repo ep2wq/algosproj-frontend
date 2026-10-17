@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ApiError, getModules, type Module } from '../api'
 import Content from '../components/Content'
@@ -10,14 +11,17 @@ function trackName(track: string): string {
 }
 
 export default function HomePage() {
+  const { t } = useTranslation()
   const [modules, setModules] = useState<Module[] | null>(null)
-  const [error, setError] = useState('')
+  const [failure, setFailure] = useState<unknown>(null)
 
   useEffect(() => {
     getModules()
       .then(setModules)
-      .catch((err) => setError(err instanceof ApiError ? err.message : 'Could not load the lessons.'))
+      .catch(setFailure)
   }, [])
+
+  const error = failure === null ? '' : failure instanceof ApiError ? failure.message : t('home.loadFailed')
 
   // Modules arrive in sort_order; group them by track, keeping that order.
   const tracks = new Map<string, Module[]>()
@@ -27,21 +31,21 @@ export default function HomePage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-3xl font-semibold tracking-tight">Lessons</h1>
-      <p className="mt-2 text-muted">Pick a lesson, read it, then solve its problems in the editor.</p>
+      <h1 className="text-3xl font-semibold tracking-tight">{t('home.title')}</h1>
+      <p className="mt-2 text-muted">{t('home.intro')}</p>
 
       {error && (
         <p role="alert" className="mt-6 rounded border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
           {error}
         </p>
       )}
-      {!error && modules === null && <p className="mt-6 text-muted">Loading lessons...</p>}
-      {modules !== null && modules.length === 0 && <p className="mt-6 text-muted">No lessons have been published yet.</p>}
+      {!error && modules === null && <p className="mt-6 text-muted">{t('home.loading')}</p>}
+      {modules !== null && modules.length === 0 && <p className="mt-6 text-muted">{t('home.empty')}</p>}
 
       {[...tracks].map(([track, trackModules]) => (
         <section key={track} className="mt-10" aria-labelledby={`track-${track}`}>
           <h2 id={`track-${track}`} className="border-b border-line pb-2 text-xl font-semibold">
-            {trackName(track)}
+            {t(`home.tracks.${track}`, { defaultValue: trackName(track) })}
           </h2>
           {trackModules.map((module) => (
             <div key={module.id} className="mt-5">
@@ -49,7 +53,7 @@ export default function HomePage() {
                 <Content lang="en">{module.title}</Content>
               </h3>
               {module.lessons.length === 0 ? (
-                <p className="mt-1 text-sm text-muted">No lessons in this module yet.</p>
+                <p className="mt-1 text-sm text-muted">{t('home.moduleEmpty')}</p>
               ) : (
                 <ul className="mt-2 divide-y divide-line rounded border border-line bg-surface">
                   {module.lessons.map((lesson) => (

@@ -34,8 +34,10 @@ export default function Field({ id, label, type = 'text', value, onChange, autoC
         }`}
       />
       {hasError && (
-        <p id={errorId} className="mt-1 text-sm text-fail">
-          {errors!.join(' ')}
+        // Field errors come from the server, in English. The span keeps their punctuation in
+        // place on an Arabic page, while the line still starts at the page's start side.
+        <p id={errorId} lang="en" className="mt-1 text-sm text-fail">
+          <span dir="auto">{errors!.join(' ')}</span>
         </p>
       )}
     </div>

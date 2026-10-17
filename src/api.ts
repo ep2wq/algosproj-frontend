@@ -1,3 +1,5 @@
+import i18n from './i18n'
+
 const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '')
 const TOKEN_KEY = 'token'
 
@@ -280,6 +282,14 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (token) headers.Authorization = `Bearer ${token}`
 
+  // Messages the frontend decides by HTTP status are translated. The server only speaks English:
+  // in English its own message is shown as before; in Arabic a generic message for the status is
+  // shown instead, except field errors and the ban reason, which stay as the server sent them.
+  // The admin area is English only, so its requests always get English messages.
+  const admin = path.startsWith('/admin')
+  const t = i18n.getFixedT(admin ? 'en' : i18n.language)
+  const useServerText = admin || i18n.language !== 'ar'
+
   let response: Response
   try {
     response = await fetch(`${BASE_URL}/api${path}`, {
@@ -288,21 +298,21 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
       body: body === undefined ? undefined : JSON.stringify(body),
     })
   } catch {
-    throw new ApiError(0, "Can't reach the server")
+    throw new ApiError(0, t('errors.network'))
   }
 
   const data = await response.json().catch(() => null)
 
   if (response.ok) return data as T
 
-  const serverMessage = typeof data?.message === 'string' ? data.message : ''
+  const serverMessage = useServerText && typeof data?.message === 'string' ? data.message : ''
 
   // A dead token. Not for login and register (a wrong password keeps its own message) or logout
   // (the user is leaving anyway, and auth.tsx clears the token).
   if (response.status === 401 && token && !['/login', '/register', '/logout'].includes(path)) {
     setToken(null)
     onUnauthorized()
-    throw new ApiError(401, 'Your session has ended. Please log in again.')
+    throw new ApiError(401, t('errors.sessionEnded'))
   }
   // A banned account: {"message": "This account is banned.", "reason": ...}. With a token it is
   // handled like a 401; on login it is shown on the form.
@@ -314,15 +324,20 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     throw new ApiError(403, serverMessage, {}, data.reason)
   }
   if (response.status === 422) {
-    throw new ApiError(422, serverMessage || 'Check the highlighted fields.', data?.errors ?? {})
+    throw new ApiError(422, serverMessage || t('errors.validation'), data?.errors ?? {})
   }
   if (response.status === 429) {
-    throw new ApiError(429, 'Too many requests, wait a minute')
+    throw new ApiError(429, t('errors.tooMany'))
   }
   if (response.status === 503) {
-    throw new ApiError(503, serverMessage || 'The service is unavailable, try again shortly')
+    throw new ApiError(503, serverMessage || t('errors.unavailable'))
   }
-  throw new ApiError(response.status, serverMessage || `Request failed (${response.status})`)
+  const statusMessages: Record<number, string> = {
+    401: t('errors.invalidCredentials'),
+    403: t('errors.forbidden'),
+    404: t('errors.notFound'),
+  }
+  throw new ApiError(response.status, serverMessage || statusMessages[response.status] || t('errors.status', { status: response.status }))
 }
 
 export function register(name: string, email: string, password: string) {

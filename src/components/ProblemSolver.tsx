@@ -1,5 +1,6 @@
 import Editor from '@monaco-editor/react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ApiError, LANGUAGES, submitSolution, type Language, type Problem, type SubmitResult } from '../api'
 import { useAuth } from '../auth'
@@ -19,6 +20,7 @@ export default function ProblemSolver({
   examplesHeading?: 'h2' | 'h3'
   onPassed?: (result: SubmitResult) => void
 }) {
+  const { t } = useTranslation()
   const { user, refreshUser } = useAuth()
   const { dark } = useTheme()
   const location = useLocation()
@@ -46,7 +48,7 @@ export default function ProblemSolver({
       if (err instanceof ApiError && err.status === 422) {
         setError(Object.values(err.fieldErrors).flat().join(' ') || err.message)
       } else {
-        setError(err instanceof ApiError ? err.message : 'Something went wrong. Try again.')
+        setError(err instanceof ApiError ? err.message : t('common.genericError'))
       }
     } finally {
       setBusy(false)
@@ -61,18 +63,18 @@ export default function ProblemSolver({
 
       {problem.test_cases.length > 0 && (
         <div className="mt-5">
-          <ExamplesHeading className="text-sm font-medium">Examples</ExamplesHeading>
+          <ExamplesHeading className="text-sm font-medium">{t('solver.examples')}</ExamplesHeading>
           <div className="mt-2 grid gap-3 sm:grid-cols-2">
             {problem.test_cases.map((testCase) => (
               <dl key={testCase.id} className="grid grid-cols-2 gap-2 rounded border border-line bg-surface p-3">
                 <div className="min-w-0">
-                  <dt className="text-xs text-muted">Input</dt>
+                  <dt className="text-xs text-muted">{t('solver.input')}</dt>
                   <dd>
                     <pre dir="ltr" lang="en" className="mt-0.5 overflow-x-auto whitespace-pre-wrap font-mono text-sm">{testCase.input}</pre>
                   </dd>
                 </div>
                 <div className="min-w-0">
-                  <dt className="text-xs text-muted">Expected output</dt>
+                  <dt className="text-xs text-muted">{t('solver.expectedOutput')}</dt>
                   <dd>
                     <pre dir="ltr" lang="en" className="mt-0.5 overflow-x-auto whitespace-pre-wrap font-mono text-sm">{testCase.expected_output}</pre>
                   </dd>
@@ -85,7 +87,7 @@ export default function ProblemSolver({
 
       <div className="mt-6">
         <label htmlFor={languageId} className="text-sm font-medium">
-          Language
+          {t('solver.language')}
         </label>
         <select
           id={languageId}
@@ -110,9 +112,9 @@ export default function ProblemSolver({
           theme={dark ? 'vs-dark' : 'vs'}
           value={code[language]}
           onChange={(value) => setCode((current) => ({ ...current, [language]: value ?? '' }))}
-          loading={<p className="p-4 text-sm text-muted">Loading editor...</p>}
+          loading={<p className="p-4 text-sm text-muted">{t('solver.loadingEditor')}</p>}
           options={{
-            ariaLabel: `${LANGUAGE_LABELS[language]} code for ${problem.title}`,
+            ariaLabel: t('solver.editorLabel', { language: LANGUAGE_LABELS[language], title: problem.title }),
             minimap: { enabled: false },
             fontSize: 14,
             scrollBeyondLastLine: false,
@@ -121,7 +123,7 @@ export default function ProblemSolver({
           }}
         />
       </div>
-      {language === 'java' && <p className="mt-1 text-sm text-muted">The Java class must be named Main.</p>}
+      {language === 'java' && <p className="mt-1 text-sm text-muted">{t('solver.javaMain')}</p>}
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         {user ? (
@@ -131,7 +133,7 @@ export default function ProblemSolver({
             disabled={busy}
             className="rounded bg-accent px-4 py-2 font-medium text-inverse hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {busy ? 'Running tests...' : 'Submit'}
+            {busy ? t('solver.running') : t('solver.submit')}
           </button>
         ) : (
           <Link
@@ -139,12 +141,13 @@ export default function ProblemSolver({
             state={{ from: location }}
             className="rounded border border-accent px-4 py-2 font-medium text-accent hover:bg-accent-soft"
           >
-            Log in to submit
+            {t('solver.logInToSubmit')}
           </Link>
         )}
         {error && (
           <p role="alert" className="text-sm text-fail">
-            {error}
+            {/* May be the server's English field errors; dir="auto" keeps their punctuation in place. */}
+            <span dir="auto">{error}</span>
           </p>
         )}
       </div>

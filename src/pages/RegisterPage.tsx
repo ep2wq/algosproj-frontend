@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api'
 import { useAuth } from '../auth'
@@ -7,6 +8,7 @@ import Field from '../components/Field'
 import { redirectTarget } from '../redirect'
 
 export default function RegisterPage() {
+  const { t } = useTranslation()
   const { register } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -28,7 +30,7 @@ export default function RegisterPage() {
       if (err instanceof ApiError && err.status === 422) {
         setFieldErrors(err.fieldErrors)
       } else {
-        setError(err instanceof ApiError ? err.message : 'Something went wrong. Try again.')
+        setError(err instanceof ApiError ? err.message : t('common.genericError'))
       }
       setBusy(false)
     }
@@ -36,26 +38,26 @@ export default function RegisterPage() {
 
   return (
     <AuthForm
-      title="Create an account"
-      submitLabel="Create account"
-      busyLabel="Creating account..."
+      title={t('auth.registerTitle')}
+      submitLabel={t('auth.createAccount')}
+      busyLabel={t('auth.creatingAccount')}
       busy={busy}
       error={error}
       onSubmit={handleSubmit}
       footer={
         <>
-          Already have an account?{' '}
+          {t('auth.haveAccount')}{' '}
           <Link to="/login" state={location.state} className="rounded text-accent underline underline-offset-2">
-            Log in
+            {t('auth.logIn')}
           </Link>
         </>
       }
     >
-      <Field id="name" label="Name" value={name} onChange={setName} autoComplete="name" errors={fieldErrors.name} />
-      <Field id="email" label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" errors={fieldErrors.email} />
+      <Field id="name" label={t('auth.name')} value={name} onChange={setName} autoComplete="name" errors={fieldErrors.name} />
+      <Field id="email" label={t('auth.email')} type="email" value={email} onChange={setEmail} autoComplete="email" errors={fieldErrors.email} />
       <Field
         id="password"
-        label="Password (at least 8 characters)"
+        label={t('auth.newPassword')}
         type="password"
         value={password}
         onChange={setPassword}

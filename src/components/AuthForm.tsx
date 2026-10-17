@@ -5,7 +5,7 @@ type AuthFormProps = {
   submitLabel: string
   busyLabel: string
   busy: boolean
-  error: string
+  error: ReactNode
   onSubmit: () => void
   footer: ReactNode
   children: ReactNode

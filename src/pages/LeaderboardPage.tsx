@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ApiError, getLeaderboard, getMyRank, type LeaderboardEntry, type MyRank } from '../api'
 import { useAuth } from '../auth'
 
 export default function LeaderboardPage() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const [entries, setEntries] = useState<LeaderboardEntry[] | null>(null)
-  const [error, setError] = useState('')
+  const [failure, setFailure] = useState<unknown>(null)
   const [myRank, setMyRank] = useState<{ userId: number; rank: MyRank } | null>(null)
 
   useEffect(() => {
     getLeaderboard(50)
       .then(setEntries)
-      .catch((err) => setError(err instanceof ApiError ? err.message : 'Could not load the leaderboard.'))
+      .catch(setFailure)
   }, [])
 
   const userId = user?.id
@@ -32,16 +34,17 @@ export default function LeaderboardPage() {
   }, [userId, userPoints])
 
   const rank = user && myRank?.userId === user.id ? myRank.rank : null
+  const error = failure === null ? '' : failure instanceof ApiError ? failure.message : t('leaderboard.loadFailed')
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-3xl font-semibold tracking-tight">Leaderboard</h1>
-      <p className="mt-2 text-muted">Points come from solving problems. Each problem counts once.</p>
+      <h1 className="text-3xl font-semibold tracking-tight">{t('leaderboard.title')}</h1>
+      <p className="mt-2 text-muted">{t('leaderboard.intro')}</p>
 
       {rank && !entries?.some((entry) => entry.is_you) && (
         <p className="mt-4 rounded border border-line bg-surface px-3 py-2">
-          Your rank: <span className="font-semibold tabular-nums">{rank.rank}</span>{' '}
-          <span className="text-muted tabular-nums">({rank.points} {rank.points === 1 ? 'point' : 'points'})</span>
+          {t('leaderboard.yourRank')} <span className="font-semibold tabular-nums">{rank.rank}</span>{' '}
+          <span className="text-muted tabular-nums">{t('leaderboard.rankPoints', { count: rank.points })}</span>
         </p>
       )}
 
@@ -50,9 +53,9 @@ export default function LeaderboardPage() {
           {error}
         </p>
       )}
-      {!error && entries === null && <p className="mt-6 text-muted">Loading leaderboard...</p>}
+      {!error && entries === null && <p className="mt-6 text-muted">{t('leaderboard.loading')}</p>}
       {entries !== null && entries.length === 0 && (
-        <p className="mt-6 text-muted">Nobody has scored yet. Solve a problem to take first place.</p>
+        <p className="mt-6 text-muted">{t('leaderboard.empty')}</p>
       )}
 
       {entries !== null && entries.length > 0 && (
@@ -61,13 +64,13 @@ export default function LeaderboardPage() {
             <thead className="border-b border-line text-sm text-muted">
               <tr>
                 <th scope="col" className="w-20 px-4 py-2 font-medium">
-                  Rank
+                  {t('leaderboard.rank')}
                 </th>
                 <th scope="col" className="px-4 py-2 font-medium">
-                  Name
+                  {t('leaderboard.name')}
                 </th>
                 <th scope="col" className="px-4 py-2 text-end font-medium">
-                  Points
+                  {t('leaderboard.points')}
                 </th>
               </tr>
             </thead>
@@ -81,7 +84,7 @@ export default function LeaderboardPage() {
                     <td className="px-4 py-2">
                       {/* Names can be Arabic or English; dir="auto" lets each show in its own direction. */}
                       <span dir="auto">{entry.name}</span>
-                      {isMe && <span className="ms-2 text-sm text-accent">(you)</span>}
+                      {isMe && <span className="ms-2 text-sm text-accent">{t('leaderboard.you')}</span>}
                     </td>
                     <td className="px-4 py-2 text-end tabular-nums">{entry.points}</td>
                   </tr>

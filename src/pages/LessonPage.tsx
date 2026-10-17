@@ -1,4 +1,5 @@
 import { Suspense, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError, getLesson, type Lesson } from '../api'
 import Content from '../components/Content'
@@ -8,9 +9,10 @@ import { VISUALS } from '../visuals'
 
 // Loaded with React.lazy, so Monaco stays out of the first bundle.
 export default function LessonPage() {
+  const { t } = useTranslation()
   const { slug = '' } = useParams()
   // The loaded result is stored with its slug, so a stale lesson never shows for a new URL.
-  const [loaded, setLoaded] = useState<{ slug: string; lesson?: Lesson; error?: string } | null>(null)
+  const [loaded, setLoaded] = useState<{ slug: string; lesson?: Lesson; failure?: unknown } | null>(null)
 
   useEffect(() => {
     let active = true
@@ -19,12 +21,7 @@ export default function LessonPage() {
         if (active) setLoaded({ slug, lesson })
       })
       .catch((err) => {
-        if (!active) return
-        if (err instanceof ApiError && err.status === 404) {
-          setLoaded({ slug, error: "This lesson doesn't exist." })
-        } else {
-          setLoaded({ slug, error: err instanceof ApiError ? err.message : 'Could not load the lesson.' })
-        }
+        if (active) setLoaded({ slug, failure: err })
       })
     return () => {
       active = false
@@ -33,7 +30,15 @@ export default function LessonPage() {
 
   const current = loaded?.slug === slug ? loaded : null
   const lesson = current?.lesson ?? null
-  const error = current?.error ?? ''
+  const failure = current?.failure
+  const error =
+    failure === undefined
+      ? ''
+      : failure instanceof ApiError && failure.status === 404
+        ? t('lesson.notFound')
+        : failure instanceof ApiError
+          ? failure.message
+          : t('lesson.loadFailed')
   const Visual = VISUALS.get(slug)
 
   if (error) {
@@ -43,18 +48,18 @@ export default function LessonPage() {
           {error}
         </p>
         <Link to="/" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
-          Back to the lessons
+          {t('lesson.backToLessons')}
         </Link>
       </div>
     )
   }
 
-  if (!lesson) return <p className="text-muted">Loading lesson...</p>
+  if (!lesson) return <p className="text-muted">{t('lesson.loading')}</p>
 
   return (
     <div>
       <Link to="/" className="rounded text-sm text-muted hover:text-accent">
-        All lessons
+        {t('lesson.allLessons')}
       </Link>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">
         <Content lang="en">{lesson.title}</Content>
@@ -64,9 +69,9 @@ export default function LessonPage() {
       {Visual && (
         <section className="mt-10 border-t border-line pt-8" aria-labelledby="visual-heading">
           <h2 id="visual-heading" className="text-xl font-semibold">
-            Visualization
+            {t('lesson.visualization')}
           </h2>
-          <Suspense fallback={<p className="mt-4 text-sm text-muted">Loading visualization...</p>}>
+          <Suspense fallback={<p className="mt-4 text-sm text-muted">{t('lesson.loadingVisualization')}</p>}>
             {/* English and left-to-right in both interface languages (drawing, controls, step text). */}
             <div lang="en" dir="ltr">
               {/* Looked up from a module-level map, so it is the same component on every render. */}

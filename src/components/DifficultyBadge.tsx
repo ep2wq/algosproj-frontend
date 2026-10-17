@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 // The difficulty as a word with a color, so it never depends on color alone.
 const STYLES: Record<string, string> = {
   easy: 'bg-pass/10 text-pass border-pass/30',
@@ -6,11 +8,12 @@ const STYLES: Record<string, string> = {
 }
 
 export default function DifficultyBadge({ difficulty }: { difficulty: string }) {
+  const { t } = useTranslation()
   return (
     <span
-      className={`inline-block rounded border px-1.5 py-0.5 text-xs font-medium capitalize ${STYLES[difficulty] ?? 'border-line text-muted'}`}
+      className={`inline-block rounded border px-1.5 py-0.5 text-xs font-medium ${STYLES[difficulty] ?? 'border-line text-muted'}`}
     >
-      {difficulty}
+      {t(`difficulty.${difficulty}`, { defaultValue: difficulty })}
     </span>
   )
 }

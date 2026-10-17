@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Route, Routes } from 'react-router-dom'
 import AdminRoute from './components/AdminRoute'
 import Layout from './components/Layout'
@@ -23,6 +24,7 @@ const LessonPage = lazy(() => import('./pages/LessonPage'))
 const ChallengePage = lazy(() => import('./pages/ChallengePage'))
 
 function App() {
+  const { t } = useTranslation()
   return (
     <Routes>
       <Route element={<Layout />}>
@@ -30,7 +32,7 @@ function App() {
         <Route
           path="/lessons/:slug"
           element={
-            <Suspense fallback={<p className="text-muted">Loading lesson...</p>}>
+            <Suspense fallback={<p className="text-muted">{t('lesson.loading')}</p>}>
               <LessonPage />
             </Suspense>
           }
@@ -39,7 +41,7 @@ function App() {
         <Route
           path="/challenges/:slug"
           element={
-            <Suspense fallback={<p className="text-muted">Loading challenge...</p>}>
+            <Suspense fallback={<p className="text-muted">{t('challenge.loading')}</p>}>
               <ChallengePage />
             </Suspense>
           }

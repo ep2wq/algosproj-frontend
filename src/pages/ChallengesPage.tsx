@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ApiError, getChallenges, type ChallengeSummary } from '../api'
 import { useAuth } from '../auth'
@@ -12,20 +13,22 @@ const STANDALONE = '-standalone'
 const controlClass = 'mt-1 w-full rounded border border-field bg-surface px-2 py-1.5 text-sm hover:border-muted'
 
 function SolvedMark({ solved }: { solved: boolean }) {
+  const { t } = useTranslation()
   return solved ? (
     <span className="text-pass">
       <span aria-hidden="true">✓</span>
-      <span className="sr-only">Solved</span>
+      <span className="sr-only">{t('common.solved')}</span>
     </span>
   ) : (
-    <span className="sr-only">Not solved</span>
+    <span className="sr-only">{t('common.notSolved')}</span>
   )
 }
 
 export default function ChallengesPage() {
+  const { t } = useTranslation()
   const { user, loading } = useAuth()
   const [challenges, setChallenges] = useState<ChallengeSummary[] | null>(null)
-  const [error, setError] = useState('')
+  const [failure, setFailure] = useState<unknown>(null)
   const [search, setSearch] = useState('')
   const [difficulty, setDifficulty] = useState('')
   const [topic, setTopic] = useState('')
@@ -41,12 +44,14 @@ export default function ChallengesPage() {
         if (active) setChallenges(list)
       })
       .catch((err) => {
-        if (active) setError(err instanceof ApiError ? err.message : 'Could not load the challenges.')
+        if (active) setFailure(err)
       })
     return () => {
       active = false
     }
   }, [loading, userId])
+
+  const error = failure === null ? '' : failure instanceof ApiError ? failure.message : t('challenges.loadFailed')
 
   // Topics in the order the list arrives (module order).
   const topics = new Map<string, string>()
@@ -75,23 +80,23 @@ export default function ChallengesPage() {
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-3xl font-semibold tracking-tight">Challenges</h1>
-      <p className="mt-2 text-muted">Every problem in one place. Solving one here or in its lesson counts once.</p>
+      <h1 className="text-3xl font-semibold tracking-tight">{t('challenges.title')}</h1>
+      <p className="mt-2 text-muted">{t('challenges.intro')}</p>
 
       {error && (
         <p role="alert" className="mt-6 rounded border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
           {error}
         </p>
       )}
-      {!error && challenges === null && <p className="mt-6 text-muted">Loading challenges...</p>}
-      {challenges !== null && challenges.length === 0 && <p className="mt-6 text-muted">No challenges have been published yet.</p>}
+      {!error && challenges === null && <p className="mt-6 text-muted">{t('challenges.loading')}</p>}
+      {challenges !== null && challenges.length === 0 && <p className="mt-6 text-muted">{t('challenges.empty')}</p>}
 
       {challenges !== null && challenges.length > 0 && (
         <>
           <div className={`mt-6 grid gap-3 sm:grid-cols-2 ${user ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
             <div>
               <label htmlFor="challenge-search" className="text-sm font-medium">
-                Search by title
+                {t('challenges.search')}
               </label>
               <input
                 id="challenge-search"
@@ -103,7 +108,7 @@ export default function ChallengesPage() {
             </div>
             <div>
               <label htmlFor="challenge-difficulty" className="text-sm font-medium">
-                Difficulty
+                {t('challenges.difficulty')}
               </label>
               <select
                 id="challenge-difficulty"
@@ -111,17 +116,17 @@ export default function ChallengesPage() {
                 onChange={(event) => setDifficulty(event.target.value)}
                 className={controlClass}
               >
-                <option value="">All difficulties</option>
+                <option value="">{t('challenges.allDifficulties')}</option>
                 {DIFFICULTIES.map((option) => (
                   <option key={option} value={option}>
-                    {option.charAt(0).toUpperCase() + option.slice(1)}
+                    {t(`difficulty.${option}`)}
                   </option>
                 ))}
               </select>
             </div>
             <div>
               <label htmlFor="challenge-topic" className="text-sm font-medium">
-                Topic
+                {t('challenges.topic')}
               </label>
               <select
                 id="challenge-topic"
@@ -129,19 +134,19 @@ export default function ChallengesPage() {
                 onChange={(event) => setTopic(event.target.value)}
                 className={controlClass}
               >
-                <option value="">All topics</option>
+                <option value="">{t('challenges.allTopics')}</option>
                 {[...topics].map(([slug, title]) => (
                   <option key={slug} value={slug} lang="en">
                     {title}
                   </option>
                 ))}
-                {hasStandalone && <option value={STANDALONE}>No topic</option>}
+                {hasStandalone && <option value={STANDALONE}>{t('common.noTopic')}</option>}
               </select>
             </div>
             {user && (
               <div>
                 <label htmlFor="challenge-status" className="text-sm font-medium">
-                  Status
+                  {t('challenges.status')}
                 </label>
                 <select
                   id="challenge-status"
@@ -149,9 +154,9 @@ export default function ChallengesPage() {
                   onChange={(event) => setStatus(event.target.value)}
                   className={controlClass}
                 >
-                  <option value="">All</option>
-                  <option value="solved">Solved</option>
-                  <option value="unsolved">Unsolved</option>
+                  <option value="">{t('challenges.all')}</option>
+                  <option value="solved">{t('common.solved')}</option>
+                  <option value="unsolved">{t('challenges.unsolved')}</option>
                 </select>
               </div>
             )}
@@ -159,7 +164,7 @@ export default function ChallengesPage() {
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <p aria-live="polite" className="text-sm text-muted tabular-nums">
-              Showing {shown.length} of {challenges.length}
+              {t('challenges.showing', { shown: shown.length, count: challenges.length })}
             </p>
             <button
               type="button"
@@ -167,13 +172,13 @@ export default function ChallengesPage() {
               disabled={!filtered}
               className="rounded border border-line bg-surface px-3 py-1 text-sm hover:border-muted disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Clear filters
+              {t('challenges.clearFilters')}
             </button>
           </div>
 
           {shown.length === 0 ? (
             <p className="mt-4 rounded border border-line bg-surface px-4 py-6 text-center text-muted">
-              No challenges match these filters.
+              {t('challenges.noMatch')}
             </p>
           ) : (
             <>
@@ -189,8 +194,8 @@ export default function ChallengesPage() {
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
                       <DifficultyBadge difficulty={challenge.difficulty} />
-                      <span className="tabular-nums">{challenge.points} points</span>
-                      {challenge.topic ? <Content lang="en">{challenge.topic.title}</Content> : <span>No topic</span>}
+                      <span className="tabular-nums">{t('common.points', { count: challenge.points })}</span>
+                      {challenge.topic ? <Content lang="en">{challenge.topic.title}</Content> : <span>{t('common.noTopic')}</span>}
                     </div>
                   </li>
                 ))}
@@ -202,20 +207,20 @@ export default function ChallengesPage() {
                     <tr>
                       {user && (
                         <th scope="col" className="w-20 px-4 py-2 font-medium">
-                          Status
+                          {t('challenges.status')}
                         </th>
                       )}
                       <th scope="col" className="px-4 py-2 font-medium">
-                        Title
+                        {t('challenges.columnTitle')}
                       </th>
                       <th scope="col" className="px-4 py-2 font-medium">
-                        Topic
+                        {t('challenges.topic')}
                       </th>
                       <th scope="col" className="px-4 py-2 font-medium">
-                        Difficulty
+                        {t('challenges.difficulty')}
                       </th>
                       <th scope="col" className="px-4 py-2 text-end font-medium">
-                        Points
+                        {t('challenges.columnPoints')}
                       </th>
                     </tr>
                   </thead>
@@ -233,7 +238,7 @@ export default function ChallengesPage() {
                           </Link>
                         </td>
                         <td className="px-4 py-2 text-sm text-muted">
-                          {challenge.topic ? <Content lang="en">{challenge.topic.title}</Content> : 'No topic'}
+                          {challenge.topic ? <Content lang="en">{challenge.topic.title}</Content> : t('common.noTopic')}
                         </td>
                         <td className="px-4 py-2">
                           <DifficultyBadge difficulty={challenge.difficulty} />

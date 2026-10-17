@@ -46,6 +46,7 @@ function LanguageToggle() {
 }
 
 export default function Layout() {
+  const { t } = useTranslation()
   const { user, loading, logout } = useAuth()
   const location = useLocation()
 
@@ -57,23 +58,23 @@ export default function Layout() {
           <Link to="/" lang="en" className="rounded text-lg font-semibold tracking-tight text-ink">
             AlgosProj
           </Link>
-          <nav aria-label="Main" className="flex items-center gap-1 text-sm">
+          <nav aria-label={t('nav.main')} className="flex items-center gap-1 text-sm">
             <NavLink to="/" end className={navLink}>
-              Lessons
+              {t('nav.lessons')}
             </NavLink>
             <NavLink to="/challenges" className={navLink}>
-              Challenges
+              {t('nav.challenges')}
             </NavLink>
             <NavLink to="/leaderboard" className={navLink}>
-              Leaderboard
+              {t('nav.leaderboard')}
             </NavLink>
             {(user?.role === 'admin' || user?.role === 'owner') && (
               <NavLink to="/admin" className={navLink}>
-                Admin
+                {t('nav.admin')}
               </NavLink>
             )}
           </nav>
-          {/* Wraps on narrow screens, so the theme control never pushes the page sideways. */}
+          {/* Wraps on narrow screens, so the toggles never push the page sideways. */}
           <div className="ms-auto flex flex-wrap items-center gap-3 text-sm">
             <div className="flex items-center">
               <ThemeToggle />
@@ -84,7 +85,7 @@ export default function Layout() {
                 <span className="text-ink">
                   <span dir="auto">{user.name}</span>{' '}
                   <span className="ms-1 rounded bg-accent-soft px-1.5 py-0.5 text-accent tabular-nums">
-                    {user.points} {user.points === 1 ? 'point' : 'points'}
+                    {t('header.points', { count: user.points })}
                   </span>
                 </span>
                 <button
@@ -92,7 +93,7 @@ export default function Layout() {
                   onClick={() => logout()}
                   className="rounded px-2 py-1 text-muted hover:text-accent"
                 >
-                  Log out
+                  {t('nav.logOut')}
                 </button>
               </>
             ) : (
@@ -102,14 +103,14 @@ export default function Layout() {
                   state={{ from: location }}
                   className="rounded px-2 py-1 text-muted hover:text-accent"
                 >
-                  Log in
+                  {t('nav.logIn')}
                 </Link>
                 <Link
                   to="/register"
                   state={{ from: location }}
                   className="rounded border border-accent px-3 py-1 text-accent hover:bg-accent-soft"
                 >
-                  Register
+                  {t('nav.register')}
                 </Link>
               </>
             )}

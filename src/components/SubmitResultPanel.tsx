@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { SubmitResult, SubmitStatus, TestResult, VisibleTestResult } from '../api'
 
 const STATUS_STYLES: Record<SubmitStatus, string> = {
@@ -7,54 +8,58 @@ const STATUS_STYLES: Record<SubmitStatus, string> = {
   timeout: 'bg-warn/10 text-warn border-warn/30',
 }
 
-const STATUS_LABELS: Record<SubmitStatus, string> = {
-  passed: 'Passed',
-  failed: 'Failed',
-  error: 'Error',
-  timeout: 'Timed out',
-}
-
 function isVisible(result: TestResult): result is VisibleTestResult {
   return 'input' in result
 }
 
+// Program text is always left to right; "(empty)" is interface text, so it keeps the page language.
 function Output({ label, value }: { label: string; value: string | null }) {
+  const { t } = useTranslation()
   return (
     <div className="min-w-0">
       <dt className="text-xs text-muted">{label}</dt>
       <dd>
-        <pre dir="ltr" lang="en" className="mt-0.5 overflow-x-auto whitespace-pre-wrap break-words rounded bg-paper px-2 py-1 font-mono text-sm">
-          {value === null || value === '' ? <span className="text-muted">(empty)</span> : value}
-        </pre>
+        {value === null || value === '' ? (
+          <p className="mt-0.5 rounded bg-paper px-2 py-1 text-sm text-muted">{t('result.empty')}</p>
+        ) : (
+          <pre dir="ltr" lang="en" className="mt-0.5 overflow-x-auto whitespace-pre-wrap break-words rounded bg-paper px-2 py-1 font-mono text-sm">
+            {value}
+          </pre>
+        )}
       </dd>
     </div>
   )
 }
 
 export default function SubmitResultPanel({ result }: { result: SubmitResult }) {
+  const { t } = useTranslation()
+  const outcome = (passed: boolean) => (
+    <span className={passed ? 'text-pass' : 'text-fail'}>{passed ? t('result.passed') : t('result.failed')}</span>
+  )
+
   return (
-    <section aria-label="Submission result" aria-live="polite" className="mt-4 rounded border border-line bg-surface p-4">
+    <section aria-label={t('result.label')} aria-live="polite" className="mt-4 rounded border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <span className={`rounded border px-2 py-0.5 text-sm font-semibold ${STATUS_STYLES[result.status]}`}>
-          {STATUS_LABELS[result.status]}
+          {t(`result.status.${result.status}`)}
         </span>
         <span className="text-sm text-ink tabular-nums">
-          {result.passed_count} of {result.total_count} tests passed
+          {t('result.testsPassed', { passed: result.passed_count, count: result.total_count })}
         </span>
         {result.runtime_ms !== null && (
-          <span className="text-sm text-muted tabular-nums">{result.runtime_ms} ms</span>
+          <span className="text-sm text-muted tabular-nums">{t('result.milliseconds', { ms: result.runtime_ms })}</span>
         )}
         {result.points_awarded > 0 && (
-          <span className="text-sm font-semibold text-pass">+{result.points_awarded} points</span>
+          <span className="text-sm font-semibold text-pass">{t('result.pointsAwarded', { count: result.points_awarded })}</span>
         )}
         {result.status === 'passed' && result.points_awarded === 0 && (
-          <span className="text-sm text-muted">Already solved, so no new points.</span>
+          <span className="text-sm text-muted">{t('result.alreadySolved')}</span>
         )}
       </div>
 
       {result.compile_error && (
         <div className="mt-4">
-          <h4 className="text-sm font-medium text-fail">Compile error</h4>
+          <h4 className="text-sm font-medium text-fail">{t('result.compileError')}</h4>
           <pre dir="ltr" lang="en" className="mt-1 overflow-x-auto whitespace-pre-wrap rounded bg-paper p-3 font-mono text-sm text-ink">
             {result.compile_error}
           </pre>
@@ -71,12 +76,12 @@ export default function SubmitResultPanel({ result }: { result: SubmitResult }) 
               {isVisible(test) ? (
                 <>
                   <p className="text-sm font-medium">
-                    Test {index + 1}: <span className={test.passed ? 'text-pass' : 'text-fail'}>{test.passed ? 'passed' : 'failed'}</span>
+                    {t('result.test', { number: index + 1 })} {outcome(test.passed)}
                   </p>
                   <dl className="mt-2 grid gap-2 sm:grid-cols-3">
-                    <Output label="Input" value={test.input} />
-                    <Output label="Expected" value={test.expected} />
-                    <Output label="Actual" value={test.actual} />
+                    <Output label={t('result.input')} value={test.input} />
+                    <Output label={t('result.expected')} value={test.expected} />
+                    <Output label={t('result.actual')} value={test.actual} />
                   </dl>
                   {test.error && (
                     <pre dir="ltr" lang="en" className="mt-2 overflow-x-auto whitespace-pre-wrap rounded bg-fail/5 p-2 font-mono text-sm text-fail">
@@ -86,7 +91,7 @@ export default function SubmitResultPanel({ result }: { result: SubmitResult }) 
                 </>
               ) : (
                 <p className="text-sm">
-                  Hidden test: <span className={test.passed ? 'text-pass' : 'text-fail'}>{test.passed ? 'passed' : 'failed'}</span>
+                  {t('result.hiddenTest')} {outcome(test.passed)}
                 </p>
               )}
             </li>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError, getChallenge, type Challenge } from '../api'
 import { useAuth } from '../auth'
@@ -8,10 +9,11 @@ import ProblemSolver from '../components/ProblemSolver'
 
 // Loaded with React.lazy, like the lesson page, so Monaco stays out of the first bundle.
 export default function ChallengePage() {
+  const { t } = useTranslation()
   const { slug = '' } = useParams()
   const { user, loading } = useAuth()
   // The loaded result is stored with its slug, so a stale challenge never shows for a new URL.
-  const [loaded, setLoaded] = useState<{ slug: string; challenge?: Challenge; error?: string } | null>(null)
+  const [loaded, setLoaded] = useState<{ slug: string; challenge?: Challenge; failure?: unknown } | null>(null)
   // Set after a passing submit, so the page shows solved without loading again.
   const [solvedNow, setSolvedNow] = useState<string | null>(null)
 
@@ -25,12 +27,7 @@ export default function ChallengePage() {
         if (active) setLoaded({ slug, challenge })
       })
       .catch((err) => {
-        if (!active) return
-        if (err instanceof ApiError && err.status === 404) {
-          setLoaded({ slug, error: "This challenge doesn't exist." })
-        } else {
-          setLoaded({ slug, error: err instanceof ApiError ? err.message : 'Could not load the challenge.' })
-        }
+        if (active) setLoaded({ slug, failure: err })
       })
     return () => {
       active = false
@@ -39,7 +36,15 @@ export default function ChallengePage() {
 
   const current = loaded?.slug === slug ? loaded : null
   const challenge = current?.challenge ?? null
-  const error = current?.error ?? ''
+  const failure = current?.failure
+  const error =
+    failure === undefined
+      ? ''
+      : failure instanceof ApiError && failure.status === 404
+        ? t('challenge.notFound')
+        : failure instanceof ApiError
+          ? failure.message
+          : t('challenge.loadFailed')
 
   if (error) {
     return (
@@ -48,36 +53,37 @@ export default function ChallengePage() {
           {error}
         </p>
         <Link to="/challenges" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
-          Back to challenges
+          {t('challenge.back')}
         </Link>
       </div>
     )
   }
 
-  if (!challenge) return <p className="text-muted">Loading challenge...</p>
+  if (!challenge) return <p className="text-muted">{t('challenge.loading')}</p>
 
   const solved = user !== null && (challenge.solved || solvedNow === challenge.slug)
 
   return (
     <div>
       <Link to="/challenges" className="rounded text-sm text-muted hover:text-accent">
-        Back to challenges
+        {t('challenge.back')}
       </Link>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">
         <Content lang="en">{challenge.title}</Content>
       </h1>
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-        {challenge.topic ? <Content lang="en">{challenge.topic.title}</Content> : <span>No topic</span>}
+        {challenge.topic ? <Content lang="en">{challenge.topic.title}</Content> : <span>{t('common.noTopic')}</span>}
         <DifficultyBadge difficulty={challenge.difficulty} />
-        <span className="tabular-nums">{challenge.points} points</span>
+        <span className="tabular-nums">{t('common.points', { count: challenge.points })}</span>
         {solved && (
           <span className="rounded border border-pass/30 bg-pass/10 px-1.5 py-0.5 text-xs font-medium text-pass">
-            <span aria-hidden="true">✓ </span>Solved
+            <span aria-hidden="true">✓ </span>
+            {t('common.solved')}
           </span>
         )}
         {challenge.lesson_slug && (
           <Link to={`/lessons/${challenge.lesson_slug}`} className="rounded text-accent underline underline-offset-2">
-            Open the lesson
+            {t('challenge.openLesson')}
           </Link>
         )}
       </div>
