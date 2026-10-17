@@ -195,7 +195,7 @@ export default function QueensVisual() {
               )
             })}
           </ol>
-          <p className="mt-2 text-xs text-muted">✗ attacked, skipped. ♛ queen placed. ↩ queen removed (backtrack). Faded rows belong to a branch already abandoned.</p>
+          <p className="mt-2 text-xs text-muted">✗ attacked, skipped. ♛ queen placed. ↩ queen removed (backtrack). Abandoned rows belong to a branch already abandoned.</p>
         </div>
       </div>
 
