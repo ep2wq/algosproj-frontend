@@ -47,20 +47,24 @@ Put these in `.env` (copy `.env.example`; `.env` is not committed):
 - `VITE_API_URL` — base URL of the backend, default `http://localhost:8000`. The app
   calls `${VITE_API_URL}/api/...`.
 
-Only the auth token and the theme choice are stored in `localStorage`.
+Only the auth token, the theme choice (`theme`) and the language choice (`lang`) are stored
+in `localStorage`, every read and write in `try`/`catch`. With storage blocked the app still
+loads (logged out) and follows the OS theme and the browser language; both toggles still
+switch the current page view. Neither choice is sent to the server.
 
 ## Themes
 
-The "Theme" select in the main navigation offers System (the default), Light and Dark.
-System follows the OS setting (`prefers-color-scheme`) and changes live when the OS setting
-changes. The choice is stored in `localStorage` under `theme` (System removes the key); every
-read and write is in `try`/`catch`, so with storage blocked the app still loads and behaves as
-System.
+The theme button (sun and moon icon, a real `<button>`, 44 px) in the main navigation switches
+between Light and Dark; its accessible name says what it will do ("Switch to dark theme").
+Until it is clicked, the app follows the OS setting (`prefers-color-scheme`) and changes live
+when the OS setting changes. After the first click the choice is stored under `theme`
+(`light` or `dark`) and wins from then on. Any other stored value, such as an old `system`,
+is ignored and the OS is followed.
 
 - `src/theme.ts` puts a `dark` class and `color-scheme` (so scrollbars, form controls and the
-  browser UI match) on `<html>`, and exposes `useTheme()`. A small inline script in
-  `index.html` does the same before the first paint, so a dark page never flashes light; keep
-  the two in step.
+  browser UI match) on `<html>`, and exposes `useTheme()` and `toggleTheme()`. A small inline
+  script in `index.html` does the same before the first paint, so a dark page never flashes
+  light; keep the two in step.
 - Colors are tokens in `src/index.css` (`paper`, `surface`, `ink`, `muted`, `line`, `field`,
   `accent`, `accent-soft`, `pass`, `fail`, `warn`, `inverse`). `.dark` redefines them, so a
   token class such as `bg-surface` or `text-muted` is right in both themes with no `dark:`
@@ -78,6 +82,64 @@ System.
   in both themes.
 - The Monaco editor uses `vs` or `vs-dark` from `useTheme()`; switching restyles the open
   editor without remounting it, so typed code stays.
+
+## Languages (English and Arabic)
+
+The interface is English or Arabic (right to left). This is phase 1: only the interface is
+translated. Lesson text, problem text, module and topic titles and the visualizations stay
+English until later phases translate them.
+
+- **Translation:** i18next with react-i18next, with the strings bundled (no network loading,
+  no detector or backend plugins). `src/i18n.ts` sets it up; the strings are in
+  `src/locales/en.json` (the source and the fallback) and `src/locales/ar.json`, grouped by
+  page or component. Rule: every new user-visible string (text, labels, placeholders,
+  `aria-label`s, screen-reader text, errors built in the frontend) goes through `t()` and into
+  both files with the same keys. A count uses i18next plurals: `_one`/`_other` in English and
+  all six Arabic forms (`_zero`, `_one`, `_two`, `_few`, `_many`, `_other`).
+- **The language button** in the main navigation shows the other language in that language
+  ("العربية" with `lang="ar"` while in English, "English" with `lang="en"` while in Arabic),
+  plus hidden text saying what it does. First visit: Arabic if `navigator.languages` lists
+  Arabic first, otherwise English. After the first click the choice is stored under `lang`
+  (`en` or `ar`) and wins. `lang` and `dir` on `<html>` change live, and the inline script in
+  `index.html` sets them before the first paint, so an Arabic page never flashes left to
+  right. The app does not set `document.title` (it stays "AlgosProj").
+- **Layout:** Tailwind's logical classes only (`ms-`/`me-`, `ps-`/`pe-`, `start-`/`end-`,
+  `text-start`/`text-end`, `border-s`/`border-e`, `rounded-s`/`rounded-e`), never `ml-`,
+  `pr-`, `left-`, `text-right` and the like, so the layout flips with `dir`. Where a logical
+  class can't do it (transforms, SVG, absolute offsets), use an `rtl:` variant. Numeric table
+  columns use `text-end`. Header cells inherit their table's alignment (a base rule in
+  `src/index.css`, because the browser's own `th` style would center them).
+- **Always English and left to right:** the Monaco editor, code blocks, test inputs and
+  outputs, every visualization (wrapped in `lang="en" dir="ltr"`), email inputs (`dir="ltr"`)
+  and the whole admin area (`/admin/*`, staff only, wrapped in `lang="en" dir="ltr"` in
+  `AdminRoute`). Names people chose (header, leaderboard, admin lists) use `dir="auto"`.
+- **Content wrapper:** text from the course content (lesson body, lesson and problem titles,
+  problem descriptions, module and topic titles) is rendered through
+  `src/components/Content.tsx` with a `lang` prop (`LessonBody` takes one too). It is `"en"`
+  everywhere today; `"ar"` gives `dir="rtl"`. The next phases pass the language the API
+  returns. Lists, headings and paragraphs follow that direction; code blocks stay LTR.
+- **Numbers and dates:** always Western digits (0-9) in both languages, so they match the code
+  and test data. Dates and times go through `formatDateTime()` in `src/i18n.ts`: Intl with
+  the Gregorian calendar and Latin digits (`ar-u-ca-gregory-nu-latn` for Arabic), never Hijri.
+  Only the admin area shows dates today, in English.
+- **Font:** Noto Sans Arabic (variable weights), self-hosted from
+  `@fontsource-variable/noto-sans-arabic`. `src/i18n.ts` imports its CSS only when Arabic is
+  active, so English pages load no extra font. Under `:root[lang="ar"]` it goes ahead of the
+  system font and lines are a little taller; English passages (`[lang="en"]`) inside an
+  Arabic page keep the English font and line heights. `letter-spacing` and `text-transform`
+  never apply to Arabic text (a rule on `:lang(ar)`), because they break letter joining.
+- **Server messages:** the backend speaks English. In Arabic, the messages the frontend picks
+  by status are Arabic (network error, session ended, 401 wrong login, 403, 404, 429, 503,
+  other failures); the server's own English text is shown only for field errors and the ban
+  reason, marked `lang="en"`. English shows the server's text as before; admin requests are
+  always English. English server messages that can still appear in Arabic mode:
+  - register and login field errors from Laravel's validation, such as "The email has
+    already been taken.", "The password field must be at least 8 characters.", "The email
+    field must be a valid email address.", "The name field is required.";
+  - submit field errors: "The code may not be larger than 64 KB.", "The code field is
+    required.", "The selected language is invalid.";
+  - the ban reason, written by staff;
+  - compiler and runtime error output from the sandbox (program output, shown left to right).
 
 ## Pages
 
