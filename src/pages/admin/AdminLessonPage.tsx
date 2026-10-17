@@ -187,6 +187,13 @@ export default function AdminLessonPage() {
               dir="rtl"
               lang="ar"
             />
+            <p className="mt-1 text-sm text-muted">
+              Technical terms stay in English inside ~tildes~, for example{' '}
+              <span lang="ar" dir="rtl">
+                الـ~array~
+              </span>
+              : shown as plain left-to-right text, not code.
+            </p>
             <p className="mt-1 text-sm text-muted tabular-nums">{form.body_ar.length} of 20,000 characters</p>
           </div>
           <section aria-labelledby="preview-ar-heading" className="min-w-0">

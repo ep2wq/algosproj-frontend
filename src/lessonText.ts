@@ -74,3 +74,13 @@ export function splitInlineCode(text: string): { code: boolean; text: string }[]
     part.length > 2 && part.startsWith('`') && part.endsWith('`') ? { code: true, text: part.slice(1, -1) } : { code: false, text: part },
   )
 }
+
+// Splits prose (never code) on ~term~ markers: an English term inside Arabic text, shown as plain
+// text isolated left to right. A marker starts and ends with a non-space character, so a lone or
+// empty ~ (or "~ ~") stays as text.
+export function splitTerms(text: string): { term: boolean; text: string }[] {
+  return text
+    .split(/(~[^~\s](?:[^~\n]*[^~\s])?~)/)
+    .map((part, index) => (index % 2 === 1 ? { term: true, text: part.slice(1, -1) } : { term: false, text: part }))
+    .filter((part) => part.text)
+}

@@ -1,8 +1,9 @@
-import { parseLessonText, splitInlineCode } from '../lessonText'
+import { parseLessonText, splitInlineCode, splitTerms } from '../lessonText'
 import Content from './Content'
 
-// Text with `inline code`. Code parts are isolated left to right (dir="ltr" isolates them), so
-// expressions and values inside Arabic sentences keep their order. inline-block keeps a short
+// Text with `inline code` and ~term~ markers (code is split off first, so a ~ inside code stays).
+// Code parts are isolated left to right (dir="ltr" isolates them), so expressions and values
+// inside Arabic sentences keep their order. inline-block keeps a short
 // expression on one line; one longer than the line wraps inside its own box. A word joiner
 // (U+2060) keeps text that touches the code ("و", "،", ").") on the same line as it.
 export function TextWithCode({ text }: { text: string }) {
@@ -18,9 +19,29 @@ export function TextWithCode({ text }: { text: string }) {
         {part.text}
       </code>
     ) : (
-      (parts[index - 1]?.code && /^\S/.test(part.text) ? '⁠' : '') +
-      part.text +
-      (parts[index + 1]?.code && /\S$/.test(part.text) ? '⁠' : '')
+      <Terms
+        key={index}
+        text={
+          (parts[index - 1]?.code && /^\S/.test(part.text) ? '⁠' : '') +
+          part.text +
+          (parts[index + 1]?.code && /\S$/.test(part.text) ? '⁠' : '')
+        }
+      />
+    ),
+  )
+}
+
+// Prose with ~term~ markers (Arabic text keeps technical terms in English). Each term is plain
+// text, isolated left to right and marked English, so it keeps its order and screen readers read
+// it in English. English text never uses markers, so it renders as before.
+function Terms({ text }: { text: string }) {
+  return splitTerms(text).map((part, index) =>
+    part.term ? (
+      <bdi key={index} dir="ltr" lang="en">
+        {part.text}
+      </bdi>
+    ) : (
+      part.text
     ),
   )
 }
