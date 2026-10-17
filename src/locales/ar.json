@@ -97,8 +97,8 @@
   },
   "solver": {
     "examples": "أمثلة",
-    "input": "Input",
-    "expectedOutput": "الـ Output المتوقع",
+    "input": "المدخلات",
+    "expectedOutput": "المخرجات المتوقعة",
     "language": "لغة البرمجة",
     "loadingEditor": "جارٍ تحميل المحرر...",
     "editorLabel": "كود {{language}} لمسألة {{title}}",
@@ -134,9 +134,9 @@
     "hiddenTest": "اختبار مخفي:",
     "passed": "نجح",
     "failed": "فشل",
-    "input": "Input",
-    "expected": "الـ Output المتوقع",
-    "actual": "الـ Output الفعلي",
+    "input": "المدخلات",
+    "expected": "المخرجات المتوقعة",
+    "actual": "المخرجات الفعلية",
     "empty": "(فارغ)"
   },
   "leaderboard": {
