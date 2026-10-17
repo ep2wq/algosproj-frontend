@@ -7,6 +7,7 @@ import { useAuth } from '../auth'
 import { useTheme } from '../theme'
 import { LANGUAGE_LABELS, STARTER_CODE } from '../starters'
 import Content from './Content'
+import { TextWithCode } from './LessonBody'
 import SubmitResultPanel from './SubmitResultPanel'
 
 // The statement, examples, editor and Submit for one problem. Shared by the lesson page
@@ -57,8 +58,8 @@ export default function ProblemSolver({
 
   return (
     <>
-      <Content lang="en" as="p" className="mt-3 max-w-prose whitespace-pre-wrap">
-        {problem.description}
+      <Content lang={problem.description_lang} as="p" className="mt-3 max-w-prose whitespace-pre-wrap">
+        <TextWithCode text={problem.description} />
       </Content>
 
       {problem.test_cases.length > 0 && (

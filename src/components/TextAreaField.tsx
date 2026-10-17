@@ -5,10 +5,13 @@ type TextAreaFieldProps = {
   onChange: (value: string) => void
   rows?: number
   errors?: string[]
+  // For an Arabic field in the admin forms: dir="rtl" lang="ar".
+  dir?: 'rtl'
+  lang?: string
 }
 
 // A labelled monospace textarea with the server's errors under it, like Field.
-export default function TextAreaField({ id, label, value, onChange, rows = 4, errors }: TextAreaFieldProps) {
+export default function TextAreaField({ id, label, value, onChange, rows = 4, errors, dir, lang }: TextAreaFieldProps) {
   const errorId = `${id}-error`
   const hasError = Boolean(errors && errors.length > 0)
 
@@ -23,6 +26,8 @@ export default function TextAreaField({ id, label, value, onChange, rows = 4, er
         value={value}
         onChange={(event) => onChange(event.target.value)}
         rows={rows}
+        dir={dir}
+        lang={lang}
         spellCheck={false}
         aria-invalid={hasError}
         aria-describedby={hasError ? errorId : undefined}

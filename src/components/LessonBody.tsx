@@ -1,5 +1,29 @@
-import { parseLessonText } from '../lessonText'
+import { parseLessonText, splitInlineCode } from '../lessonText'
 import Content from './Content'
+
+// Text with `inline code`. Code parts are isolated left to right (dir="ltr" isolates them), so
+// expressions and values inside Arabic sentences keep their order. inline-block keeps a short
+// expression on one line; one longer than the line wraps inside its own box. A word joiner
+// (U+2060) keeps text that touches the code ("و", "،", ").") on the same line as it.
+export function TextWithCode({ text }: { text: string }) {
+  const parts = splitInlineCode(text)
+  return parts.map((part, index) =>
+    part.code ? (
+      <code
+        key={index}
+        dir="ltr"
+        lang="en"
+        className="inline-block max-w-full rounded border border-line bg-surface px-1 font-mono text-[0.9em] leading-snug [overflow-wrap:anywhere]"
+      >
+        {part.text}
+      </code>
+    ) : (
+      (parts[index - 1]?.code && /^\S/.test(part.text) ? '⁠' : '') +
+      part.text +
+      (parts[index + 1]?.code && /\S$/.test(part.text) ? '⁠' : '')
+    ),
+  )
+}
 
 // Renders lesson text as headings, lists, code blocks and paragraphs. Everything is a
 // React text node; the text is never treated as HTML. lang is the language of the text (see
@@ -12,14 +36,16 @@ export default function LessonBody({ text, lang }: { text: string; lang: string 
           case 'heading':
             return (
               <h2 key={index} className="mt-8 text-xl font-semibold">
-                {block.text}
+                <TextWithCode text={block.text} />
               </h2>
             )
           case 'list':
             return (
               <ul key={index} className="mt-3 list-disc space-y-1 ps-5">
                 {block.items.map((item, itemIndex) => (
-                  <li key={itemIndex}>{item}</li>
+                  <li key={itemIndex}>
+                    <TextWithCode text={item} />
+                  </li>
                 ))}
               </ul>
             )
@@ -39,7 +65,7 @@ export default function LessonBody({ text, lang }: { text: string; lang: string 
           case 'paragraph':
             return (
               <p key={index} className="mt-3 whitespace-pre-wrap first:mt-0">
-                {block.text}
+                <TextWithCode text={block.text} />
               </p>
             )
         }

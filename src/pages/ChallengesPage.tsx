@@ -5,6 +5,7 @@ import { ApiError, getChallenges, type ChallengeSummary } from '../api'
 import { useAuth } from '../auth'
 import Content from '../components/Content'
 import DifficultyBadge from '../components/DifficultyBadge'
+import { textLang } from '../textLang'
 
 const DIFFICULTIES = ['easy', 'medium', 'hard']
 // Topic filter value for problems that belong to no lesson.
@@ -25,7 +26,7 @@ function SolvedMark({ solved }: { solved: boolean }) {
 }
 
 export default function ChallengesPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { user, loading } = useAuth()
   const [challenges, setChallenges] = useState<ChallengeSummary[] | null>(null)
   const [failure, setFailure] = useState<unknown>(null)
@@ -34,8 +35,10 @@ export default function ChallengesPage() {
   const [topic, setTopic] = useState('')
   const [status, setStatus] = useState('')
 
-  // solved depends on who is asking, so load again when the user logs in or out.
+  // solved depends on who is asking, so load again when the user logs in or out; titles depend on
+  // the app language. The filters are kept.
   const userId = user?.id
+  const language = i18n.language
   useEffect(() => {
     if (loading) return
     let active = true
@@ -49,7 +52,7 @@ export default function ChallengesPage() {
     return () => {
       active = false
     }
-  }, [loading, userId])
+  }, [loading, userId, language])
 
   const error = failure === null ? '' : failure instanceof ApiError ? failure.message : t('challenges.loadFailed')
 
@@ -60,6 +63,7 @@ export default function ChallengesPage() {
   }
   const hasStandalone = challenges?.some((challenge) => challenge.topic === null) ?? false
 
+  // Searches the title as shown: Arabic where it is translated, English otherwise.
   const query = search.trim().toLowerCase()
   const statusFilter = user ? status : ''
   const shown = (challenges ?? []).filter(
@@ -136,7 +140,7 @@ export default function ChallengesPage() {
               >
                 <option value="">{t('challenges.allTopics')}</option>
                 {[...topics].map(([slug, title]) => (
-                  <option key={slug} value={slug} lang="en">
+                  <option key={slug} value={slug} lang={textLang(title)} dir="auto">
                     {title}
                   </option>
                 ))}
@@ -189,13 +193,13 @@ export default function ChallengesPage() {
                     <div className="flex items-baseline gap-2">
                       {user && <SolvedMark solved={challenge.solved} />}
                       <Link to={`/challenges/${challenge.slug}`} className="rounded font-medium text-accent hover:underline">
-                        <Content lang="en">{challenge.title}</Content>
+                        <Content lang="auto">{challenge.title}</Content>
                       </Link>
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
                       <DifficultyBadge difficulty={challenge.difficulty} />
                       <span className="tabular-nums">{t('common.points', { count: challenge.points })}</span>
-                      {challenge.topic ? <Content lang="en">{challenge.topic.title}</Content> : <span>{t('common.noTopic')}</span>}
+                      {challenge.topic ? <Content lang="auto">{challenge.topic.title}</Content> : <span>{t('common.noTopic')}</span>}
                     </div>
                   </li>
                 ))}
@@ -234,11 +238,11 @@ export default function ChallengesPage() {
                         )}
                         <td className="px-4 py-2">
                           <Link to={`/challenges/${challenge.slug}`} className="rounded text-accent hover:underline">
-                            <Content lang="en">{challenge.title}</Content>
+                            <Content lang="auto">{challenge.title}</Content>
                           </Link>
                         </td>
                         <td className="px-4 py-2 text-sm text-muted">
-                          {challenge.topic ? <Content lang="en">{challenge.topic.title}</Content> : t('common.noTopic')}
+                          {challenge.topic ? <Content lang="auto">{challenge.topic.title}</Content> : t('common.noTopic')}
                         </td>
                         <td className="px-4 py-2">
                           <DifficultyBadge difficulty={challenge.difficulty} />

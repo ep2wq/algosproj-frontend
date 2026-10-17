@@ -1,4 +1,4 @@
-// Parses lesson text (lessons.body) into blocks. A small subset of markdown:
+// Parses lesson text (lessons.body, body_ar) into blocks. A small subset of markdown:
 // "## " heading, "- " list items, lines indented with 4 spaces are code, everything else
 // is paragraphs separated by blank lines (single line breaks inside a paragraph are kept).
 
@@ -65,4 +65,12 @@ export function parseLessonText(text: string): LessonBlock[] {
   }
 
   return blocks
+}
+
+// Splits lesson or problem text on `inline code`. Code parts are shown left to right inside
+// Arabic text, so expressions and values keep their order. A lone backtick stays as text.
+export function splitInlineCode(text: string): { code: boolean; text: string }[] {
+  return text.split(/(`[^`\n]+`)/).filter(Boolean).map((part) =>
+    part.length > 2 && part.startsWith('`') && part.endsWith('`') ? { code: true, text: part.slice(1, -1) } : { code: false, text: part },
+  )
 }

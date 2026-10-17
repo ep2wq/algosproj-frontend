@@ -42,10 +42,15 @@ export type TestCase = {
   expected_output: string
 }
 
+// Course text arrives in the language of the Accept-Language header, field by field: a field
+// without Arabic falls back to English. body_lang and description_lang say which one came.
+export type ContentLang = 'ar' | 'en'
+
 export type Problem = {
   id: number
   title: string
   description: string
+  description_lang: ContentLang
   difficulty: string
   points: number
   test_cases: TestCase[]
@@ -57,6 +62,7 @@ export type Lesson = {
   slug: string
   title: string
   body: string | null
+  body_lang: ContentLang
   problems: Problem[]
 }
 
@@ -127,12 +133,17 @@ export type MyRank = {
 }
 
 // Admin area. These responses include hidden test cases; they are only returned to admins.
+// Admin responses hold both languages; a *_ar field is null until it is translated.
+export type AdminModule = Module & { title_ar: string | null }
+
 export type AdminLesson = {
   id: number
   module_id: number
   slug: string
   title: string
+  title_ar: string | null
   body: string | null
+  body_ar: string | null
   sort_order: number
 }
 
@@ -141,7 +152,9 @@ export type AdminProblem = {
   lesson_id: number | null
   slug: string | null
   title: string
+  title_ar: string | null
   description: string
+  description_ar: string | null
   difficulty: string
   points: number
 }
@@ -217,10 +230,27 @@ export type UserFilters = { search?: string; role?: string; banned?: string; pag
 export type AuditFilters = { action?: string; actor?: string; from?: string; to?: string; page?: string }
 export type ActivityFilters = { event?: string; user?: string; from?: string; to?: string; page?: string }
 
-// sort_order is sent as typed; the backend validates it as an integer.
-export type ModuleInput = { title: string; slug: string; sort_order: string }
-export type LessonInput = { module_id: number | null; title: string; slug: string; body: string; sort_order: string }
-export type ProblemInput = { lesson_id: number | null; title: string; slug: string; description: string; difficulty: string }
+// sort_order is sent as typed; the backend validates it as an integer. An empty *_ar field is
+// stored as null (not translated).
+export type ModuleInput = { title: string; title_ar: string; slug: string; sort_order: string }
+export type LessonInput = {
+  module_id: number | null
+  title: string
+  title_ar: string
+  slug: string
+  body: string
+  body_ar: string
+  sort_order: string
+}
+export type ProblemInput = {
+  lesson_id: number | null
+  title: string
+  title_ar: string
+  slug: string
+  description: string
+  description_ar: string
+  difficulty: string
+}
 export type TestCaseInput = { input: string; expected_output: string; is_hidden: boolean }
 
 export class ApiError extends Error {
@@ -278,7 +308,11 @@ function query(params: Record<string, string | undefined>): string {
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const token = getToken()
-  const headers: Record<string, string> = { Accept: 'application/json' }
+  // The admin area is English only (its responses hold both languages anyway). Elsewhere the
+  // app language picks the course text language. "ar" and "en" are CORS-safelisted values, so
+  // the header adds no preflight request.
+  const admin = path.startsWith('/admin')
+  const headers: Record<string, string> = { Accept: 'application/json', 'Accept-Language': admin ? 'en' : i18n.language }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (token) headers.Authorization = `Bearer ${token}`
 
@@ -286,7 +320,6 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   // in English its own message is shown as before; in Arabic a generic message for the status is
   // shown instead, except field errors and the ban reason, which stay as the server sent them.
   // The admin area is English only, so its requests always get English messages.
-  const admin = path.startsWith('/admin')
   const t = i18n.getFixedT(admin ? 'en' : i18n.language)
   const useServerText = admin || i18n.language !== 'ar'
 
@@ -386,15 +419,15 @@ export function getMyRank() {
 
 // Modules with their lessons (no body).
 export function getAdminModules() {
-  return request<Module[]>('GET', '/admin/modules')
+  return request<AdminModule[]>('GET', '/admin/modules')
 }
 
 export function createModule(data: ModuleInput) {
-  return request<Module>('POST', '/admin/modules', data)
+  return request<AdminModule>('POST', '/admin/modules', data)
 }
 
 export function updateModule(id: number, data: ModuleInput) {
-  return request<Module>('PUT', `/admin/modules/${id}`, data)
+  return request<AdminModule>('PUT', `/admin/modules/${id}`, data)
 }
 
 export function deleteModule(id: number) {
@@ -418,7 +451,7 @@ export function deleteLesson(id: number) {
 }
 
 export function getAdminProblems() {
-  return request<Omit<AdminProblem, 'description'>[]>('GET', '/admin/problems')
+  return request<Pick<AdminProblem, 'id' | 'lesson_id' | 'slug' | 'title' | 'difficulty' | 'points'>[]>('GET', '/admin/problems')
 }
 
 export function getAdminProblem(id: number) {

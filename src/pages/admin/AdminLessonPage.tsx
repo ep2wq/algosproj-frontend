@@ -30,15 +30,17 @@ export default function AdminLessonPage() {
           setForm({
             module_id: lesson.module_id,
             title: lesson.title,
+            title_ar: lesson.title_ar ?? '',
             slug: lesson.slug,
             body: lesson.body ?? '',
+            body_ar: lesson.body_ar ?? '',
             sort_order: String(lesson.sort_order),
           })
           return
         }
         const module = moduleList.find((item) => String(item.id) === moduleParam) ?? null
         const next = Math.max(0, ...(module?.lessons ?? []).map((lessonItem) => lessonItem.sort_order)) + 1
-        setForm({ module_id: module?.id ?? null, title: '', slug: '', body: '', sort_order: String(next) })
+        setForm({ module_id: module?.id ?? null, title: '', title_ar: '', slug: '', body: '', body_ar: '', sort_order: String(next) })
       })
       .catch((err) => {
         if (err instanceof ApiError && err.status === 404) setLoadError("This lesson doesn't exist.")
@@ -137,6 +139,18 @@ export default function AdminLessonPage() {
             onChange={(slug) => setForm({ ...form, slug })}
             errors={fieldErrors.slug}
           />
+          <div className="sm:col-start-1">
+            <Field
+              id="title_ar"
+              label="Title (Arabic)"
+              value={form.title_ar}
+              onChange={(title_ar) => setForm({ ...form, title_ar })}
+              errors={fieldErrors.title_ar}
+              required={false}
+              dir="rtl"
+              lang="ar"
+            />
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -157,6 +171,37 @@ export default function AdminLessonPage() {
             </h2>
             <div className="mt-1 rounded border border-line bg-paper p-4">
               {form.body.trim() ? <LessonBody text={form.body} lang="en" /> : <p className="text-sm text-muted">Nothing to preview yet.</p>}
+            </div>
+          </section>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div>
+            <TextAreaField
+              id="body_ar"
+              label="Body (Arabic)"
+              value={form.body_ar}
+              onChange={(body_ar) => setForm({ ...form, body_ar })}
+              rows={24}
+              errors={fieldErrors.body_ar}
+              dir="rtl"
+              lang="ar"
+            />
+            <p className="mt-1 text-sm text-muted tabular-nums">{form.body_ar.length} of 20,000 characters</p>
+          </div>
+          <section aria-labelledby="preview-ar-heading" className="min-w-0">
+            <h2 id="preview-ar-heading" className="text-sm font-medium text-ink">
+              Arabic preview
+            </h2>
+            {/* dir="rtl" as on the Arabic site, so the preview matches what users see. */}
+            <div dir="rtl" className="mt-1 rounded border border-line bg-paper p-4">
+              {form.body_ar.trim() ? (
+                <LessonBody text={form.body_ar} lang="ar" />
+              ) : (
+                <p lang="en" dir="ltr" className="text-sm text-muted">
+                  Nothing to preview yet.
+                </p>
+              )}
             </div>
           </section>
         </div>

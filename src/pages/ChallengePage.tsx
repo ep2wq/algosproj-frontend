@@ -9,7 +9,7 @@ import ProblemSolver from '../components/ProblemSolver'
 
 // Loaded with React.lazy, like the lesson page, so Monaco stays out of the first bundle.
 export default function ChallengePage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { slug = '' } = useParams()
   const { user, loading } = useAuth()
   // The loaded result is stored with its slug, so a stale challenge never shows for a new URL.
@@ -17,8 +17,10 @@ export default function ChallengePage() {
   // Set after a passing submit, so the page shows solved without loading again.
   const [solvedNow, setSolvedNow] = useState<string | null>(null)
 
-  // solved depends on who is asking, so load again when the user logs in or out.
+  // solved depends on who is asking, so load again when the user logs in or out; the text depends on
+  // the app language. The old challenge stays on screen meanwhile, so the editor keeps its code.
   const userId = user?.id
+  const language = i18n.language
   useEffect(() => {
     if (loading) return
     let active = true
@@ -32,7 +34,7 @@ export default function ChallengePage() {
     return () => {
       active = false
     }
-  }, [slug, loading, userId])
+  }, [slug, loading, userId, language])
 
   const current = loaded?.slug === slug ? loaded : null
   const challenge = current?.challenge ?? null
@@ -69,10 +71,10 @@ export default function ChallengePage() {
         {t('challenge.back')}
       </Link>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-        <Content lang="en">{challenge.title}</Content>
+        <Content lang="auto">{challenge.title}</Content>
       </h1>
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-        {challenge.topic ? <Content lang="en">{challenge.topic.title}</Content> : <span>{t('common.noTopic')}</span>}
+        {challenge.topic ? <Content lang="auto">{challenge.topic.title}</Content> : <span>{t('common.noTopic')}</span>}
         <DifficultyBadge difficulty={challenge.difficulty} />
         <span className="tabular-nums">{t('common.points', { count: challenge.points })}</span>
         {solved && (

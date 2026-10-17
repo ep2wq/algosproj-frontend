@@ -4,7 +4,7 @@ import { ApiError, getAdminModules, getAdminProblems, type AdminProblem, type Mo
 import DifficultyBadge from '../../components/DifficultyBadge'
 import { alertClass, buttonLink } from './styles'
 
-type ProblemSummary = Omit<AdminProblem, 'description'>
+type ProblemSummary = Omit<AdminProblem, 'title_ar' | 'description' | 'description_ar'>
 
 function ProblemRow({ problem }: { problem: ProblemSummary }) {
   return (

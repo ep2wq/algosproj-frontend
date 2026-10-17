@@ -265,13 +265,23 @@ export default function AdminProblemPage() {
           setForm({
             lesson_id: problem.lesson_id,
             title: problem.title,
+            title_ar: problem.title_ar ?? '',
             slug: problem.slug ?? '',
             description: problem.description,
+            description_ar: problem.description_ar ?? '',
             difficulty: problem.difficulty,
           })
           return
         }
-        setForm({ lesson_id: lessonParam ? Number(lessonParam) : null, title: '', slug: '', description: '', difficulty: 'easy' })
+        setForm({
+          lesson_id: lessonParam ? Number(lessonParam) : null,
+          title: '',
+          title_ar: '',
+          slug: '',
+          description: '',
+          description_ar: '',
+          difficulty: 'easy',
+        })
       })
       .catch((err) => {
         if (err instanceof ApiError && err.status === 404) setLoadError("This problem doesn't exist.")
@@ -338,7 +348,19 @@ export default function AdminProblemPage() {
             onChange={(slug) => setForm({ ...form, slug })}
             errors={fieldErrors.slug}
           />
-          <div>
+          <div className="sm:col-start-1">
+            <Field
+              id="title_ar"
+              label="Title (Arabic)"
+              value={form.title_ar}
+              onChange={(title_ar) => setForm({ ...form, title_ar })}
+              errors={fieldErrors.title_ar}
+              required={false}
+              dir="rtl"
+              lang="ar"
+            />
+          </div>
+          <div className="sm:col-start-1">
             <label htmlFor="lesson_id" className="block text-sm font-medium text-ink">
               Lesson
             </label>
@@ -403,6 +425,17 @@ export default function AdminProblemPage() {
           errors={fieldErrors.description}
         />
         <p className="-mt-3 text-sm text-muted tabular-nums">{form.description.length} of 5,000 characters</p>
+        <TextAreaField
+          id="description_ar"
+          label="Description (Arabic)"
+          value={form.description_ar}
+          onChange={(description_ar) => setForm({ ...form, description_ar })}
+          rows={12}
+          errors={fieldErrors.description_ar}
+          dir="rtl"
+          lang="ar"
+        />
+        <p className="-mt-3 text-sm text-muted tabular-nums">{form.description_ar.length} of 5,000 characters</p>
 
         {error && (
           <p role="alert" className={alertClass}>

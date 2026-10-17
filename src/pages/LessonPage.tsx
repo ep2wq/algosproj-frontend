@@ -9,11 +9,14 @@ import { VISUALS } from '../visuals'
 
 // Loaded with React.lazy, so Monaco stays out of the first bundle.
 export default function LessonPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { slug = '' } = useParams()
   // The loaded result is stored with its slug, so a stale lesson never shows for a new URL.
   const [loaded, setLoaded] = useState<{ slug: string; lesson?: Lesson; failure?: unknown } | null>(null)
 
+  // The text comes in the app language, so load again when it changes. The old lesson stays on
+  // screen until the new one arrives, so the editors stay mounted and keep their code.
+  const language = i18n.language
   useEffect(() => {
     let active = true
     getLesson(slug)
@@ -26,7 +29,7 @@ export default function LessonPage() {
     return () => {
       active = false
     }
-  }, [slug])
+  }, [slug, language])
 
   const current = loaded?.slug === slug ? loaded : null
   const lesson = current?.lesson ?? null
@@ -62,9 +65,9 @@ export default function LessonPage() {
         {t('lesson.allLessons')}
       </Link>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-        <Content lang="en">{lesson.title}</Content>
+        <Content lang="auto">{lesson.title}</Content>
       </h1>
-      {lesson.body && <LessonBody text={lesson.body} lang="en" />}
+      {lesson.body && <LessonBody text={lesson.body} lang={lesson.body_lang} />}
 
       {Visual && (
         <section className="mt-10 border-t border-line pt-8" aria-labelledby="visual-heading">

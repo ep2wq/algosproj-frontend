@@ -11,15 +11,25 @@ function trackName(track: string): string {
 }
 
 export default function HomePage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [modules, setModules] = useState<Module[] | null>(null)
   const [failure, setFailure] = useState<unknown>(null)
 
+  // Titles come in the app language, so load again when it changes (the old list stays until then).
+  const language = i18n.language
   useEffect(() => {
+    let active = true
     getModules()
-      .then(setModules)
-      .catch(setFailure)
-  }, [])
+      .then((list) => {
+        if (active) setModules(list)
+      })
+      .catch((err) => {
+        if (active) setFailure(err)
+      })
+    return () => {
+      active = false
+    }
+  }, [language])
 
   const error = failure === null ? '' : failure instanceof ApiError ? failure.message : t('home.loadFailed')
 
@@ -50,7 +60,7 @@ export default function HomePage() {
           {trackModules.map((module) => (
             <div key={module.id} className="mt-5">
               <h3 className="font-medium text-ink">
-                <Content lang="en">{module.title}</Content>
+                <Content lang="auto">{module.title}</Content>
               </h3>
               {module.lessons.length === 0 ? (
                 <p className="mt-1 text-sm text-muted">{t('home.moduleEmpty')}</p>
@@ -62,7 +72,7 @@ export default function HomePage() {
                         to={`/lessons/${lesson.slug}`}
                         className="block rounded px-4 py-3 text-accent hover:bg-accent-soft"
                       >
-                        <Content lang="en">{lesson.title}</Content>
+                        <Content lang="auto">{lesson.title}</Content>
                       </Link>
                     </li>
                   ))}

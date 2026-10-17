@@ -23,7 +23,7 @@ export default function AdminModulePage() {
       .then((modules) => {
         if (moduleId === null) {
           const next = Math.max(0, ...modules.map((module) => module.sort_order)) + 1
-          setForm({ title: '', slug: '', sort_order: String(next) })
+          setForm({ title: '', title_ar: '', slug: '', sort_order: String(next) })
           return
         }
         const module = modules.find((item) => item.id === moduleId)
@@ -31,7 +31,7 @@ export default function AdminModulePage() {
           setLoadError("This module doesn't exist.")
           return
         }
-        setForm({ title: module.title, slug: module.slug, sort_order: String(module.sort_order) })
+        setForm({ title: module.title, title_ar: module.title_ar ?? '', slug: module.slug, sort_order: String(module.sort_order) })
       })
       .catch((err) => setLoadError(err instanceof ApiError ? err.message : 'Could not load the module.'))
   }, [moduleId])
@@ -84,6 +84,16 @@ export default function AdminModulePage() {
 
       <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
         <Field id="title" label="Title" value={form.title} onChange={(title) => setForm({ ...form, title })} errors={fieldErrors.title} />
+        <Field
+          id="title_ar"
+          label="Title (Arabic)"
+          value={form.title_ar}
+          onChange={(title_ar) => setForm({ ...form, title_ar })}
+          errors={fieldErrors.title_ar}
+          required={false}
+          dir="rtl"
+          lang="ar"
+        />
         <Field
           id="slug"
           label="Slug (lowercase letters, digits and hyphens)"
