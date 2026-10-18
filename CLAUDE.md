@@ -52,7 +52,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## Current status
 
 - Done: lessons, Monaco + submit, auth, leaderboard, 404, Challenges, admin, dark mode, Arabic
-  interface + content (15 modules translated, `~term~` markers). Next: more modules, AI hint UI.
+  interface + content (all 19 modules translated, `~term~` markers). Next: AI hint UI.
 - Decisions: oxlint. Lint/build pass. A 401 with a token (not login/register/logout), or a
   403 with `reason`, clears it; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.
