@@ -1,39 +1,32 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TextWithCode } from '../components/LessonBody'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { palindromeFrames, reverseFrames, type PointerFrame, type PointerMode } from './twoPointerFrames'
 import { usePlayback } from './usePlayback'
 
 const MAX_LENGTH = 12
 
-// The allowed characters follow each problem's input rules.
+// The allowed characters follow each problem's input rules. The texts are under
+// twoPointer.<mode> (labels, hint, error) and twoPointer.legend.<key>.
 const MODES = {
   reverse: {
     frames: reverseFrames,
     samples: ['hello', 'abc def', 'racecar', 'stack', 'two sum', 'data 2024', 'level', 'Binary'],
-    inputLabel: 'Your own text',
-    randomLabel: 'New random text',
-    placeholder: 'e.g. abc def',
-    hint: `1 to ${MAX_LENGTH} characters: letters, digits and single spaces, with no space at the start or end (the same rule as the problem).`,
     pattern: /^[A-Za-z0-9]+( [A-Za-z0-9]+)*$/,
-    patternError: 'Use only letters, digits and single spaces, with no space at the start or end.',
     legend: [
-      { label: 'Swapped in this step', style: 'border-accent bg-accent' },
-      { label: 'In final place', style: 'border-pass bg-pass' },
+      { key: 'swapped', style: 'border-accent bg-accent' },
+      { key: 'settled', style: 'border-pass bg-pass' },
     ],
   },
   palindrome: {
     frames: palindromeFrames,
     samples: ['level', 'racecar', 'abba', 'noon', 'kayak', 'refer', 'madam', 'hello', 'abca', 'banana', 'abcdba', 'stack'],
-    inputLabel: 'Your own word',
-    randomLabel: 'New random word',
-    placeholder: 'e.g. racecar',
-    hint: `1 to ${MAX_LENGTH} lowercase letters a to z, no spaces or capitals (the same rule as the problem).`,
     pattern: /^[a-z]+$/,
-    patternError: 'Use only lowercase letters a to z, with no spaces.',
     legend: [
-      { label: 'Being compared', style: 'border-warn bg-warn' },
-      { label: 'Matched', style: 'border-pass bg-pass' },
-      { label: 'Mismatch', style: 'border-fail bg-fail' },
+      { key: 'compared', style: 'border-warn bg-warn' },
+      { key: 'matched', style: 'border-pass bg-pass' },
+      { key: 'mismatch', style: 'border-fail bg-fail' },
     ],
   },
 }
@@ -61,13 +54,14 @@ function pointerLabels(frame: PointerFrame, index: number) {
 
 // Two pointers moving inward from both ends: reversing text, or checking a palindrome.
 export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
+  const { t } = useTranslation('visuals')
   const id = useId()
   const config = MODES[mode]
   const [text, setText] = useState(() => randomSample(config.samples))
   const [customText, setCustomText] = useState('')
   const [inputError, setInputError] = useState('')
 
-  const frames = useMemo(() => config.frames(text), [config, text])
+  const frames = useMemo(() => config.frames(text, t), [config, text, t])
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
@@ -79,9 +73,9 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
 
   function handleCustom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (customText.length === 0) return setInputError('Enter at least one character.')
-    if (customText.length > MAX_LENGTH) return setInputError(`Use at most ${MAX_LENGTH} characters.`)
-    if (!config.pattern.test(customText)) return setInputError(config.patternError)
+    if (customText.length === 0) return setInputError(t('twoPointer.atLeastOne'))
+    if (customText.length > MAX_LENGTH) return setInputError(t('stack.tooManyChars', { count: MAX_LENGTH }))
+    if (!config.pattern.test(customText)) return setInputError(t(`twoPointer.${mode}.patternError`))
     setInputError('')
     restart(customText)
   }
@@ -94,7 +88,8 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
 
       <div
         role="img"
-        aria-label={`Text: "${current.chars.join('')}".`}
+        aria-label={t('twoPointer.label', { text: current.chars.join('') })}
+        dir="ltr"
         className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
       >
         {current.chars.map((char, index) => (
@@ -111,32 +106,36 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
       </div>
 
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-        {config.legend.map(({ label, style }) => (
-          <li key={label} className="flex items-center gap-1.5">
+        {config.legend.map(({ key, style }) => (
+          <li key={key} className="flex items-center gap-1.5">
             <span className={`inline-block size-3 rounded-sm border ${style}`} aria-hidden="true" />
-            {label}
+            {t(`twoPointer.legend.${key}`)}
           </li>
         ))}
-        <li>L, R: left and right pointers. Small numbers: indices.{mode === 'reverse' && ' ␣ is a space.'}</li>
+        <li>
+          <TextWithCode text={mode === 'reverse' ? t('twoPointer.pointersSpace') : t('twoPointer.pointers')} />
+        </li>
       </ul>
 
       {current.result && (
-        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">{current.result}</p>
+        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
+          <TextWithCode text={current.result} />
+        </p>
       )}
 
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
-        {current.description}
+        <TextWithCode text={current.description} />
       </p>
 
       <PlaybackControls playback={playback} />
 
       <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
         <button type="button" onClick={() => restart(randomSample(config.samples, text))} className={buttonClass}>
-          {config.randomLabel}
+          {t(`twoPointer.${mode}.randomLabel`)}
         </button>
         <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
           <label htmlFor={`${id}-text`} className="block text-sm font-medium">
-            {config.inputLabel}
+            {t(`twoPointer.${mode}.inputLabel`)}
           </label>
           <div className="mt-1 flex gap-2">
             <input
@@ -144,9 +143,10 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
               type="text"
               autoComplete="off"
               spellCheck={false}
+              dir="ltr"
               value={customText}
               onChange={(event) => setCustomText(event.target.value)}
-              placeholder={config.placeholder}
+              placeholder={t(`twoPointer.${mode}.placeholder`)}
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-text-hint${inputError ? ` ${id}-text-error` : ''}`}
               className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
@@ -154,15 +154,15 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>
-              Use this
+              {t('common.useThis')}
             </button>
           </div>
           <p id={`${id}-text-hint`} className="mt-1 text-xs text-muted">
-            {config.hint}
+            <TextWithCode text={t(`twoPointer.${mode}.hint`, { max: MAX_LENGTH })} />
           </p>
           {inputError && (
             <p id={`${id}-text-error`} role="alert" className="mt-1 text-sm text-fail">
-              {inputError}
+              <TextWithCode text={inputError} />
             </p>
           )}
         </form>

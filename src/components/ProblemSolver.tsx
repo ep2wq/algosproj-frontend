@@ -124,7 +124,11 @@ export default function ProblemSolver({
           }}
         />
       </div>
-      {language === 'java' && <p className="mt-1 text-sm text-muted">{t('solver.javaMain')}</p>}
+      {language === 'java' && (
+        <p className="mt-1 text-sm text-muted">
+          <TextWithCode text={t('solver.javaMain')} />
+        </p>
+      )}
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         {user ? (

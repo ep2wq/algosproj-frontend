@@ -1,6 +1,8 @@
 // Pure function for the read, compute, print cycle of "Double the number", and the
 // solution shown for each language. The player only reads these.
 
+import { joinAnd, type T } from './i18n'
+
 export type WarmupLine = 'prompt' | 'read' | 'convert' | 'double' | 'print'
 
 export type WarmupFrame = {
@@ -77,7 +79,7 @@ export const SOLUTIONS: Record<string, { label: string; lines: [WarmupLine | '',
 export const PROMPT = 'Enter a number:'
 
 // Expects n in the problem's range, -1000000000 to 1000000000.
-export function warmupFrames(n: number, prompt: boolean): WarmupFrame[] {
+export function warmupFrames(n: number, prompt: boolean, t: T): WarmupFrame[] {
   const input = String(n)
   const output: string[] = []
   let text: string | null = null
@@ -95,31 +97,29 @@ export function warmupFrames(n: number, prompt: boolean): WarmupFrame[] {
     description,
   })
 
-  const frames = [frame(null, `The grader writes "${input}" to standard input and starts your program.`)]
+  const frames = [frame(null, t('warmup.start', { input }))]
   if (prompt) {
     output.push(PROMPT)
-    frames.push(frame('prompt', `Your program prints "${PROMPT}". No person reads it: it goes to standard output, like everything printed.`))
+    frames.push(frame('prompt', t('warmup.prompt', { prompt: PROMPT })))
   }
   text = input
-  frames.push(frame('read', `Your program reads the text "${text}" from standard input. It is text, not a number yet.`))
+  frames.push(frame('read', t('warmup.read', { text })))
   value = Number(text)
-  frames.push(frame('convert', `It converts the text "${text}" to the integer ${value}.`))
+  frames.push(frame('convert', t('warmup.convert', { text, value })))
   answer = 2 * value
-  frames.push(frame('double', `It doubles ${value} to ${answer}.`))
+  frames.push(frame('double', t('warmup.double', { value, answer })))
   output.push(String(answer))
-  frames.push(frame('print', `It prints ${answer} to standard output.`))
+  frames.push(frame('print', t('warmup.print', { answer })))
 
   // The grader's rule: whitespace at the start and end is ignored; everything else must match.
   const expected = String(2 * n)
   const actual = output.join('\n').trim()
   if (actual === expected) {
-    frames.push(frame(null, `The grader compares "${actual}" with the expected "${expected}": passed.`, 'Passed', true))
+    frames.push(frame(null, t('warmup.passed', { actual, expected }), t('warmup.verdictPassed'), true))
   } else {
-    const verdict = output.length > 1 ? 'Failed: the output has an extra line' : 'Failed'
-    const shown = output.map((line) => `"${line}"`).join(' and ')
-    frames.push(
-      frame(null, `The grader compares the output, ${shown} on ${output.length} lines, with the expected "${expected}". They differ. ${verdict}.`, verdict),
-    )
+    const verdict = output.length > 1 ? t('warmup.verdictExtraLine') : t('warmup.verdictFailed')
+    const shown = joinAnd(t, output.map((line) => t('warmup.quoted', { line })))
+    frames.push(frame(null, t('warmup.failed', { shown, count: output.length, expected, verdict }), verdict))
   }
   return frames
 }

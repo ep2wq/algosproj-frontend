@@ -4,6 +4,8 @@
 // problem: count every solution and keep the first. Rows and columns are 0-based here and
 // 1-based in the text, like the problem. The player only reads these.
 
+import type { T } from './i18n'
+
 export type QueensKind = 'start' | 'attacked' | 'place' | 'solution' | 'remove' | 'done'
 
 // What happened to one column tried in a row: attacked (skipped), a queen placed there and
@@ -50,7 +52,7 @@ export function attackedSquares(n: number, queens: number[]): Set<string> {
 const columns = (queens: number[]) => queens.map((c) => c + 1).join(' ')
 
 // Expects n >= 1.
-export function queensFrames(n: number): QueensFrame[] {
+export function queensFrames(n: number, t: T): QueensFrame[] {
   const frames: QueensFrame[] = []
   const queens: number[] = []
   const trail: { col: number; outcome: TryOutcome }[][] = Array.from({ length: n }, () => [])
@@ -78,52 +80,49 @@ export function queensFrames(n: number): QueensFrame[] {
       const last = col === n - 1
       const attacker = attackerOf(queens, row, col)
       if (attacker !== null) {
-        const how = queens[attacker] === col ? 'same column' : 'same diagonal'
+        const how = queens[attacker] === col ? t('queens.sameColumn') : t('queens.sameDiagonal')
         trail[row].push({ col, outcome: 'attacked' })
-        push(
-          'attacked',
-          row,
-          col,
-          attacker,
-          `Row ${row + 1}: column ${col + 1} is attacked by the queen in row ${attacker + 1} (${how}), ${last ? 'and it is the last column.' : 'try the next column.'}`,
-        )
+        const params = { row: row + 1, col: col + 1, attacker: attacker + 1, how }
+        push('attacked', row, col, attacker, last ? t('queens.attackedLast', params) : t('queens.attackedNext', params))
         continue
       }
       queens.push(col)
       trail[row].push({ col, outcome: 'placed' })
       for (let below = row + 1; below < n; below++) trail[below] = []
-      const next = row + 1 === n ? 'That fills the last row.' : `Move on to row ${row + 2}.`
-      push('place', row, col, null, `Row ${row + 1}: column ${col + 1} is safe. Place a queen there (choose). ${next}`)
+      const next = row + 1 === n ? t('queens.fillsLast') : t('queens.moveOn', { row: row + 2 })
+      push('place', row, col, null, `${t('queens.place', { row: row + 1, col: col + 1 })} ${next}`)
 
       if (row + 1 === n) {
         solutions++
         const isFirst = first === null
         if (isFirst) first = [...queens]
-        push(
-          'solution',
-          row,
-          col,
-          null,
-          `Every row has a queen: solution ${solutions}, columns ${columns(queens)}.${isFirst ? ' It is the first one found, so it is the one to print.' : ''} Keep searching for more.`,
-        )
+        const params = { number: solutions, columns: columns(queens) }
+        push('solution', row, col, null, isFirst ? t('queens.solutionFirst', params) : t('queens.solution', params))
       } else {
         place(row + 1)
       }
 
       queens.pop()
       trail[row][trail[row].length - 1].outcome = 'removed'
-      const why = row + 1 === n ? 'that board was complete' : `row ${row + 2} has no column left to try, a dead end`
+      const params = { row: row + 1, col: col + 1, next: row + 2 }
+      const complete = row + 1 === n
       push(
         'remove',
         row,
         col,
         null,
-        `Back in row ${row + 1}: ${why}. Remove the queen from column ${col + 1} (undo)${last ? '. It was the last column of this row.' : ' and try the next column.'}`,
+        complete
+          ? last
+            ? t('queens.removeCompleteLast', params)
+            : t('queens.removeCompleteNext', params)
+          : last
+            ? t('queens.removeDeadLast', params)
+            : t('queens.removeDeadNext', params),
       )
     }
   }
 
-  push('start', 0, null, null, `An empty ${n} by ${n} board. Fill the rows from 1 to ${n}, trying the columns from 1 to ${n} in each row.`)
+  push('start', 0, null, null, t('queens.start', { n }))
   place(0)
   const answer = first === null ? 'none' : columns(first)
   push(
@@ -131,7 +130,7 @@ export function queensFrames(n: number): QueensFrame[] {
     null,
     null,
     null,
-    `Row 1 has tried every column: the search is over. ${solutions} ${solutions === 1 ? 'solution' : 'solutions'}; print ${solutions}, then ${first === null ? 'none' : `the first one, ${answer}`}.`,
+    first === null ? t('queens.doneNone', { count: solutions }) : t('queens.done', { count: solutions, answer }),
     `${solutions}\n${answer}`,
   )
   return frames

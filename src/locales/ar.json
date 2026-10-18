@@ -102,7 +102,7 @@
     "language": "لغة البرمجة",
     "loadingEditor": "جارٍ تحميل المحرر...",
     "editorLabel": "كود {{language}} لمسألة {{title}}",
-    "javaMain": "يجب أن يكون اسم الـ class في Java هو Main.",
+    "javaMain": "يجب أن يكون اسم الـ~class~ في ~Java~ هو `Main`.",
     "submit": "إرسال",
     "running": "جارٍ تشغيل الاختبارات...",
     "logInToSubmit": "سجّل الدخول للإرسال"
@@ -129,7 +129,7 @@
     "pointsAwarded_many": "+{{count}} نقطة",
     "pointsAwarded_other": "+{{count}} نقطة",
     "alreadySolved": "حللت هذه المسألة من قبل، فلا نقاط جديدة.",
-    "compileError": "خطأ في الترجمة (Compile error)",
+    "compileError": "خطأ في الترجمة (~Compile error~)",
     "test": "الاختبار {{number}}:",
     "hiddenTest": "اختبار مخفي:",
     "passed": "نجح",

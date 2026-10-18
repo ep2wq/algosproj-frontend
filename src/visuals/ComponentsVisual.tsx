@@ -1,6 +1,9 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TextWithCode } from '../components/LessonBody'
 import { componentColor } from './componentColors'
 import { componentsFrames, type ComponentsFrame } from './componentsFrames'
+import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 
@@ -36,19 +39,19 @@ function randomGraph(): Graph {
   return { n, edges }
 }
 
-function parseInput(nText: string, edgesText: string): Graph | { field: 'n' | 'edges'; message: string } {
+function parseInput(nText: string, edgesText: string, t: T): Graph | { field: 'n' | 'edges'; message: string } {
   const nTrimmed = nText.trim()
   if (!/^\d+$/.test(nTrimmed) || Number(nTrimmed) < 1 || Number(nTrimmed) > MAX_NODES) {
-    return { field: 'n', message: `n must be a whole number from 1 to ${MAX_NODES}.` }
+    return { field: 'n', message: t('components.invalidN', { max: MAX_NODES }) }
   }
   const n = Number(nTrimmed)
   const parts = edgesText.split(/[,\n]/).map((part) => part.trim()).filter(Boolean)
-  if (parts.length > MAX_EDGES) return { field: 'edges', message: `Use at most ${MAX_EDGES} edges, so the drawing stays readable.` }
+  if (parts.length > MAX_EDGES) return { field: 'edges', message: t('components.tooManyEdges', { count: MAX_EDGES }) }
   const edges: [number, number][] = []
   for (const [index, part] of parts.entries()) {
-    if (!/^\d+\s+\d+$/.test(part)) return { field: 'edges', message: `Write each edge as two node numbers, like 1 2, and separate edges with commas. Edge ${index + 1} is "${part}".` }
+    if (!/^\d+\s+\d+$/.test(part)) return { field: 'edges', message: t('components.badEdge', { index: index + 1, part }) }
     const [u, v] = part.split(/\s+/).map(Number)
-    if (u < 1 || u > n || v < 1 || v > n) return { field: 'edges', message: `Edge ${index + 1}, ${u} ${v}, uses a node outside 1 to ${n}.` }
+    if (u < 1 || u > n || v < 1 || v > n) return { field: 'edges', message: t('components.outsideEdge', { index: index + 1, u, v, n }) }
     edges.push([u, v])
   }
   return { n, edges }
@@ -73,14 +76,14 @@ function nodeClass(frame: ComponentsFrame, node: number) {
   return frame.current === node ? `${color.fill} stroke-warn` : `${color.fill} ${color.stroke}`
 }
 
-function graphLabel(frame: ComponentsFrame) {
+function graphLabel(frame: ComponentsFrame, t: T) {
   const nodes = Array.from({ length: frame.n }, (_, i) => {
     const id = frame.component[i + 1]
-    return `${i + 1} ${id === null ? 'not visited' : `in component ${id}`}`
-  })
-  const edges = frame.edges.length === 0 ? 'no edges' : `edges ${frame.edges.map(([u, v]) => `${u}-${v}`).join(', ')}`
-  const popped = frame.current !== null ? ` Just popped: ${frame.current}.` : ''
-  return `Nodes: ${nodes.join(', ')}. ${edges}.${popped}`
+    return id === null ? t('components.nodeNotVisited', { node: i + 1 }) : t('components.nodeIn', { node: i + 1, id })
+  }).join(t('common.listSeparator'))
+  const edges = frame.edges.length === 0 ? t('components.noEdges') : t('components.edgesList', { list: frame.edges.map(([u, v]) => `${u}-${v}`).join(', ') })
+  if (frame.current === null) return t('components.graphLabel', { nodes, edges })
+  return t('components.graphLabelPopped', { nodes, edges, popped: frame.current })
 }
 
 function Diagram({ frame }: { frame: ComponentsFrame }) {
@@ -122,13 +125,14 @@ function Diagram({ frame }: { frame: ComponentsFrame }) {
 
 // Counting connected components: loop over the nodes, and walk from each unvisited one with a stack.
 export default function ComponentsVisual() {
+  const { t } = useTranslation('visuals')
   const id = useId()
   const [graph, setGraph] = useState(randomGraph)
   const [nText, setNText] = useState('')
   const [edgesText, setEdgesText] = useState('')
   const [inputError, setInputError] = useState<{ field: 'n' | 'edges'; message: string } | null>(null)
 
-  const frames = useMemo(() => componentsFrames(graph.n, graph.edges), [graph])
+  const frames = useMemo(() => componentsFrames(graph.n, graph.edges, t), [graph, t])
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
@@ -149,7 +153,7 @@ export default function ComponentsVisual() {
 
   function handleCustom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const parsed = parseInput(nText, edgesText)
+    const parsed = parseInput(nText, edgesText, t)
     if ('message' in parsed) {
       setInputError(parsed)
       return
@@ -173,12 +177,14 @@ export default function ComponentsVisual() {
       <div className="mt-4 flex flex-wrap gap-2">
         {[
           ['count', current.count],
-          ['loop at node', current.checked ?? '-'],
-          ['popped', current.current ?? '-'],
+          [t('components.loopAt'), current.checked ?? '-'],
+          [t('components.popped'), current.current ?? '-'],
         ].map(([name, value]) => (
           <p key={name} className="inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-1.5">
-            <span className="text-sm text-muted">{name}</span>
-            <span className="text-lg font-semibold tabular-nums">{value}</span>
+            <span className="text-sm text-muted">
+              <TextWithCode text={String(name)} />
+            </span>
+            <span dir="ltr" className="text-lg font-semibold tabular-nums">{value}</span>
           </p>
         ))}
       </div>
@@ -187,18 +193,24 @@ export default function ComponentsVisual() {
         <div
           tabIndex={0}
           role="region"
-          aria-label="Graph drawing, scrolls sideways when wider than the screen"
+          aria-label={t('components.region')}
+          dir="ltr"
           className="overflow-x-auto rounded border border-line bg-surface p-2"
         >
-          <div role="img" aria-label={graphLabel(current)} className="w-max">
+          <div role="img" aria-label={graphLabel(current, t)} className="w-max">
             <Diagram frame={current} />
           </div>
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium">Stack (top on the right)</p>
-          <div aria-label={`Stack: ${current.stack.length === 0 ? 'empty' : current.stack.join(', ')}.`} className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-surface p-1.5">
-            {current.stack.length === 0 && <span className="px-1 text-sm text-muted">empty</span>}
+          <p className="text-sm font-medium">
+            <TextWithCode text={t('components.stackTitle')} />
+          </p>
+          <div
+            aria-label={t('components.stackLabel', { list: current.stack.length === 0 ? t('components.empty') : current.stack.join(', ') })}
+            dir="ltr"
+            className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-surface p-1.5">
+            {current.stack.length === 0 && <span className="px-1 text-sm text-muted">{t('components.empty')}</span>}
             {current.stack.map((node) => (
               <span
                 key={node}
@@ -209,13 +221,15 @@ export default function ComponentsVisual() {
             ))}
           </div>
 
-          <p className="mt-3 text-sm font-medium">Components</p>
+          <p className="mt-3 text-sm font-medium">
+            <TextWithCode text={t('components.components')} />
+          </p>
           <ul className="mt-1 flex flex-col gap-1 text-sm">
-            {groups.length === 0 && <li className="text-muted">none yet</li>}
+            {groups.length === 0 && <li className="text-muted">{t('components.noneYet')}</li>}
             {groups.map(([group, nodes]) => (
               <li key={group} className="flex items-center gap-2">
                 <span className={`inline-block size-3 rounded-sm border ${componentColor(group).bg} ${componentColor(group).border}`} aria-hidden="true" />
-                Component {group}: {nodes.join(', ')}
+                <TextWithCode text={t('components.component', { id: group, nodes: nodes.join(', ') })} />
               </li>
             ))}
           </ul>
@@ -225,34 +239,36 @@ export default function ComponentsVisual() {
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-full border-2 border-muted bg-surface" aria-hidden="true" />
-          Not visited
+          {t('components.legendNotVisited')}
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-full border-2 border-warn bg-surface" aria-hidden="true" />
-          Just popped, with its edges
+          <TextWithCode text={t('components.legendPopped')} />
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-accent bg-accent-soft" aria-hidden="true" />
-          Pushed in this step
+          <TextWithCode text={t('components.legendPushed')} />
         </li>
-        <li>Colours: one per component.</li>
+        <li>
+          <TextWithCode text={t('components.legendColours')} />
+        </li>
       </ul>
 
       {current.output !== null && (
         <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
-          Output: <span className="font-mono">{current.output}</span>
+          {t('common.output')} <span className="font-mono">{current.output}</span>
         </p>
       )}
 
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
-        {current.description}
+        <TextWithCode text={current.description} />
       </p>
 
       <PlaybackControls playback={playback} />
 
       <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
         <button type="button" onClick={() => restart(randomGraph())} className={buttonClass}>
-          New random example
+          {t('common.newRandomExample')}
         </button>
         <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
           <div className="flex flex-wrap items-end gap-2">
@@ -266,6 +282,7 @@ export default function ComponentsVisual() {
                 inputMode="numeric"
                 autoComplete="off"
                 spellCheck={false}
+                dir="ltr"
                 value={nText}
                 onChange={(event) => setNText(event.target.value)}
                 placeholder="5"
@@ -276,32 +293,32 @@ export default function ComponentsVisual() {
             </div>
             <div className="min-w-0 flex-1 basis-40">
               <label htmlFor={`${id}-edges`} className="block text-sm font-medium">
-                Your own edges
+                <TextWithCode text={t('components.ownEdges')} />
               </label>
               <input
                 id={`${id}-edges`}
                 type="text"
                 autoComplete="off"
                 spellCheck={false}
+                dir="ltr"
                 value={edgesText}
                 onChange={(event) => setEdgesText(event.target.value)}
-                placeholder="e.g. 1 2, 2 3, 4 5"
+                placeholder={t('components.placeholder')}
                 aria-invalid={inputError?.field === 'edges'}
                 aria-describedby={describedBy('edges')}
                 className={`mt-1 ${inputClass('edges')}`}
               />
             </div>
             <button type="submit" className={`${buttonClass} shrink-0`}>
-              Use these
+              {t('common.useThese')}
             </button>
           </div>
           <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
-            n from 1 to {MAX_NODES}, and 0 to {MAX_EDGES} edges written as u v and separated by commas, with nodes from 1 to n.
-            Duplicate edges and self-loops are allowed, as in the problem (which allows up to 1000 nodes and 5000 edges).
+            <TextWithCode text={t('components.hint', { maxNodes: MAX_NODES, maxEdges: MAX_EDGES })} />
           </p>
           {inputError && (
             <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
-              {inputError.message}
+              <TextWithCode text={inputError.message} />
             </p>
           )}
         </form>

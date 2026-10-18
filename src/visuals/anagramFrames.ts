@@ -1,6 +1,8 @@
 // Pure function for Valid anagram, as in the lesson: compare the lengths first, then add 1 for
 // each letter of s and take 1 away for each letter of t. The player only reads these.
 
+import type { T } from './i18n'
+
 export type CountEntry = { letter: string; count: number }
 
 export type AnagramFrame = {
@@ -15,15 +17,9 @@ export type AnagramFrame = {
   description: string
 }
 
-function letters(n: number) {
-  return n === 1 ? '1 letter' : `${n} letters`
-}
-
-function quoted(word: string) {
-  return word === '' ? 'an empty word' : `"${word}"`
-}
-
-export function anagramFrames(s: string, t: string): AnagramFrame[] {
+export function anagramFrames(s: string, t: string, tr: T): AnagramFrame[] {
+  const letters = (n: number) => tr('anagram.letters', { count: n })
+  const quoted = (word: string) => (word === '' ? tr('anagram.emptyWord') : tr('anagram.quoted', { word }))
   const counts: CountEntry[] = []
   const frame = (parts: Partial<Omit<AnagramFrame, 's' | 't' | 'counts' | 'description'>> & { pass: AnagramFrame['pass']; description: string }): AnagramFrame => ({
     s,
@@ -42,13 +38,13 @@ export function anagramFrames(s: string, t: string): AnagramFrame[] {
       frame({
         pass: 'length',
         output: 'no',
-        description: `Compare the lengths first: s, ${quoted(s)}, has ${letters(s.length)} and t, ${quoted(t)}, has ${letters(t.length)}. Different lengths never match. Print no.`,
+        description: tr('anagram.lengthsDiffer', { sWord: quoted(s), sLetters: letters(s.length), tWord: quoted(t), tLetters: letters(t.length) }),
       }),
     ]
   }
 
-  const same = s.length === 0 ? 's and t are both empty, so the lengths match' : `s, ${quoted(s)}, and t, ${quoted(t)}, both have ${letters(s.length)}`
-  const frames = [frame({ pass: 'length', description: `Compare the lengths first: ${same}. Start counting with an empty map.` })]
+  const same = s.length === 0 ? tr('anagram.lengthsSameEmpty') : tr('anagram.lengthsSame', { sWord: quoted(s), tWord: quoted(t), letters: letters(s.length) })
+  const frames = [frame({ pass: 'length', description: same })]
 
   for (let i = 0; i < s.length; i++) {
     const letter = s[i]
@@ -56,7 +52,7 @@ export function anagramFrames(s: string, t: string): AnagramFrame[] {
     if (entry) entry.count++
     else counts.push({ letter, count: 1 })
     const count = entry ? entry.count : 1
-    frames.push(frame({ pass: 's', index: i, changed: letter, description: `Pass 1, position ${i} of s, letter ${letter}: add 1, so ${letter}: ${count}.` }))
+    frames.push(frame({ pass: 's', index: i, changed: letter, description: tr('anagram.passS', { i, letter, value: count }) }))
   }
 
   for (let i = 0; i < t.length; i++) {
@@ -65,9 +61,7 @@ export function anagramFrames(s: string, t: string): AnagramFrame[] {
     if (entry) entry.count--
     else counts.push({ letter, count: -1 })
     const count = entry ? entry.count : -1
-    const start = `Pass 2, position ${i} of t, letter ${letter}: take 1 away`
     if (count < 0) {
-      const why = entry ? `, so ${letter} drops to -1` : `: ${letter} was never counted, so it drops to -1`
       frames.push(
         frame({
           pass: 't',
@@ -75,18 +69,14 @@ export function anagramFrames(s: string, t: string): AnagramFrame[] {
           changed: letter,
           below: letter,
           output: 'no',
-          description: `${start}${why}. A count below 0 means t uses ${letter} more often than s. Print no.`,
+          description: entry ? tr('anagram.passTBelowCounted', { i, letter }) : tr('anagram.passTBelowNew', { i, letter }),
         }),
       )
       return frames
     }
-    frames.push(frame({ pass: 't', index: i, changed: letter, description: `${start}, so ${letter}: ${count}.` }))
+    frames.push(frame({ pass: 't', index: i, changed: letter, description: tr('anagram.passT', { i, letter, value: count }) }))
   }
 
-  const done =
-    s.length === 0
-      ? 'Both words are empty, so there is nothing to count and no count is above or below 0.'
-      : 'Every letter of t is taken away and no count went below 0. The lengths are equal, so every count is 0.'
-  frames.push(frame({ pass: 'done', output: 'yes', description: `${done} Print yes.` }))
+  frames.push(frame({ pass: 'done', output: 'yes', description: s.length === 0 ? tr('anagram.doneEmpty') : tr('anagram.done') }))
   return frames
 }

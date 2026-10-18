@@ -4,6 +4,7 @@
 // problem, the output comes out in lexicographic order. The player only reads these.
 
 import type { CallNode } from './callTree'
+import { joinAnd, value, type T } from './i18n'
 
 export type PermKind = 'start' | 'choose' | 'print' | 'undo' | 'done'
 
@@ -21,13 +22,8 @@ export type PermFrame = {
   description: string
 }
 
-function joinAnd(items: string[]) {
-  if (items.length <= 1) return items.join('')
-  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
-}
-
 // Expects 1 or more distinct items.
-export function permutationFrames(items: string[]): { tree: CallNode[]; frames: PermFrame[] } {
+export function permutationFrames(items: string[], t: T): { tree: CallNode[]; frames: PermFrame[] } {
   const n = items.length
   const tree: CallNode[] = []
   const frames: PermFrame[] = []
@@ -40,7 +36,7 @@ export function permutationFrames(items: string[]): { tree: CallNode[]; frames: 
   for (let k = 2; k <= n; k++) total *= k
 
   const show = (indexes: number[]) => `[${indexes.map((i) => items[i]).join(', ')}]`
-  const names = (indexes: number[]) => joinAnd(indexes.map((i) => items[i]))
+  const names = (indexes: number[]) => joinAnd(t, indexes.map((i) => value(t, items[i])))
 
   function push(kind: PermKind, focus: number | null, skipped: number[], description: string) {
     frames.push({
@@ -70,7 +66,7 @@ export function permutationFrames(items: string[]): { tree: CallNode[]; frames: 
       const line = cur.map((i) => items[i]).join(' ')
       results.push(line)
       printed.push(id)
-      push('print', null, [], `Base case: cur holds all ${n} items, so print ${line}. Printed so far: ${results.length} of ${n}! = ${total}.`)
+      push('print', null, [], t('permutations.print', { n, line, printed: results.length, total }))
       return
     }
     // Skips not yet named in a step's text: the used items passed before the first choice.
@@ -83,9 +79,10 @@ export function permutationFrames(items: string[]): { tree: CallNode[]; frames: 
       used[i] = true
       cur.push(i)
       call(id)
-      const skipText = unnamed.length === 0 ? '' : `Skip ${names(unnamed)}: already used. `
-      const then = cur.length === n ? 'cur is full: a base case.' : `It fills position ${cur.length + 1}.`
-      push('choose', i, unnamed, `${skipText}Choose ${items[i]}: mark it used and append it, cur = ${show(cur)}. Explore: call again, at depth ${cur.length}. ${then}`)
+      const parts = unnamed.length === 0 ? [] : [t('permutations.skipUsed', { items: names(unnamed), count: unnamed.length })]
+      parts.push(t('permutations.choose', { item: items[i], cur: show(cur), depth: cur.length }))
+      parts.push(cur.length === n ? t('permutations.thenFull') : t('permutations.thenFills', { position: cur.length + 1 }))
+      push('choose', i, unnamed, parts.join(' '))
       unnamed = []
       explore()
       stack.pop()
@@ -96,14 +93,16 @@ export function permutationFrames(items: string[]): { tree: CallNode[]; frames: 
       let next = i + 1
       const passed: number[] = []
       while (next < n && used[next]) passed.push(next++)
-      const skipText2 = passed.length === 0 ? '' : ` Skip ${names(passed)}: ${passed.length === 1 ? 'it is' : 'they are'} still used.`
-      const after =
+      const undoParts = [t('permutations.undo', { depth: cur.length, item: items[i], cur: show(cur) })]
+      if (passed.length > 0) undoParts.push(t('permutations.stillUsed', { items: names(passed), count: passed.length }))
+      undoParts.push(
         next < n
-          ? `${skipText2} Next, try ${items[next]}.`
+          ? t('permutations.nextTry', { item: items[next] })
           : stack.length === 1
-            ? `${skipText2} The first call has tried every item: the search is over.`
-            : `${skipText2} No item is left to try at this depth, so this call returns to depth ${cur.length - 1}.`
-      push('undo', i, passed, `Back at depth ${cur.length}. Undo: pop ${items[i]} and clear its mark, cur = ${show(cur)}.${after}`)
+            ? t('permutations.searchOver')
+            : t('permutations.returns', { depth: cur.length - 1 }),
+      )
+      push('undo', i, passed, undoParts.join(' '))
     }
   }
 
@@ -112,10 +111,10 @@ export function permutationFrames(items: string[]): { tree: CallNode[]; frames: 
     'start',
     null,
     [],
-    `Call with cur empty and nothing used, at depth 0. Each call fills the next position, trying the items in the order given: ${items.join(', ')}.`,
+    t('permutations.start', { items: items.join(', ') }),
   )
   explore()
   stack.pop()
-  push('done', null, [], `Done: ${n}! = ${total} permutations from ${tree.length} calls. They come out in the order the items were tried at every position.`)
+  push('done', null, [], t('permutations.done', { n, total, calls: tree.length }))
   return { tree, frames }
 }

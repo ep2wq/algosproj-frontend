@@ -1,15 +1,18 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TextWithCode } from '../components/LessonBody'
+import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
-import { SOLUTIONS, warmupFrames, type WarmupFrame } from './warmupFrames'
+import { PROMPT, SOLUTIONS, warmupFrames, type WarmupFrame } from './warmupFrames'
 
 const LIMIT = 1000000000 // the problem's range: -1000000000 to 1000000000
 type Language = keyof typeof SOLUTIONS
 
 // Returns the number, or an error message to show.
-function parseNumber(text: string): number | string {
+function parseNumber(text: string, t: T): number | string {
   const trimmed = text.trim()
-  if (!/^-?\d+$/.test(trimmed) || Math.abs(Number(trimmed)) > LIMIT) return `Enter one whole number from -${LIMIT} to ${LIMIT}.`
+  if (!/^-?\d+$/.test(trimmed) || Math.abs(Number(trimmed)) > LIMIT) return t('warmup.invalid', { limit: LIMIT })
   return Number(trimmed) || 0 // turns -0 into 0
 }
 
@@ -22,7 +25,7 @@ function Variables({ frame }: { frame: WarmupFrame }) {
     ['answer', frame.answer === null ? null : String(frame.answer)],
   ]
   return (
-    <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 border-t border-line pt-2 font-mono text-xs">
+    <dl dir="ltr" className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 border-t border-line pt-2 font-mono text-xs">
       {rows.map(([name, value]) => (
         <div key={name} className="contents">
           <dt className="text-muted">{name}</dt>
@@ -35,6 +38,7 @@ function Variables({ frame }: { frame: WarmupFrame }) {
 
 // The read, compute, print cycle of "Double the number", with the grader on both sides.
 export default function WarmupVisual() {
+  const { t } = useTranslation('visuals')
   const id = useId()
   const [n, setN] = useState(21)
   const [prompt, setPrompt] = useState(false)
@@ -42,7 +46,7 @@ export default function WarmupVisual() {
   const [customText, setCustomText] = useState('21')
   const [inputError, setInputError] = useState('')
 
-  const frames = useMemo(() => warmupFrames(n, prompt), [n, prompt])
+  const frames = useMemo(() => warmupFrames(n, prompt, t), [n, prompt, t])
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
@@ -51,7 +55,7 @@ export default function WarmupVisual() {
 
   function handleCustom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const parsed = parseNumber(customText)
+    const parsed = parseNumber(customText, t)
     if (typeof parsed === 'string') {
       setInputError(parsed)
       return
@@ -66,7 +70,7 @@ export default function WarmupVisual() {
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <div>
           <label htmlFor={`${id}-language`} className="text-sm font-medium">
-            Language
+            {t('warmup.language')}
           </label>
           <select
             id={`${id}-language`}
@@ -86,20 +90,25 @@ export default function WarmupVisual() {
 
       <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_3fr_1fr]">
         <div className={boxClass}>
-          <p className="text-sm font-medium">Input (standard input)</p>
+          <p className="text-sm font-medium">
+            <TextWithCode text={t('warmup.inputTitle')} />
+          </p>
           <p
+            dir="ltr"
             className={`mt-2 rounded border-2 px-2 py-1 font-mono text-sm break-all motion-safe:transition-colors motion-safe:duration-300 ${
               inputRead ? 'border-line bg-paper text-muted' : 'border-warn bg-surface text-ink'
             }`}
           >
             {current.input}
           </p>
-          <p className="mt-1 text-xs text-muted">{inputRead ? 'Read by your program.' : 'Waiting to be read.'}</p>
+          <p className="mt-1 text-xs text-muted">{inputRead ? t('warmup.inputRead') : t('warmup.inputWaiting')}</p>
         </div>
 
         <div className={boxClass}>
-          <p className="text-sm font-medium">Your program ({SOLUTIONS[language].label})</p>
-          <pre tabIndex={0} className="mt-2 overflow-x-auto rounded bg-paper py-1 font-mono text-xs leading-5">
+          <p className="text-sm font-medium">
+            <TextWithCode text={t('warmup.program', { language: SOLUTIONS[language].label })} />
+          </p>
+          <pre tabIndex={0} dir="ltr" className="mt-2 overflow-x-auto rounded bg-paper py-1 font-mono text-xs leading-5">
             {lines.map(([key, text], index) => (
               <code
                 key={index}
@@ -115,34 +124,38 @@ export default function WarmupVisual() {
         </div>
 
         <div className={boxClass}>
-          <p className="text-sm font-medium">Output (standard output)</p>
-          <div className="mt-2 min-h-8 rounded border border-line px-2 py-1 font-mono text-sm break-all">
-            {current.output.length === 0 && <span className="text-muted">nothing yet</span>}
+          <p className="text-sm font-medium">
+            <TextWithCode text={t('warmup.outputTitle')} />
+          </p>
+          <div dir="ltr" className="mt-2 min-h-8 rounded border border-line px-2 py-1 font-mono text-sm break-all">
+            {current.output.length === 0 && <span className="text-muted">{t('warmup.nothingYet')}</span>}
             {current.output.map((line, index) => (
               <span key={index} className="block">
                 {line}
               </span>
             ))}
           </div>
-          <p className="mt-1 text-xs text-muted">Expected: {2 * n}</p>
+          <p className="mt-1 text-xs text-muted">
+            <TextWithCode text={t('warmup.expected', { expected: 2 * n })} />
+          </p>
         </div>
       </div>
 
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-warn bg-warn" aria-hidden="true" />
-          Line running in this step
+          {t('warmup.legendLine')}
         </li>
       </ul>
 
       {current.verdict && (
         <p className={`mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold ${current.passed ? 'text-pass' : 'text-fail'}`}>
-          {current.verdict}
+          <TextWithCode text={current.verdict} />
         </p>
       )}
 
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
-        {current.description}
+        <TextWithCode text={current.description} />
       </p>
 
       <PlaybackControls playback={playback} />
@@ -150,16 +163,17 @@ export default function WarmupVisual() {
       <div className="mt-5 flex flex-col gap-3 border-t border-line pt-4">
         <form onSubmit={handleCustom} noValidate>
           <label htmlFor={`${id}-number`} className="block text-sm font-medium">
-            Input number
+            {t('warmup.inputNumber')}
           </label>
           <div className="mt-1 flex max-w-sm gap-2">
             <input
               id={`${id}-number`}
               type="text"
               autoComplete="off"
+              dir="ltr"
               value={customText}
               onChange={(event) => setCustomText(event.target.value)}
-              placeholder="e.g. 21"
+              placeholder={t('warmup.placeholder')}
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-number-hint${inputError ? ` ${id}-number-error` : ''}`}
               className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
@@ -167,15 +181,15 @@ export default function WarmupVisual() {
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>
-              Use this
+              {t('common.useThis')}
             </button>
           </div>
           <p id={`${id}-number-hint`} className="mt-1 text-xs text-muted">
-            A whole number from -{LIMIT} to {LIMIT}, as in the problem. The answer, 2 * n, still fits in a 32-bit int.
+            <TextWithCode text={t('warmup.hint', { limit: LIMIT })} />
           </p>
           {inputError && (
             <p id={`${id}-number-error`} role="alert" className="mt-1 text-sm text-fail">
-              {inputError}
+              <TextWithCode text={inputError} />
             </p>
           )}
         </form>
@@ -189,7 +203,9 @@ export default function WarmupVisual() {
             }}
             className="mt-0.5 size-4"
           />
-          <span>Also print a prompt like "Enter a number:"</span>
+          <span>
+            <TextWithCode text={t('warmup.promptOption', { prompt: PROMPT })} />
+          </span>
         </label>
       </div>
     </div>

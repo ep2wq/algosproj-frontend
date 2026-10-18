@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ApiError, getActivity, type ActivityEntry, type Page } from '../../api'
 import Pagination from '../../components/Pagination'
-import { controlClass, EVENT_LABELS, formatTime } from './format'
+import { controlClass, EVENTS, formatTime } from './format'
 import { alertClass, primaryButton, secondaryButton } from './styles'
 
 const EMPTY = { event: '', user: '', from: '', to: '', page: '' }
@@ -19,6 +20,7 @@ function Who({ entry }: { entry: ActivityEntry }) {
 
 // /admin/activity, owners only (OwnerRoute): every user's register, login, logout and ban events.
 export default function AdminActivityPage() {
+  const { t } = useTranslation()
   const [params, setParams] = useSearchParams()
   const key = params.toString()
   const filters = { ...EMPTY, ...Object.fromEntries(params) }
@@ -35,11 +37,11 @@ export default function AdminActivityPage() {
           setError('')
         }
       })
-      .catch((err) => active && setError(err instanceof ApiError ? err.message : 'Could not load the activity.'))
+      .catch((err) => active && setError(err instanceof ApiError ? err.message : t('admin.activity.loadFailed')))
     return () => {
       active = false
     }
-  }, [key])
+  }, [key, t])
 
   function apply(next: typeof filters) {
     setParams(Object.fromEntries(Object.entries(next).filter(([, value]) => value)))
@@ -52,44 +54,44 @@ export default function AdminActivityPage() {
 
   return (
     <div className="max-w-5xl">
-      <h1 className="text-3xl font-semibold tracking-tight">Admin: activity</h1>
-      <p className="mt-2 text-muted">Registrations, logins, logouts and bans, newest first. The date filters use UTC days.</p>
+      <h1 className="text-3xl font-semibold tracking-tight">{t('admin.activity.title')}</h1>
+      <p className="mt-2 text-muted">{t('admin.activity.intro')}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <label htmlFor="activity-event" className="text-sm font-medium">
-            Event
+            {t('admin.activity.event')}
           </label>
           <select id="activity-event" value={form.event} onChange={(event) => setForm({ ...form, event: event.target.value })} className={controlClass}>
-            <option value="">All events</option>
-            {Object.entries(EVENT_LABELS).map(([value, label]) => (
+            <option value="">{t('admin.activity.allEvents')}</option>
+            {EVENTS.map((value) => (
               <option key={value} value={value}>
-                {label}
+                {t(`admin.events.${value}`)}
               </option>
             ))}
           </select>
         </div>
         <div>
           <label htmlFor="activity-user" className="text-sm font-medium">
-            User (id or email)
+            {t('admin.activity.userFilter')}
           </label>
           <input id="activity-user" type="text" value={form.user} onChange={(event) => setForm({ ...form, user: event.target.value })} className={controlClass} />
         </div>
         <div>
           <label htmlFor="activity-from" className="text-sm font-medium">
-            From
+            {t('admin.common.from')}
           </label>
           <input id="activity-from" type="date" value={form.from} onChange={(event) => setForm({ ...form, from: event.target.value })} className={controlClass} />
         </div>
         <div>
           <label htmlFor="activity-to" className="text-sm font-medium">
-            To
+            {t('admin.common.to')}
           </label>
           <input id="activity-to" type="date" value={form.to} onChange={(event) => setForm({ ...form, to: event.target.value })} className={controlClass} />
         </div>
         <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-4">
           <button type="submit" className={primaryButton}>
-            Filter
+            {t('admin.common.filter')}
           </button>
           <button
             type="button"
@@ -99,7 +101,7 @@ export default function AdminActivityPage() {
             }}
             className={secondaryButton}
           >
-            Clear filters
+            {t('admin.common.clearFilters')}
           </button>
         </div>
       </form>
@@ -109,9 +111,9 @@ export default function AdminActivityPage() {
           {error}
         </p>
       )}
-      {!error && result === null && <p className="mt-6 text-muted">Loading activity...</p>}
+      {!error && result === null && <p className="mt-6 text-muted">{t('admin.activity.loading')}</p>}
       {result !== null && result.data.length === 0 && (
-        <p className="mt-6 rounded border border-line bg-surface px-4 py-6 text-center text-muted">No activity matches these filters.</p>
+        <p className="mt-6 rounded border border-line bg-surface px-4 py-6 text-center text-muted">{t('admin.activity.noMatch')}</p>
       )}
 
       {result !== null && result.data.length > 0 && (
@@ -119,12 +121,12 @@ export default function AdminActivityPage() {
           <ul className="mt-6 divide-y divide-line rounded border border-line bg-surface md:hidden">
             {result.data.map((entry) => (
               <li key={entry.id} className="px-4 py-3 text-sm">
-                <p className="font-medium">{EVENT_LABELS[entry.event] ?? entry.event}</p>
+                <p className="font-medium">{t(`admin.events.${entry.event}`, { defaultValue: entry.event })}</p>
                 <p className="mt-1">
                   <Who entry={entry} />
                 </p>
                 <p className="mt-1 break-all text-muted">
-                  {formatTime(entry.created_at)} · {entry.ip ?? 'no IP'} · {entry.user_agent ?? 'no browser'}
+                  {formatTime(entry.created_at)} · {entry.ip ?? t('admin.common.noIp')} · {entry.user_agent ?? t('admin.common.noBrowser')}
                 </p>
               </li>
             ))}
@@ -135,19 +137,19 @@ export default function AdminActivityPage() {
               <thead className="border-b border-line text-muted">
                 <tr>
                   <th scope="col" className="px-3 py-2 font-medium">
-                    Time
+                    {t('admin.common.time')}
                   </th>
                   <th scope="col" className="px-3 py-2 font-medium">
-                    Event
+                    {t('admin.activity.event')}
                   </th>
                   <th scope="col" className="px-3 py-2 font-medium">
-                    User
+                    {t('admin.activity.user')}
                   </th>
                   <th scope="col" className="px-3 py-2 font-medium">
-                    IP
+                    {t('admin.common.ip')}
                   </th>
                   <th scope="col" className="px-3 py-2 font-medium">
-                    Browser
+                    {t('admin.activity.browser')}
                   </th>
                 </tr>
               </thead>
@@ -155,7 +157,7 @@ export default function AdminActivityPage() {
                 {result.data.map((entry) => (
                   <tr key={entry.id}>
                     <td className="px-3 py-2 whitespace-nowrap text-muted">{formatTime(entry.created_at)}</td>
-                    <td className="px-3 py-2">{EVENT_LABELS[entry.event] ?? entry.event}</td>
+                    <td className="px-3 py-2">{t(`admin.events.${entry.event}`, { defaultValue: entry.event })}</td>
                     <td className="px-3 py-2">
                       <Who entry={entry} />
                     </td>

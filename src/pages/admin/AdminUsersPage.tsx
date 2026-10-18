@@ -1,15 +1,17 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ApiError, getAdminUsers, type AdminUserRow, type Page } from '../../api'
 import BannedBadge from '../../components/BannedBadge'
 import Pagination from '../../components/Pagination'
-import { controlClass, formatTime, ROLE_LABELS } from './format'
+import { controlClass, formatTime } from './format'
 import { alertClass, primaryButton, secondaryButton } from './styles'
 
 const EMPTY = { search: '', role: '', banned: '', page: '' }
 
 // /admin/users: search, filters and the page live in the address, so Back and links keep them.
 export default function AdminUsersPage() {
+  const { t } = useTranslation()
   const [params, setParams] = useSearchParams()
   const key = params.toString()
   const filters = { ...EMPTY, ...Object.fromEntries(params) }
@@ -26,11 +28,11 @@ export default function AdminUsersPage() {
           setError('')
         }
       })
-      .catch((err) => active && setError(err instanceof ApiError ? err.message : 'Could not load the users.'))
+      .catch((err) => active && setError(err instanceof ApiError ? err.message : t('admin.users.loadFailed')))
     return () => {
       active = false
     }
-  }, [key])
+  }, [key, t])
 
   function apply(next: typeof filters) {
     setParams(Object.fromEntries(Object.entries(next).filter(([, value]) => value)))
@@ -48,12 +50,12 @@ export default function AdminUsersPage() {
 
   return (
     <div className="max-w-5xl">
-      <h1 className="text-3xl font-semibold tracking-tight">Admin: users</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">{t('admin.users.title')}</h1>
 
       <form onSubmit={handleSubmit} className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="sm:col-span-2">
           <label htmlFor="user-search" className="text-sm font-medium">
-            Search by name or email
+            {t('admin.users.search')}
           </label>
           <input
             id="user-search"
@@ -65,18 +67,18 @@ export default function AdminUsersPage() {
         </div>
         <div>
           <label htmlFor="user-role" className="text-sm font-medium">
-            Role
+            {t('admin.users.role')}
           </label>
           <select id="user-role" value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value })} className={controlClass}>
-            <option value="">All roles</option>
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-            <option value="owner">Owner</option>
+            <option value="">{t('admin.users.allRoles')}</option>
+            <option value="user">{t('admin.roles.user')}</option>
+            <option value="admin">{t('admin.roles.admin')}</option>
+            <option value="owner">{t('admin.roles.owner')}</option>
           </select>
         </div>
         <div>
           <label htmlFor="user-banned" className="text-sm font-medium">
-            Status
+            {t('admin.users.status')}
           </label>
           <select
             id="user-banned"
@@ -84,17 +86,17 @@ export default function AdminUsersPage() {
             onChange={(event) => setForm({ ...form, banned: event.target.value })}
             className={controlClass}
           >
-            <option value="">All</option>
-            <option value="0">Not banned</option>
-            <option value="1">Banned</option>
+            <option value="">{t('admin.users.all')}</option>
+            <option value="0">{t('admin.users.notBanned')}</option>
+            <option value="1">{t('admin.common.banned')}</option>
           </select>
         </div>
         <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-4">
           <button type="submit" className={primaryButton}>
-            Search
+            {t('admin.users.searchButton')}
           </button>
           <button type="button" onClick={clear} className={secondaryButton}>
-            Clear filters
+            {t('admin.common.clearFilters')}
           </button>
         </div>
       </form>
@@ -104,9 +106,9 @@ export default function AdminUsersPage() {
           {error}
         </p>
       )}
-      {!error && result === null && <p className="mt-6 text-muted">Loading users...</p>}
+      {!error && result === null && <p className="mt-6 text-muted">{t('admin.users.loading')}</p>}
       {result !== null && result.data.length === 0 && (
-        <p className="mt-6 rounded border border-line bg-surface px-4 py-6 text-center text-muted">No users match these filters.</p>
+        <p className="mt-6 rounded border border-line bg-surface px-4 py-6 text-center text-muted">{t('admin.users.noMatch')}</p>
       )}
 
       {result !== null && result.data.length > 0 && (
@@ -123,7 +125,7 @@ export default function AdminUsersPage() {
                 </div>
                 <p className="mt-1 break-all text-sm">{row.email}</p>
                 <p className="mt-1 text-sm text-muted tabular-nums">
-                  {ROLE_LABELS[row.role]} · {row.points} points · {row.solved_count} solved · joined {formatTime(row.created_at)}
+                  {t('admin.users.card', { role: t(`admin.roles.${row.role}`), points: row.points, solved: row.solved_count, joined: formatTime(row.created_at) })}
                 </p>
               </li>
             ))}
@@ -134,25 +136,25 @@ export default function AdminUsersPage() {
               <thead className="border-b border-line text-sm text-muted">
                 <tr>
                   <th scope="col" className="px-4 py-2 font-medium">
-                    Name
+                    {t('admin.users.name')}
                   </th>
                   <th scope="col" className="px-4 py-2 font-medium">
-                    Email
+                    {t('admin.users.email')}
                   </th>
                   <th scope="col" className="px-4 py-2 font-medium">
-                    Role
+                    {t('admin.users.role')}
                   </th>
                   <th scope="col" className="px-4 py-2 font-medium">
-                    Status
+                    {t('admin.users.status')}
                   </th>
                   <th scope="col" className="px-4 py-2 text-end font-medium">
-                    Points
+                    {t('admin.users.points')}
                   </th>
                   <th scope="col" className="px-4 py-2 text-end font-medium">
-                    Solved
+                    {t('admin.users.solved')}
                   </th>
                   <th scope="col" className="px-4 py-2 font-medium">
-                    Joined
+                    {t('admin.users.joined')}
                   </th>
                 </tr>
               </thead>
@@ -165,8 +167,8 @@ export default function AdminUsersPage() {
                       </Link>
                     </td>
                     <td className="break-all px-4 py-2 text-sm">{row.email}</td>
-                    <td className="px-4 py-2 text-sm">{ROLE_LABELS[row.role]}</td>
-                    <td className="px-4 py-2">{row.banned_at ? <BannedBadge /> : <span className="text-sm text-muted">Active</span>}</td>
+                    <td className="px-4 py-2 text-sm">{t(`admin.roles.${row.role}`)}</td>
+                    <td className="px-4 py-2">{row.banned_at ? <BannedBadge /> : <span className="text-sm text-muted">{t('admin.users.active')}</span>}</td>
                     <td className="px-4 py-2 text-end tabular-nums">{row.points}</td>
                     <td className="px-4 py-2 text-end tabular-nums">{row.solved_count}</td>
                     <td className="px-4 py-2 text-sm text-muted">{formatTime(row.created_at)}</td>

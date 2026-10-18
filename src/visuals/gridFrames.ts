@@ -2,6 +2,8 @@
 // path with a BFS queue and a dist grid. Neighbours are tried in the lessons' offset order:
 // up, down, left, right. The player only reads these.
 
+import { joinAnd, value, type T } from './i18n'
+
 export type GridMode = 'islands' | 'shortest'
 
 export type Cell = [number, number] // [row, column]
@@ -26,11 +28,6 @@ const OFFSETS: Cell[] = [
 
 export function cellText([row, col]: Cell) {
   return `(${row}, ${col})`
-}
-
-function joinAnd(items: string[]) {
-  if (items.length <= 1) return items.join('')
-  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
 }
 
 function emptyMarks(grid: string[]) {
@@ -61,12 +58,14 @@ function neighbours(grid: string[], [row, col]: Cell) {
 }
 
 // Expects 1 or more rows of the same length, each made of 0 and 1.
-export function islandsFrames(grid: string[]): GridFrame[] {
+export function islandsFrames(grid: string[], t: T): GridFrame[] {
+  const cell = (c: Cell) => value(t, cellText(c))
+  const cells = (list: Cell[]) => joinAnd(t, list.map(cell))
   const marks = emptyMarks(grid)
   const stack: Cell[] = []
   let count = 0
   const frame = frameMaker(grid, marks, stack)
-  const frames = [frame({ description: `Scan row by row, with count = 0.` })]
+  const frames = [frame({ description: t('grid.scanStart') })]
 
   for (let row = 0; row < grid.length; row++) {
     for (let col = 0; col < grid[0].length; col++) {
@@ -80,14 +79,14 @@ export function islandsFrames(grid: string[]): GridFrame[] {
           current: [row, col],
           added: [[row, col]],
           count,
-          description: `${cellText([row, col])} is an unvisited 1: count = ${count}. Mark it and push it on the stack.`,
+          description: t('grid.found', { cell: cell([row, col]), value: count }),
         }),
       )
 
       while (stack.length > 0) {
-        const cell = stack.pop()!
+        const popped = stack.pop()!
         const added: Cell[] = []
-        for (const [r, c] of neighbours(grid, cell)) {
+        for (const [r, c] of neighbours(grid, popped)) {
           if (grid[r][c] === '1' && marks[r][c] === null) {
             marks[r][c] = count
             stack.push([r, c])
@@ -95,11 +94,10 @@ export function islandsFrames(grid: string[]): GridFrame[] {
             island.push([r, c])
           }
         }
-        const pushText = added.length === 0 ? 'No unmarked 1 is up, down, left or right of it.' : `Mark and push its unmarked 1 neighbours: ${joinAnd(added.map(cellText))}.`
-        let doneText = ''
+        const parts = [t('grid.pop', { cell: cell(popped) }), added.length === 0 ? t('grid.noNeighbour') : t('grid.pushNeighbours', { cells: cells(added) })]
         if (stack.length === 0) {
           const inOrder = [...island].sort((a, b) => a[0] - b[0] || a[1] - b[1])
-          doneText = ` The stack is empty: island ${count} is ${joinAnd(inOrder.map(cellText))}.`
+          parts.push(t('grid.islandDone', { island: count, cells: cells(inOrder) }))
           // Unmarked 1s that touch the finished island only at a corner are not part of it.
           const corners = new Map<string, Cell>()
           for (const [row, col] of inOrder) {
@@ -110,22 +108,20 @@ export function islandsFrames(grid: string[]): GridFrame[] {
             }
           }
           const cornerCells = [...corners.values()].sort((a, b) => a[0] - b[0] || a[1] - b[1])
-          if (cornerCells.length > 0) {
-            const one = cornerCells.length === 1
-            doneText += ` ${joinAnd(cornerCells.map(cellText))} ${one ? 'touches' : 'touch'} it only at a corner, so ${one ? 'it is' : 'they are'} not part of it.`
-          }
+          if (cornerCells.length > 0) parts.push(t('grid.cornerTouch', { cells: cells(cornerCells), count: cornerCells.length }))
         }
-        frames.push(frame({ current: cell, added, count, description: `Pop ${cellText(cell)}. ${pushText}${doneText}` }))
+        frames.push(frame({ current: popped, added, count, description: parts.join(' ') }))
       }
     }
   }
 
-  frames.push(frame({ count, output: String(count), description: `The scan has passed the last cell. Print ${count}.` }))
+  frames.push(frame({ count, output: String(count), description: t('grid.scanDone', { result: count }) }))
   return frames
 }
 
 // Expects 1 or more rows of the same length, each made of 0 and 1.
-export function shortestPathFrames(grid: string[]): GridFrame[] {
+export function shortestPathFrames(grid: string[], t: T): GridFrame[] {
+  const cell = (c: Cell) => value(t, cellText(c))
   const marks = emptyMarks(grid)
   const queue: Cell[] = []
   const frame = frameMaker(grid, marks, queue)
@@ -135,42 +131,41 @@ export function shortestPathFrames(grid: string[]): GridFrame[] {
 
   if (startWall || endWall) {
     const oneCell = end[0] === 0 && end[1] === 0
-    const which = oneCell
-      ? 'The only cell, (0, 0), is both the start and the end, and it is a wall'
+    const description = oneCell
+      ? t('grid.wallOnly')
       : startWall && endWall
-        ? 'The start and the end are walls'
+        ? t('grid.wallBoth')
         : startWall
-          ? 'The start, (0, 0), is a wall'
-          : `The end, ${cellText(end)}, is a wall`
-    return [frame({ output: '-1', description: `${which}, so there is no path. Print -1.` })]
+          ? t('grid.wallStart')
+          : t('grid.wallEnd', { end: cell(end) })
+    return [frame({ output: '-1', description })]
   }
 
   marks[0][0] = 0
   queue.push([0, 0])
-  const frames = [frame({ added: [[0, 0]], description: `Neither the start nor the end is a wall. Set dist[0][0] = 0 and queue the start.` })]
+  const frames = [frame({ added: [[0, 0]], description: t('grid.queueStart') })]
 
   while (queue.length > 0) {
-    const cell = queue.shift()!
-    const d = marks[cell[0]][cell[1]]!
+    const taken = queue.shift()!
+    const d = marks[taken[0]][taken[1]]!
     const added: Cell[] = []
-    for (const [r, c] of neighbours(grid, cell)) {
+    for (const [r, c] of neighbours(grid, taken)) {
       if (grid[r][c] === '0' && marks[r][c] === null) {
         marks[r][c] = d + 1
         queue.push([r, c])
         added.push([r, c])
       }
     }
-    const take = `Take ${cellText(cell)} from the front, dist ${d}.`
-    const addText =
-      added.length === 0
-        ? ' No open neighbour is still -1.'
-        : ` ${joinAnd(added.map(cellText))} ${added.length === 1 ? 'is an open neighbour' : 'are open neighbours'} still at -1: dist ${d + 1}, added to the back.`
-    const endText = added.some(([r, c]) => r === end[0] && c === end[1]) ? ` The end, ${cellText(end)}, gets ${d + 1}.` : ''
-    frames.push(frame({ current: cell, added, description: `${take}${addText}${endText}` }))
+    const parts = [
+      t('grid.take', { cell: cell(taken), dist: d }),
+      added.length === 0 ? t('grid.noOpen') : t('grid.openNeighbours', { cells: joinAnd(t, added.map(cell)), count: added.length, dist: d + 1 }),
+    ]
+    if (added.some(([r, c]) => r === end[0] && c === end[1])) parts.push(t('grid.endGets', { end: cell(end), dist: d + 1 }))
+    frames.push(frame({ current: taken, added, description: parts.join(' ') }))
   }
 
   const answer = marks[end[0]][end[1]]
-  const result = answer === null ? `dist of the end is still -1: no path reaches it. Print -1.` : `dist of the end, ${cellText(end)}, is ${answer}. Print ${answer}.`
-  frames.push(frame({ output: String(answer ?? -1), description: `The queue is empty. ${result}` }))
+  const description = answer === null ? t('grid.noPath') : t('grid.pathFound', { end: cell(end), answer })
+  frames.push(frame({ output: String(answer ?? -1), description }))
   return frames
 }

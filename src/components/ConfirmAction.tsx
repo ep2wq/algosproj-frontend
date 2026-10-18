@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ApiError } from '../api'
 
 // A button that opens an in-page confirmation (no browser dialog) with optional inputs, then
@@ -20,6 +21,7 @@ export default function ConfirmAction({
   onConfirm: () => Promise<void>
   onClose?: () => void
 }) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -42,7 +44,7 @@ export default function ConfirmAction({
         const fieldMessages = Object.values(err.fieldErrors).flat()
         setError(fieldMessages.length > 0 ? fieldMessages.join(' ') : err.message)
       } else {
-        setError('Something went wrong. Try again.')
+        setError(t('admin.common.genericError'))
       }
     }
     setBusy(false)
@@ -60,7 +62,7 @@ export default function ConfirmAction({
           {children}
           <div className="flex flex-wrap gap-2">
             <button type="submit" disabled={busy} className={confirmClass}>
-              {busy ? 'Working...' : confirmLabel}
+              {busy ? t('admin.common.working') : confirmLabel}
             </button>
             <button
               type="button"
@@ -68,7 +70,7 @@ export default function ConfirmAction({
               disabled={busy}
               className="rounded border border-line bg-surface px-3 py-1 text-sm hover:border-muted"
             >
-              Cancel
+              {t('admin.common.cancel')}
             </button>
           </div>
         </form>

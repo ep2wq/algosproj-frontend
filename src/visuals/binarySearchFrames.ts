@@ -1,6 +1,8 @@
 // Pure function that turns a sorted array and a target into the steps of a binary search.
 // The player only reads these; there is no animation logic here.
 
+import type { T } from './i18n'
+
 export type SearchFrame = {
   array: number[]
   low: number | null // null once the search has ended without finding the target
@@ -11,7 +13,7 @@ export type SearchFrame = {
   description: string
 }
 
-export function binarySearchFrames(array: number[], target: number): SearchFrame[] {
+export function binarySearchFrames(array: number[], target: number, t: T): SearchFrame[] {
   const frame = (parts: Omit<SearchFrame, 'array' | 'result'> & { result?: number }): SearchFrame => ({
     array: [...array],
     ...parts,
@@ -27,18 +29,18 @@ export function binarySearchFrames(array: number[], target: number): SearchFrame
       high,
       mid: null,
       possible: array.length > 0 ? [low, high] : null,
-      description: `Search for ${target}. Every index from ${low} to ${high} is still possible.`,
+      description: t('binarySearch.start', { target, low, high }),
     }),
   )
 
   while (low <= high) {
     const mid = low + Math.floor((high - low) / 2)
     const value = array[mid]
-    frames.push(frame({ low, high, mid, possible: [low, high], description: `Look at the middle: index ${mid} holds ${value}.` }))
+    frames.push(frame({ low, high, mid, possible: [low, high], description: t('binarySearch.look', { mid, value }) }))
 
     if (value === target) {
       frames.push(
-        frame({ low, high, mid, possible: [mid, mid], result: mid, description: `${value} is the target. Found at index ${mid}.` }),
+        frame({ low, high, mid, possible: [mid, mid], result: mid, description: t('binarySearch.found', { value, mid }) }),
       )
       return frames
     }
@@ -52,7 +54,7 @@ export function binarySearchFrames(array: number[], target: number): SearchFrame
           high,
           mid,
           possible: low <= nextHigh ? [low, nextHigh] : null,
-          description: `${value} is bigger than the target ${target}, so the target can only be on the left. Discard the right half.`,
+          description: t('binarySearch.bigger', { value, target }),
         }),
       )
       high = nextHigh
@@ -64,7 +66,7 @@ export function binarySearchFrames(array: number[], target: number): SearchFrame
           high,
           mid,
           possible: nextLow <= high ? [nextLow, high] : null,
-          description: `${value} is smaller than the target ${target}, so the target can only be on the right. Discard the left half.`,
+          description: t('binarySearch.smaller', { value, target }),
         }),
       )
       low = nextLow
@@ -78,7 +80,7 @@ export function binarySearchFrames(array: number[], target: number): SearchFrame
       mid: null,
       possible: null,
       result: -1,
-      description: "Nothing left to check. The target isn't in the array, so the answer is -1.",
+      description: t('binarySearch.notFound'),
     }),
   )
   return frames

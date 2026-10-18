@@ -1,6 +1,8 @@
 // Pure function for counting inversions with merge sort: count while you merge.
 // The player only reads these.
 
+import { joinAnd, value, type T } from './i18n'
+
 export type InversionFrame = {
   array: number[] // merged ranges are written back after each merge
   range: [number, number] | null // the range being merged, start inclusive, end exclusive
@@ -15,12 +17,7 @@ export type InversionFrame = {
   description: string
 }
 
-function list(values: number[]) {
-  if (values.length === 1) return `${values[0]} is`
-  return `${values.slice(0, -1).join(', ')} and ${values[values.length - 1]} are`
-}
-
-export function inversionFrames(input: number[]): InversionFrame[] {
+export function inversionFrames(input: number[], t: T): InversionFrame[] {
   const a = [...input]
   let total = 0
   const frame = (parts: Partial<Omit<InversionFrame, 'array' | 'total' | 'description'>> & { description: string }): InversionFrame => ({
@@ -37,12 +34,10 @@ export function inversionFrames(input: number[]): InversionFrame[] {
     description: parts.description,
   })
 
-  if (a.length === 0) return [frame({ done: true, description: 'There are no numbers, so there are no pairs: 0 inversions.' })]
-  if (a.length === 1) return [frame({ done: true, description: 'A single number has no pairs: 0 inversions.' })]
+  if (a.length === 0) return [frame({ done: true, description: t('inversions.empty') })]
+  if (a.length === 1) return [frame({ done: true, description: t('inversions.single') })]
 
-  const frames = [
-    frame({ description: 'Merge sort splits the array into halves, sorts each half, and counts inversions while it merges them.' }),
-  ]
+  const frames = [frame({ description: t('inversions.intro') })]
 
   // Sorts a[start..end) and adds the inversions inside it to total.
   function sort(start: number, end: number) {
@@ -61,35 +56,34 @@ export function inversionFrames(input: number[]): InversionFrame[] {
     const at = (took: 'left' | 'right' | null, description: string) =>
       frame({ range, left, right, leftPointer: i, rightPointer: j, merged, took, description })
 
-    frames.push(at(null, `Merge ${left.join(' ')} with ${right.join(' ')}. Both halves are sorted.`))
+    frames.push(at(null, t('inversions.mergeStart', { left: left.join(' '), right: right.join(' ') })))
     while (i < left.length || j < right.length) {
       if (j === right.length || (i < left.length && left[i] <= right[j])) {
         // Take from the left, also on a tie: equal values are not an inversion.
         const tie = j < right.length && left[i] === right[j]
-        const value = left[i]
-        merged.push(value)
+        const taken = left[i]
+        merged.push(taken)
         i++
-        const note = tie ? ` It equals the ${value} on the right. Equal values are not an inversion, so take the left one and add nothing.` : ''
-        frames.push(at('left', `Take ${value} from the left half.${note}`))
+        frames.push(at('left', tie ? t('inversions.takeLeftTie', { value: taken }) : t('inversions.takeLeft', { value: taken })))
       } else {
         const waiting = left.slice(i)
-        const value = right[j]
-        merged.push(value)
+        const taken = right[j]
+        merged.push(taken)
         j++
         total += waiting.length
         const note =
           waiting.length === 0
-            ? 'Nothing is waiting on the left, so add nothing.'
-            : `${list(waiting)} still waiting on the left, so add ${waiting.length}. Total ${total}.`
-        frames.push(at('right', `Take ${value} from the right half. ${note}`))
+            ? t('inversions.nothingWaiting')
+            : t('inversions.waiting', { values: joinAnd(t, waiting.map((item) => value(t, item))), count: waiting.length, total })
+        frames.push(at('right', `${t('inversions.takeRight', { value: taken })} ${note}`))
       }
     }
 
     for (let k = 0; k < merged.length; k++) a[start + k] = merged[k]
-    frames.push(at(null, `Write ${merged.join(' ')} back. This merge added ${total - before}. Total ${total}.`))
+    frames.push(at(null, t('inversions.writeBack', { merged: merged.join(' '), added: total - before, total })))
   }
 
   sort(0, a.length)
-  frames.push(frame({ done: true, description: `Done: the array is sorted, and the total is ${total} ${total === 1 ? 'inversion' : 'inversions'}.` }))
+  frames.push(frame({ done: true, description: t('inversions.done', { count: total }) }))
   return frames
 }

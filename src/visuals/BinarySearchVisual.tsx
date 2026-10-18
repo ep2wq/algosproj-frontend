@@ -1,5 +1,8 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TextWithCode } from '../components/LessonBody'
 import { binarySearchFrames, type SearchFrame } from './binarySearchFrames'
+import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 
@@ -23,21 +26,21 @@ function randomCase() {
 }
 
 // Returns the sorted numbers, or an error message to show.
-function parseNumbers(text: string): number[] | string {
+function parseNumbers(text: string, t: T): number[] | string {
   const parts = text.split(/[\s,]+/).filter(Boolean)
-  if (parts.length === 0) return 'Enter at least one number.'
-  if (parts.length > MAX_NUMBERS) return `Enter at most ${MAX_NUMBERS} numbers.`
+  if (parts.length === 0) return t('common.atLeastOneNumber')
+  if (parts.length > MAX_NUMBERS) return t('common.atMostNumbers', { count: MAX_NUMBERS })
   if (parts.some((part) => !/^\d+$/.test(part) || Number(part) < 1 || Number(part) > 99)) {
-    return 'Use whole numbers from 1 to 99, separated by spaces or commas.'
+    return t('binarySearch.invalid')
   }
   const numbers = parts.map(Number)
-  if (new Set(numbers).size !== numbers.length) return 'Each number can only appear once.'
+  if (new Set(numbers).size !== numbers.length) return t('binarySearch.unique')
   return numbers.sort((a, b) => a - b)
 }
 
-function parseTarget(text: string): number | string {
+function parseTarget(text: string, t: T): number | string {
   const trimmed = text.trim()
-  if (!/^\d+$/.test(trimmed) || Number(trimmed) < 1 || Number(trimmed) > 99) return 'The target must be a whole number from 1 to 99.'
+  if (!/^\d+$/.test(trimmed) || Number(trimmed) < 1 || Number(trimmed) > 99) return t('binarySearch.targetInvalid')
   return Number(trimmed)
 }
 
@@ -61,13 +64,14 @@ function pointerLabels(frame: SearchFrame, index: number) {
 }
 
 const LEGEND = [
-  { label: 'Middle being checked', style: 'border-warn bg-warn' },
-  { label: 'Found', style: 'border-pass bg-pass' },
-  { label: 'Still possible', style: 'border-muted bg-surface' },
-  { label: 'Ruled out', style: 'border-muted/40 bg-paper' },
+  { key: 'middle', style: 'border-warn bg-warn' },
+  { key: 'found', style: 'border-pass bg-pass' },
+  { key: 'possible', style: 'border-muted bg-surface' },
+  { key: 'ruledOut', style: 'border-muted/40 bg-paper' },
 ]
 
 export default function BinarySearchVisual() {
+  const { t } = useTranslation('visuals')
   const id = useId()
   const [initial] = useState(randomCase)
   const [array, setArray] = useState(initial.array)
@@ -77,7 +81,7 @@ export default function BinarySearchVisual() {
   const [customText, setCustomText] = useState('')
   const [inputError, setInputError] = useState('')
 
-  const frames = useMemo(() => binarySearchFrames(array, target), [array, target])
+  const frames = useMemo(() => binarySearchFrames(array, target, t), [array, target, t])
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
@@ -93,7 +97,7 @@ export default function BinarySearchVisual() {
 
   function handleTarget(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const parsed = parseTarget(targetText)
+    const parsed = parseTarget(targetText, t)
     if (typeof parsed === 'string') {
       setTargetError(parsed)
       return
@@ -105,7 +109,7 @@ export default function BinarySearchVisual() {
 
   function handleCustom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const parsed = parseNumbers(customText)
+    const parsed = parseNumbers(customText, t)
     if (typeof parsed === 'string') {
       setInputError(parsed)
       return
@@ -120,12 +124,13 @@ export default function BinarySearchVisual() {
       <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
         <form onSubmit={handleTarget} noValidate>
           <label htmlFor={`${id}-target`} className="text-sm font-medium">
-            Target
+            <TextWithCode text={t('binarySearch.target')} />
           </label>
           <input
             id={`${id}-target`}
             type="text"
             inputMode="numeric"
+            dir="ltr"
             value={targetText}
             onChange={(event) => setTargetText(event.target.value)}
             aria-invalid={Boolean(targetError)}
@@ -135,11 +140,11 @@ export default function BinarySearchVisual() {
             }`}
           />
           <button type="submit" className={`${buttonClass} ms-2 py-1`}>
-            Search
+            {t('binarySearch.search')}
           </button>
           {targetError && (
             <p id={`${id}-target-error`} role="alert" className="mt-1 text-sm text-fail">
-              {targetError}
+              <TextWithCode text={targetError} />
             </p>
           )}
         </form>
@@ -148,7 +153,8 @@ export default function BinarySearchVisual() {
 
       <div
         role="img"
-        aria-label={`Sorted array: ${current.array.join(', ')}. Target: ${target}.`}
+        aria-label={t('binarySearch.label', { values: current.array.join(', '), target })}
+        dir="ltr"
         className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
       >
         {current.array.map((value, index) => (
@@ -165,37 +171,40 @@ export default function BinarySearchVisual() {
       </div>
 
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-        {LEGEND.map(({ label, style }) => (
-          <li key={label} className="flex items-center gap-1.5">
+        {LEGEND.map(({ key, style }) => (
+          <li key={key} className="flex items-center gap-1.5">
             <span className={`inline-block size-3 rounded-sm border ${style}`} aria-hidden="true" />
-            {label}
+            {t(`binarySearch.legend.${key}`)}
           </li>
         ))}
-        <li>L, M, H: low, mid, high. Small numbers: indices.</li>
+        <li>
+          <TextWithCode text={t('binarySearch.pointers')} />
+        </li>
       </ul>
 
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
-        {current.description}
+        <TextWithCode text={current.description} />
       </p>
 
       <PlaybackControls playback={playback} />
 
       <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
         <button type="button" onClick={handleRandom} className={buttonClass}>
-          New random array
+          <TextWithCode text={t('common.newRandomArray')} />
         </button>
         <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
           <label htmlFor={`${id}-numbers`} className="block text-sm font-medium">
-            Your own numbers
+            {t('common.yourOwnNumbers')}
           </label>
           <div className="mt-1 flex gap-2">
             <input
               id={`${id}-numbers`}
               type="text"
               inputMode="numeric"
+              dir="ltr"
               value={customText}
               onChange={(event) => setCustomText(event.target.value)}
-              placeholder="e.g. 4 15 8 23"
+              placeholder={t('binarySearch.placeholder')}
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-numbers-hint${inputError ? ` ${id}-numbers-error` : ''}`}
               className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
@@ -203,15 +212,15 @@ export default function BinarySearchVisual() {
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>
-              Use these
+              {t('common.useThese')}
             </button>
           </div>
           <p id={`${id}-numbers-hint`} className="mt-1 text-xs text-muted">
-            Up to {MAX_NUMBERS} different numbers from 1 to 99, separated by spaces or commas. They are sorted for you.
+            <TextWithCode text={t('binarySearch.hint', { count: MAX_NUMBERS })} />
           </p>
           {inputError && (
             <p id={`${id}-numbers-error`} role="alert" className="mt-1 text-sm text-fail">
-              {inputError}
+              <TextWithCode text={inputError} />
             </p>
           )}
         </form>

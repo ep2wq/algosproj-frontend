@@ -1,4 +1,6 @@
+import type { TFunction } from 'i18next'
 import { useEffect, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   ApiError,
@@ -25,8 +27,8 @@ const POINTS: Record<string, number> = { easy: 10, medium: 20, hard: 30 }
 // Long tests are cut short in the table; the edit form shows them in full.
 const PREVIEW_LENGTH = 200
 
-function preview(text: string): string {
-  return text.length > PREVIEW_LENGTH ? `${text.slice(0, PREVIEW_LENGTH)}... (${text.length} characters)` : text
+function preview(text: string, t: TFunction): string {
+  return text.length > PREVIEW_LENGTH ? t('admin.problem.preview', { start: text.slice(0, PREVIEW_LENGTH), length: text.length }) : text
 }
 
 // The add and edit form for one test case.
@@ -43,6 +45,7 @@ function TestCaseForm({
   onSave: (data: TestCaseInput) => Promise<void>
   onCancel?: () => void
 }) {
+  const { t } = useTranslation()
   const [form, setForm] = useState(initial)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -58,7 +61,7 @@ function TestCaseForm({
       setForm(initial)
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) setFieldErrors(err.fieldErrors)
-      setError(err instanceof ApiError ? err.message : 'Could not save the test case. Try again.')
+      setError(err instanceof ApiError ? err.message : t('admin.problem.testSaveFailed'))
     }
     setBusy(false)
   }
@@ -68,14 +71,14 @@ function TestCaseForm({
       <div className="grid gap-3 md:grid-cols-2">
         <TextAreaField
           id={`${idPrefix}-input`}
-          label="Input (standard input, sent exactly as typed)"
+          label={t('admin.problem.inputLabel')}
           value={form.input}
           onChange={(input) => setForm({ ...form, input })}
           errors={fieldErrors.input}
         />
         <TextAreaField
           id={`${idPrefix}-expected`}
-          label="Expected output (compared after trimming)"
+          label={t('admin.problem.expectedLabel')}
           value={form.expected_output}
           onChange={(expected_output) => setForm({ ...form, expected_output })}
           errors={fieldErrors.expected_output}
@@ -90,7 +93,7 @@ function TestCaseForm({
           className="h-4 w-4"
         />
         <label htmlFor={`${idPrefix}-hidden`} className="text-sm">
-          Hidden (users never see its input or expected output)
+          {t('admin.problem.hiddenLabel')}
         </label>
       </div>
       {error && (
@@ -100,11 +103,11 @@ function TestCaseForm({
       )}
       <div className="flex flex-wrap gap-2">
         <button type="submit" disabled={busy} className={primaryButton}>
-          {busy ? 'Saving...' : submitLabel}
+          {busy ? t('admin.common.saving') : submitLabel}
         </button>
         {onCancel && (
           <button type="button" onClick={onCancel} className={secondaryButton}>
-            Cancel
+            {t('admin.common.cancel')}
           </button>
         )}
       </div>
@@ -113,6 +116,7 @@ function TestCaseForm({
 }
 
 function TestCases({ problemId }: { problemId: number }) {
+  const { t } = useTranslation()
   const [testCases, setTestCases] = useState<AdminTestCase[] | null>(null)
   const [loadError, setLoadError] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -120,8 +124,8 @@ function TestCases({ problemId }: { problemId: number }) {
   useEffect(() => {
     getTestCases(problemId)
       .then(setTestCases)
-      .catch((err) => setLoadError(err instanceof ApiError ? err.message : 'Could not load the test cases.'))
-  }, [problemId])
+      .catch((err) => setLoadError(err instanceof ApiError ? err.message : t('admin.problem.testsLoadFailed')))
+  }, [problemId, t])
 
   if (loadError) {
     return (
@@ -130,7 +134,7 @@ function TestCases({ problemId }: { problemId: number }) {
       </p>
     )
   }
-  if (!testCases) return <p className="mt-4 text-muted">Loading test cases...</p>
+  if (!testCases) return <p className="mt-4 text-muted">{t('admin.problem.testsLoading')}</p>
 
   const editing = testCases.find((testCase) => testCase.id === editingId) ?? null
   const totalBytes = testCases.reduce(
@@ -140,10 +144,7 @@ function TestCases({ problemId }: { problemId: number }) {
 
   return (
     <>
-      <p className="mt-2 text-sm text-muted tabular-nums">
-        {testCases.length} of 50 test cases, {totalBytes.toLocaleString('en')} of 25,000 bytes. Submissions run against all of
-        them; only visible ones are shown to users.
-      </p>
+      <p className="mt-2 text-sm text-muted tabular-nums">{t('admin.problem.testsSummary', { tests: testCases.length, bytes: totalBytes.toLocaleString('en') })}</p>
 
       {testCases.length > 0 && (
         <div className="mt-4 rounded border border-line bg-surface">
@@ -154,16 +155,16 @@ function TestCases({ problemId }: { problemId: number }) {
                   #
                 </th>
                 <th scope="col" className="px-2 py-2 font-medium sm:px-3">
-                  Input
+                  {t('admin.problem.input')}
                 </th>
                 <th scope="col" className="px-2 py-2 font-medium sm:px-3">
-                  Expected output
+                  {t('admin.problem.expected')}
                 </th>
                 <th scope="col" className="w-16 px-2 py-2 font-medium sm:w-20 sm:px-3">
-                  Hidden
+                  {t('admin.problem.hidden')}
                 </th>
                 <th scope="col" className="w-20 px-2 py-2 font-medium sm:w-24 sm:px-3">
-                  <span className="sr-only">Actions</span>
+                  <span className="sr-only">{t('admin.problem.actions')}</span>
                 </th>
               </tr>
             </thead>
@@ -172,20 +173,21 @@ function TestCases({ problemId }: { problemId: number }) {
                 <tr key={testCase.id} className={testCase.id === editingId ? 'bg-accent-soft' : undefined}>
                   <td className="px-2 py-2 tabular-nums sm:px-3">{index + 1}</td>
                   <td className="px-2 py-2 sm:px-3">
-                    <pre className="max-h-32 overflow-y-auto font-mono text-xs break-all whitespace-pre-wrap">{preview(testCase.input)}</pre>
+                    <pre className="max-h-32 overflow-y-auto font-mono text-xs break-all whitespace-pre-wrap">{preview(testCase.input, t)}</pre>
                   </td>
                   <td className="px-2 py-2 sm:px-3">
                     <pre className="max-h-32 overflow-y-auto font-mono text-xs break-all whitespace-pre-wrap">
-                      {preview(testCase.expected_output)}
+                      {preview(testCase.expected_output, t)}
                     </pre>
                   </td>
-                  <td className="px-2 py-2 sm:px-3">{testCase.is_hidden ? 'Yes' : 'No'}</td>
+                  <td className="px-2 py-2 sm:px-3">{testCase.is_hidden ? t('admin.common.yes') : t('admin.common.no')}</td>
                   <td className="space-y-2 px-2 py-2 sm:px-3">
                     <button type="button" onClick={() => setEditingId(testCase.id)} className={secondaryButton}>
-                      Edit<span className="sr-only"> test {index + 1}</span>
+                      {t('admin.common.edit')}
+                      <span className="sr-only"> {t('admin.problem.testNumber', { number: index + 1 })}</span>
                     </button>
                     <DeleteButton
-                      what={`test ${index + 1}`}
+                      what={t('admin.problem.testNumber', { number: index + 1 })}
                       onConfirm={async () => {
                         await deleteTestCase(problemId, testCase.id)
                         setTestCases(testCases.filter((item) => item.id !== testCase.id))
@@ -203,14 +205,14 @@ function TestCases({ problemId }: { problemId: number }) {
       {editing && (
         <section className="mt-6 rounded border border-line bg-surface p-4" aria-labelledby="edit-test-heading">
           <h3 id="edit-test-heading" className="font-semibold">
-            Edit test {testCases.indexOf(editing) + 1}
+            {t('admin.problem.editTest', { number: testCases.indexOf(editing) + 1 })}
           </h3>
           <div className="mt-3">
             <TestCaseForm
               key={editing.id}
               idPrefix={`test-${editing.id}`}
               initial={{ input: editing.input, expected_output: editing.expected_output, is_hidden: editing.is_hidden }}
-              submitLabel="Save test case"
+              submitLabel={t('admin.problem.saveTest')}
               onCancel={() => setEditingId(null)}
               onSave={async (data) => {
                 const saved = await updateTestCase(problemId, editing.id, data)
@@ -224,13 +226,13 @@ function TestCases({ problemId }: { problemId: number }) {
 
       <section className="mt-6 rounded border border-line bg-surface p-4" aria-labelledby="add-test-heading">
         <h3 id="add-test-heading" className="font-semibold">
-          Add a test case
+          {t('admin.problem.addTestTitle')}
         </h3>
         <div className="mt-3">
           <TestCaseForm
             idPrefix="new-test"
             initial={{ input: '', expected_output: '', is_hidden: false }}
-            submitLabel="Add test case"
+            submitLabel={t('admin.problem.addTest')}
             onSave={async (data) => {
               const created = await createTestCase(problemId, data)
               setTestCases([...testCases, created])
@@ -244,6 +246,7 @@ function TestCases({ problemId }: { problemId: number }) {
 
 // /admin/problems/new?lesson=<id> and /admin/problems/:id
 export default function AdminProblemPage() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const problemId = id === undefined ? null : Number(id)
   const [searchParams] = useSearchParams()
@@ -284,10 +287,10 @@ export default function AdminProblemPage() {
         })
       })
       .catch((err) => {
-        if (err instanceof ApiError && err.status === 404) setLoadError("This problem doesn't exist.")
-        else setLoadError(err instanceof ApiError ? err.message : 'Could not load the problem.')
+        if (err instanceof ApiError && err.status === 404) setLoadError(t('admin.problem.notFound'))
+        else setLoadError(err instanceof ApiError ? err.message : t('admin.problem.loadFailed'))
       })
-  }, [problemId, lessonParam])
+  }, [problemId, lessonParam, t])
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -301,14 +304,14 @@ export default function AdminProblemPage() {
         const created = await createProblem(form)
         // Same component for the new address, so it stays mounted; its effect loads the saved item.
         navigate(`/admin/problems/${created.id}`, { replace: true })
-        setNotice('Problem created. Add its test cases below.')
+        setNotice(t('admin.problem.created'))
       } else {
         await updateProblem(problemId, form)
-        setNotice('Saved.')
+        setNotice(t('admin.common.saved'))
       }
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) setFieldErrors(err.fieldErrors)
-      setError(err instanceof ApiError ? err.message : 'Could not save. Try again.')
+      setError(err instanceof ApiError ? err.message : t('admin.common.saveFailed'))
     }
     setBusy(false)
   }
@@ -320,13 +323,13 @@ export default function AdminProblemPage() {
           {loadError}
         </p>
         <Link to="/admin" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
-          Back to the content list
+          {t('admin.common.backToContent')}
         </Link>
       </div>
     )
   }
 
-  if (!form) return <p className="text-muted">Loading problem...</p>
+  if (!form) return <p className="text-muted">{t('admin.problem.loading')}</p>
 
   const lessonErrors = fieldErrors.lesson_id
   const difficultyErrors = fieldErrors.difficulty
@@ -334,16 +337,16 @@ export default function AdminProblemPage() {
   return (
     <div className="max-w-4xl">
       <Link to="/admin" className="rounded text-sm text-muted hover:text-accent">
-        Content list
+        {t('admin.common.contentList')}
       </Link>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">{problemId === null ? 'Add problem' : 'Edit problem'}</h1>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight">{problemId === null ? t('admin.problem.add') : t('admin.problem.edit')}</h1>
 
       <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field id="title" label="Title" value={form.title} onChange={(title) => setForm({ ...form, title })} errors={fieldErrors.title} />
+          <Field id="title" label={t('admin.fields.title')} value={form.title} onChange={(title) => setForm({ ...form, title })} errors={fieldErrors.title} />
           <Field
             id="slug"
-            label="Slug (lowercase letters, digits and hyphens)"
+            label={t('admin.fields.slug')}
             value={form.slug}
             onChange={(slug) => setForm({ ...form, slug })}
             errors={fieldErrors.slug}
@@ -351,7 +354,7 @@ export default function AdminProblemPage() {
           <div className="sm:col-start-1">
             <Field
               id="title_ar"
-              label="Title (Arabic)"
+              label={t('admin.fields.titleAr')}
               value={form.title_ar}
               onChange={(title_ar) => setForm({ ...form, title_ar })}
               errors={fieldErrors.title_ar}
@@ -362,7 +365,7 @@ export default function AdminProblemPage() {
           </div>
           <div className="sm:col-start-1">
             <label htmlFor="lesson_id" className="block text-sm font-medium text-ink">
-              Lesson
+              {t('admin.fields.lesson')}
             </label>
             <select
               id="lesson_id"
@@ -372,7 +375,7 @@ export default function AdminProblemPage() {
               aria-describedby={lessonErrors ? 'lesson_id-error' : undefined}
               className={`${selectClass} ${lessonErrors ? 'border-fail' : 'border-field hover:border-muted'}`}
             >
-              <option value="">None (standalone, Challenges only)</option>
+              <option value="">{t('admin.problem.noLesson')}</option>
               {modules.map((module) => (
                 <optgroup key={module.id} label={module.title}>
                   {module.lessons.map((lesson) => (
@@ -391,7 +394,7 @@ export default function AdminProblemPage() {
           </div>
           <div>
             <label htmlFor="difficulty" className="block text-sm font-medium text-ink">
-              Difficulty
+              {t('admin.fields.difficulty')}
             </label>
             <select
               id="difficulty"
@@ -401,9 +404,9 @@ export default function AdminProblemPage() {
               aria-describedby={difficultyErrors ? 'difficulty-error' : 'difficulty-points'}
               className={`${selectClass} ${difficultyErrors ? 'border-fail' : 'border-field hover:border-muted'}`}
             >
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
+              <option value="easy">{t('admin.difficulty.easy')}</option>
+              <option value="medium">{t('admin.difficulty.medium')}</option>
+              <option value="hard">{t('admin.difficulty.hard')}</option>
             </select>
             {difficultyErrors ? (
               <p id="difficulty-error" className="mt-1 text-sm text-fail">
@@ -411,23 +414,23 @@ export default function AdminProblemPage() {
               </p>
             ) : (
               <p id="difficulty-points" className="mt-1 text-sm text-muted">
-                Worth {POINTS[form.difficulty] ?? '?'} points (set by the server from the difficulty).
+                {t('admin.problem.worth', { points: POINTS[form.difficulty] ?? '?' })}
               </p>
             )}
           </div>
         </div>
         <TextAreaField
           id="description"
-          label="Description"
+          label={t('admin.fields.description')}
           value={form.description}
           onChange={(description) => setForm({ ...form, description })}
           rows={12}
           errors={fieldErrors.description}
         />
-        <p className="-mt-3 text-sm text-muted tabular-nums">{form.description.length} of 5,000 characters</p>
+        <p className="-mt-3 text-sm text-muted tabular-nums">{t('admin.problem.length', { length: form.description.length })}</p>
         <TextAreaField
           id="description_ar"
-          label="Description (Arabic)"
+          label={t('admin.fields.descriptionAr')}
           value={form.description_ar}
           onChange={(description_ar) => setForm({ ...form, description_ar })}
           rows={12}
@@ -435,7 +438,7 @@ export default function AdminProblemPage() {
           dir="rtl"
           lang="ar"
         />
-        <p className="-mt-3 text-sm text-muted tabular-nums">{form.description_ar.length} of 5,000 characters</p>
+        <p className="-mt-3 text-sm text-muted tabular-nums">{t('admin.problem.length', { length: form.description_ar.length })}</p>
 
         {error && (
           <p role="alert" className={alertClass}>
@@ -448,16 +451,16 @@ export default function AdminProblemPage() {
           </p>
         )}
         <button type="submit" disabled={busy} className={primaryButton}>
-          {busy ? 'Saving...' : problemId === null ? 'Create problem' : 'Save problem'}
+          {busy ? t('admin.common.saving') : problemId === null ? t('admin.problem.create') : t('admin.problem.save')}
         </button>
       </form>
 
       <section className="mt-10 border-t border-line pt-6" aria-labelledby="tests-heading">
         <h2 id="tests-heading" className="text-xl font-semibold">
-          Test cases
+          {t('admin.problem.testsTitle')}
         </h2>
         {problemId === null ? (
-          <p className="mt-2 text-muted">Create the problem first, then add its test cases here.</p>
+          <p className="mt-2 text-muted">{t('admin.problem.createFirst')}</p>
         ) : (
           <TestCases problemId={problemId} />
         )}
@@ -465,13 +468,11 @@ export default function AdminProblemPage() {
 
       {problemId !== null && (
         <div className="mt-10 border-t border-line pt-6">
-          <h2 className="text-lg font-semibold">Delete this problem</h2>
-          <p className="mt-1 text-sm text-muted">
-            A problem that users have already solved cannot be deleted; edit it instead. Its test cases go with it.
-          </p>
+          <h2 className="text-lg font-semibold">{t('admin.problem.deleteTitle')}</h2>
+          <p className="mt-1 text-sm text-muted">{t('admin.problem.deleteRule')}</p>
           <div className="mt-3">
             <DeleteButton
-              what="this problem"
+              what={t('admin.problem.this')}
               onConfirm={async () => {
                 await deleteProblem(problemId)
                 navigate('/admin', { replace: true })

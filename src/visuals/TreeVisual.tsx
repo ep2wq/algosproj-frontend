@@ -1,4 +1,7 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TextWithCode } from '../components/LessonBody'
+import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { deleteFrames, heightFrames, lcaFrames, type Mark, type TreeFrame, type TreeMode } from './treeFrames'
 import { diagramSize, NODE_R, treeLayout } from './treeLayout'
@@ -33,30 +36,30 @@ function randomValues(min: number, max: number) {
   return list
 }
 
-function parseValues(text: string, minCount: number): number[] | string {
+function parseValues(text: string, minCount: number, t: T): number[] | string {
   const parts = text.split(/[\s,]+/).filter(Boolean)
   if (parts.some((part) => !/^-?\d+$/.test(part) || Math.abs(Number(part)) > MAX_VALUE)) {
-    return `Use whole numbers from -${MAX_VALUE} to ${MAX_VALUE}, separated by spaces or commas.`
+    return t('inversions.invalid', { limit: MAX_VALUE })
   }
-  if (parts.length < minCount) return `Enter at least ${minCount} ${minCount === 1 ? 'number' : 'numbers'}.`
-  if (parts.length > MAX_NODES) return `Enter at most ${MAX_NODES} numbers, so the tree fits.`
+  if (parts.length < minCount) return t('tree.atLeast', { count: minCount })
+  if (parts.length > MAX_NODES) return t('tree.atMost', { count: MAX_NODES })
   const values = parts.map(Number)
   const repeated = values.find((value, index) => values.indexOf(value) !== index)
-  if (repeated !== undefined) return `The values must be distinct: ${repeated} appears more than once.`
+  if (repeated !== undefined) return t('tree.repeated', { value: repeated })
   return values
 }
 
-function parseMember(text: string, name: string, values: number[]): number | string {
+function parseMember(text: string, name: string, values: number[], t: T): number | string {
   const trimmed = text.trim()
-  if (!/^-?\d+$/.test(trimmed)) return `${name} must be a whole number, one of the values in the tree.`
+  if (!/^-?\d+$/.test(trimmed)) return t('tree.memberInvalid', { name })
   const value = Number(trimmed)
-  if (!values.includes(value)) return `${name} = ${value} is not in the tree. Use one of: ${values.join(' ')}.`
+  if (!values.includes(value)) return t('tree.memberMissing', { name, value, values: values.join(' ') })
   return value
 }
 
 const MODES = {
   height: {
-    frames: (source: Source) => heightFrames(source.values),
+    frames: (source: Source, t: T) => heightFrames(source.values, t),
     random: (): Source => {
       const shape = Math.random()
       if (shape < 0.15) return { values: [4, 2, 6, 1, 3, 5, 7], p: 0, q: 0, x: 0 }
@@ -65,11 +68,9 @@ const MODES = {
     },
     fields: [] as Member[],
     minCount: 0,
-    placeholder: 'e.g. 4 2 6 1 3 5 7',
-    hint: `0 to ${MAX_NODES} distinct whole numbers from -${MAX_VALUE} to ${MAX_VALUE}, in insertion order. Leave it empty for an empty tree. (The problem allows up to 1000 values from -1000000 to 1000000.)`,
   },
   lca: {
-    frames: (source: Source) => lcaFrames(source.values, source.p, source.q),
+    frames: (source: Source, t: T) => lcaFrames(source.values, source.p, source.q, t),
     random: (): Source => {
       if (Math.random() < 0.2) {
         const [p, q] = pick([
@@ -85,11 +86,9 @@ const MODES = {
     },
     fields: ['p', 'q'] as Member[],
     minCount: 2,
-    placeholder: 'e.g. 6 2 8 0 4 7 9 3 5',
-    hint: `2 to ${MAX_NODES} distinct whole numbers from -${MAX_VALUE} to ${MAX_VALUE}, in insertion order, then p and q: two values from the tree, in either order, and they may be equal. (The problem allows up to 1000 values from -1000000 to 1000000.)`,
   },
   delete: {
-    frames: (source: Source) => deleteFrames(source.values, source.x),
+    frames: (source: Source, t: T) => deleteFrames(source.values, source.x, t),
     random: (): Source => {
       if (Math.random() < 0.2) return { values: [50, 30, 70, 20, 40, 60, 80, 65], p: 0, q: 0, x: pick([50, 20]) }
       const values = randomValues(5, 9)
@@ -97,8 +96,6 @@ const MODES = {
     },
     fields: ['x'] as Member[],
     minCount: 1,
-    placeholder: 'e.g. 50 30 70 20 40 60 80 65',
-    hint: `1 to ${MAX_NODES} distinct whole numbers from -${MAX_VALUE} to ${MAX_VALUE}, in insertion order, then x: the value to delete, one of the values in the tree. (The problem allows up to 1000 values from -1000000 to 1000000.)`,
   },
 }
 
@@ -111,21 +108,17 @@ const NODE_CLASS: Record<Mark | 'plain', string> = {
   answer: 'fill-pass stroke-pass',
 }
 
-const MARK_NAMES: Record<TreeMode, Record<Mark, string>> = {
-  height: { path: 'on the insert path or popped', current: 'just popped', focus: 'just inserted', answer: '' },
-  lca: { path: 'on the path', current: 'node', focus: 'just inserted', answer: 'lowest common ancestor' },
-  delete: { path: 'on the path', current: 'cur', focus: 'just inserted, successor or moved up', answer: '' },
-}
-
-function treeLabel(frame: TreeFrame, mode: TreeMode) {
-  if (frame.root === null) return 'The tree is empty.'
+// The screen-reader name of each mark is the key tree.marks.<mode>.<mark>.
+function treeLabel(frame: TreeFrame, mode: TreeMode, t: T) {
+  if (frame.root === null) return t('tree.labelEmpty')
   const byId = new Map(frame.nodes.map((node) => [node.id, node]))
-  const valueOf = (id: number | null) => (id === null ? 'none' : String(byId.get(id)!.value))
+  const valueOf = (id: number | null) => (id === null ? t('tree.none') : String(byId.get(id)!.value))
   const nodes = [...frame.nodes]
     .sort((a, b) => a.slot - b.slot)
-    .map((node) => `${node.value} (left ${valueOf(node.left)}, right ${valueOf(node.right)})`)
-  const marks = frame.marks.map(({ id, mark }) => `${MARK_NAMES[mode][mark]}: ${valueOf(id)}`)
-  return `Root ${valueOf(frame.root)}. Nodes: ${nodes.join(', ')}.${marks.length > 0 ? ` ${marks.join('; ')}.` : ''}`
+    .map((node) => t('tree.labelNode', { value: node.value, left: valueOf(node.left), right: valueOf(node.right) }))
+    .join(t('common.listSeparator'))
+  const marks = frame.marks.map(({ id, mark }) => t('tree.labelMark', { name: t(`tree.marks.${mode}.${mark}`), value: valueOf(id) })).join(t('tree.stepSeparator'))
+  return marks ? t('tree.labelMarks', { root: valueOf(frame.root), nodes, marks }) : t('tree.label', { root: valueOf(frame.root), nodes })
 }
 
 function Diagram({ frame, rows }: { frame: TreeFrame; rows: number }) {
@@ -165,6 +158,7 @@ function Diagram({ frame, rows }: { frame: TreeFrame; rows: number }) {
 // One drawing, three lessons: build the tree, then find its height, the lowest common
 // ancestor of p and q, or delete x.
 export default function TreeVisual({ mode }: { mode: TreeMode }) {
+  const { t } = useTranslation('visuals')
   const id = useId()
   const config = MODES[mode]
   const [source, setSource] = useState(config.random)
@@ -172,7 +166,7 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
   const [memberText, setMemberText] = useState<Record<Member, string>>({ p: '', q: '', x: '' })
   const [inputError, setInputError] = useState<{ field: Field; message: string } | null>(null)
 
-  const frames = useMemo(() => config.frames(source), [config, source])
+  const frames = useMemo(() => config.frames(source, t), [config, source, t])
   // The deepest the tree gets in any step, so the drawing keeps one height while it plays.
   const rows = useMemo(() => Math.max(1, ...frames.map((frame) => Math.max(0, ...[...treeLayout(frame.nodes, frame.root).values()].map((point) => point.depth + 1)))), [frames])
   const playback = usePlayback(frames.length)
@@ -186,14 +180,14 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
 
   function handleCustom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const values = parseValues(valuesText, config.minCount)
+    const values = parseValues(valuesText, config.minCount, t)
     if (typeof values === 'string') {
       setInputError({ field: 'values', message: values })
       return
     }
     const next: Source = { values, p: 0, q: 0, x: 0 }
     for (const field of config.fields) {
-      const value = parseMember(memberText[field], field, values)
+      const value = parseMember(memberText[field], field, values, t)
       if (typeof value === 'string') {
         setInputError({ field, message: value })
         return
@@ -221,8 +215,10 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
       <div className="mt-4 flex flex-wrap gap-2">
         {current.vars.map(({ name, value }) => (
           <p key={name} className="inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-1.5">
-            <span className="text-sm text-muted">{name}</span>
-            <span className="text-lg font-semibold tabular-nums">{value}</span>
+            <span className="text-sm text-muted">
+              <TextWithCode text={name} />
+            </span>
+            <span dir="ltr" className="text-lg font-semibold tabular-nums">{value}</span>
           </p>
         ))}
       </div>
@@ -230,24 +226,30 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
       <div
         tabIndex={0}
         role="region"
-        aria-label="Tree drawing, scrolls sideways when it is wider than the screen"
+        aria-label={t('tree.region')}
+        dir="ltr"
         className="relative mt-3 overflow-x-auto rounded border border-line bg-surface p-2"
       >
-        <div role="img" aria-label={treeLabel(current, mode)} className="w-max">
+        <div role="img" aria-label={treeLabel(current, mode, t)} className="w-max">
           <Diagram frame={current} rows={rows} />
         </div>
         {current.root === null && (
           <p aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-sm text-muted">
-            Empty tree
+            <TextWithCode text={t('tree.emptyTree')} />
           </p>
         )}
       </div>
 
       {current.stack !== null && (
         <>
-          <p className="mt-3 text-sm font-medium">Stack of (value, depth) pairs (top on the right)</p>
-          <div aria-label={`Stack: ${current.stack.length === 0 ? 'empty' : current.stack.join(', ')}.`} className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-surface p-1.5">
-            {current.stack.length === 0 && <span className="px-1 text-sm text-muted">empty</span>}
+          <p className="mt-3 text-sm font-medium">
+            <TextWithCode text={t('tree.stackTitle')} />
+          </p>
+          <div
+            aria-label={t('tree.stackLabel', { list: current.stack.length === 0 ? t('tree.empty') : current.stack.join(', ') })}
+            dir="ltr"
+            className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-surface p-1.5">
+            {current.stack.length === 0 && <span className="px-1 text-sm text-muted">{t('tree.empty')}</span>}
             {current.stack.map((pair, index) => (
               <span key={index} className="rounded border border-muted bg-surface px-1.5 py-0.5 font-mono text-sm tabular-nums">
                 {pair}
@@ -262,31 +264,31 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
           {marks.has('path') && (
             <li className="flex items-center gap-1.5">
               <span className="inline-block size-3 rounded-full border-2 border-accent bg-accent-soft" aria-hidden="true" />
-              {mode === 'height' ? 'On the insert path, or already popped' : 'On the path walked'}
+              <TextWithCode text={mode === 'height' ? t('tree.legendPathHeight') : t('tree.legendPath')} />
             </li>
           )}
           {marks.has('current') && (
             <li className="flex items-center gap-1.5">
               <span className="inline-block size-3 rounded-full border-2 border-warn bg-surface" aria-hidden="true" />
-              {mode === 'height' ? 'Just popped' : mode === 'lca' ? 'node' : 'cur'}
+              <TextWithCode text={mode === 'height' ? t('tree.legendPopped') : mode === 'lca' ? t('tree.legendNode') : t('tree.legendCur')} />
             </li>
           )}
           {marks.has('focus') && (
             <li className="flex items-center gap-1.5">
               <span className="inline-block size-3 rounded-full border-2 border-pass bg-surface" aria-hidden="true" />
-              {mode === 'delete' ? 'Just inserted, the successor, or the child that moved up' : 'Just inserted'}
+              <TextWithCode text={mode === 'delete' ? t('tree.legendFocusDelete') : t('tree.legendFocus')} />
             </li>
           )}
           {marks.has('answer') && (
             <li className="flex items-center gap-1.5">
               <span className="inline-block size-3 rounded-full border-2 border-pass bg-pass" aria-hidden="true" />
-              Lowest common ancestor
+              <TextWithCode text={t('tree.legendAnswer')} />
             </li>
           )}
           {hasEdge && (
             <li className="flex items-center gap-1.5">
               <span className="inline-block h-0.5 w-4 bg-warn" aria-hidden="true" />
-              Link used or changed in this step
+              {t('tree.legendEdge')}
             </li>
           )}
         </ul>
@@ -294,35 +296,37 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
 
       {current.output !== null && (
         <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
-          Output: {current.output === '' ? <span className="font-normal text-muted">(an empty line)</span> : <span className="font-mono">{current.output}</span>}
+          {t('common.output')}{' '}
+          {current.output === '' ? <span className="font-normal text-muted">{t('linkedList.emptyLine')}</span> : <span className="font-mono">{current.output}</span>}
         </p>
       )}
 
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
-        {current.description}
+        <TextWithCode text={current.description} />
       </p>
-      {step === 0 && lastStep > 0 && <p className="mt-2 text-sm text-muted">Press Step forward to start.</p>}
+      {step === 0 && lastStep > 0 && <p className="mt-2 text-sm text-muted">{t('tree.pressStep')}</p>}
 
       <PlaybackControls playback={playback} />
 
       <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
         <button type="button" onClick={() => restart(config.random())} className={buttonClass}>
-          New random example
+          {t('common.newRandomExample')}
         </button>
         <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
           <div className="flex flex-wrap items-end gap-2">
             <div className="min-w-0 flex-1 basis-40">
               <label htmlFor={`${id}-values`} className="block text-sm font-medium">
-                Your own values
+                {t('tree.ownValues')}
               </label>
               <input
                 id={`${id}-values`}
                 type="text"
                 autoComplete="off"
                 spellCheck={false}
+                dir="ltr"
                 value={valuesText}
                 onChange={(event) => setValuesText(event.target.value)}
-                placeholder={config.placeholder}
+                placeholder={t(`tree.${mode}.placeholder`)}
                 aria-invalid={inputError?.field === 'values'}
                 aria-describedby={describedBy('values')}
                 className={`mt-1 ${inputClass('values')}`}
@@ -339,6 +343,7 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
                   inputMode="numeric"
                   autoComplete="off"
                   spellCheck={false}
+                  dir="ltr"
                   value={memberText[field]}
                   onChange={(event) => setMemberText({ ...memberText, [field]: event.target.value })}
                   aria-invalid={inputError?.field === field}
@@ -348,15 +353,15 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
               </div>
             ))}
             <button type="submit" className={`${buttonClass} shrink-0`}>
-              Use these
+              {t('common.useThese')}
             </button>
           </div>
           <p id={`${id}-input-hint`} className="mt-1 text-xs text-muted">
-            {config.hint}
+            <TextWithCode text={t(`tree.${mode}.hint`, { nodes: MAX_NODES, max: MAX_VALUE })} />
           </p>
           {inputError && (
             <p id={`${id}-input-error`} role="alert" className="mt-1 text-sm text-fail">
-              {inputError.message}
+              <TextWithCode text={inputError.message} />
             </p>
           )}
         </form>

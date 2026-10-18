@@ -4,6 +4,7 @@
 // these.
 
 import type { CallNode } from './callTree'
+import type { T } from './i18n'
 
 export type BinaryKind = 'start' | 'choose' | 'print' | 'undo' | 'done'
 
@@ -19,7 +20,7 @@ export type BinaryFrame = {
   description: string
 }
 
-export function binaryStringFrames(n: number): { tree: CallNode[]; frames: BinaryFrame[] } {
+export function binaryStringFrames(n: number, t: T): { tree: CallNode[]; frames: BinaryFrame[] } {
   const tree: CallNode[] = []
   const frames: BinaryFrame[] = []
   const stack: number[] = []
@@ -53,25 +54,24 @@ export function binaryStringFrames(n: number): { tree: CallNode[]; frames: Binar
     if (cur.length === n) {
       results.push(cur)
       printed.push(id)
-      push('print', cur, `Base case: "${cur}" has n = ${n} characters, so print it. Printed so far: ${results.length} of 2^${n} = ${total}.`)
+      push('print', cur, t('binaryString.print', { cur, n, printed: results.length, total }))
       return
     }
     const position = cur.length + 1
     for (const bit of ['0', '1']) {
       const next = cur + bit
       call(next, id)
-      const then =
-        next.length === n ? `"${next}" has ${n} characters: a base case.` : `It decides position ${position + 1}, trying 0 first.`
-      push('choose', next, `Choose ${bit} for position ${position}: cur = "${next}". Explore: call again, at depth ${next.length}. ${then}`)
+      const params = { bit, position, next, depth: next.length, n, nextPosition: position + 1 }
+      push('choose', next, next.length === n ? t('binaryString.chooseBase', params) : t('binaryString.chooseDecide', params))
       explore(next)
       stack.pop()
       const after =
         bit === '0'
-          ? `Now try 1 for position ${position}.`
+          ? t('binaryString.tryOne', { position })
           : stack.length === 1
-            ? 'Both choices for position 1 are done: the first call returns, and the search is over.'
-            : `Both choices for position ${position} are done, so this call returns to depth ${cur.length - 1}.`
-      push('undo', cur, `Back at depth ${cur.length}. Undo: pop the ${bit}, cur = "${cur}". ${after}`)
+            ? t('binaryString.searchOver')
+            : t('binaryString.returns', { position, depth: cur.length - 1 })
+      push('undo', cur, `${t('binaryString.undo', { depth: cur.length, bit, cur })} ${after}`)
     }
   }
 
@@ -79,16 +79,14 @@ export function binaryStringFrames(n: number): { tree: CallNode[]; frames: Binar
   push(
     'start',
     '',
-    n === 1
-      ? 'Call with cur = "" at depth 0. n = 1, so this call decides position 1: try 0, then 1.'
-      : `Call with cur = "" at depth 0. n = ${n}, so there are ${n} positions to fill. This call decides position 1: try 0, then 1.`,
+    n === 1 ? t('binaryString.startOne') : t('binaryString.start', { n }),
   )
   explore('')
   stack.pop()
   push(
     'done',
     '',
-    `Done: ${total} strings, printed in increasing order because 0 is tried before 1. That took 2^${n + 1} - 1 = ${tree.length} calls, one per box in the tree.`,
+    t('binaryString.done', { total, power: n + 1, calls: tree.length }),
   )
   return { tree, frames }
 }

@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TextWithCode } from '../components/LessonBody'
 import { CALL_BOX_H, CALL_BOX_W, callTreeLayout, callTreeSize, type CallNode } from './callTree'
 
 // How a call is drawn: the call running now, an open call waiting for it (on the call stack),
@@ -21,8 +23,10 @@ const TEXT_CLASS: Record<CallMark, string> = {
 
 // The calls made so far (nodes[0..shown)), drawn as a tree that grows step by step. The whole
 // tree's size is used from the start, so the drawing doesn't jump while it grows; it scrolls
-// sideways inside its own box, and follows the running call.
+// sideways inside its own box, and follows the running call. The drawing is left to right in both
+// languages (also what scrollLeft assumes).
 export default function CallTreeDiagram({ nodes, shown, markOf, label }: { nodes: CallNode[]; shown: number; markOf: (id: number) => CallMark; label: string }) {
+  const { t } = useTranslation('visuals')
   const boxRef = useRef<HTMLDivElement>(null)
   const { width, height } = callTreeSize(nodes)
   const points = callTreeLayout(nodes)
@@ -43,7 +47,8 @@ export default function CallTreeDiagram({ nodes, shown, markOf, label }: { nodes
       ref={boxRef}
       tabIndex={0}
       role="region"
-      aria-label="Call tree, scrolls sideways when it is wider than the screen"
+      aria-label={t('callTree.region')}
+      dir="ltr"
       className="mt-3 overflow-x-auto rounded border border-line bg-surface p-2"
     >
       <div role="img" aria-label={label} className="w-max">
@@ -98,6 +103,7 @@ export default function CallTreeDiagram({ nodes, shown, markOf, label }: { nodes
 
 // The legend for the call tree. Each state has a symbol or a fill, and a label.
 export function CallTreeLegend() {
+  const { t } = useTranslation('visuals')
   return (
     <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
       <li className="flex items-center gap-1.5">
@@ -105,22 +111,22 @@ export function CallTreeLegend() {
         <span aria-hidden="true" className="font-semibold text-warn">
           ▲
         </span>
-        Running now
+        {t('callTree.running')}
       </li>
       <li className="flex items-center gap-1.5">
         <span className="inline-block h-3 w-4 rounded-sm border border-accent bg-accent-soft" aria-hidden="true" />
-        Waiting on the call stack
+        <TextWithCode text={t('callTree.waiting')} />
       </li>
       <li className="flex items-center gap-1.5">
         <span className="inline-block h-3 w-4 rounded-sm border border-pass bg-pass" aria-hidden="true" />
         <span aria-hidden="true" className="font-semibold text-pass">
           ✓
         </span>
-        Base case, printed
+        <TextWithCode text={t('callTree.printed')} />
       </li>
       <li className="flex items-center gap-1.5">
         <span className="inline-block h-3 w-4 rounded-sm border border-line bg-surface" aria-hidden="true" />
-        Returned
+        {t('callTree.returned')}
       </li>
     </ul>
   )

@@ -1,4 +1,7 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TextWithCode } from '../components/LessonBody'
+import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { subarraySumFrames, type SumFrame } from './subarraySumFrames'
 import { usePlayback } from './usePlayback'
@@ -25,15 +28,15 @@ function randomExample() {
 
 type Field = 'values' | 'k'
 
-function parseInput(valuesText: string, kText: string): { values: number[]; k: number } | { field: Field; message: string } {
+function parseInput(valuesText: string, kText: string, t: T): { values: number[]; k: number } | { field: Field; message: string } {
   const parts = valuesText.split(/[\s,]+/).filter(Boolean)
-  if (parts.length === 0) return { field: 'values', message: 'Enter at least one number.' }
-  if (parts.length > MAX_NUMBERS) return { field: 'values', message: `Enter at most ${MAX_NUMBERS} numbers.` }
+  if (parts.length === 0) return { field: 'values', message: t('common.atLeastOneNumber') }
+  if (parts.length > MAX_NUMBERS) return { field: 'values', message: t('common.atMostNumbers', { count: MAX_NUMBERS }) }
   if (parts.some((part) => !/^-?\d+$/.test(part) || Math.abs(Number(part)) > MAX_VALUE)) {
-    return { field: 'values', message: `Use whole numbers from -${MAX_VALUE} to ${MAX_VALUE}, separated by spaces or commas.` }
+    return { field: 'values', message: t('inversions.invalid', { limit: MAX_VALUE }) }
   }
   const k = kText.trim()
-  if (!/^-?\d+$/.test(k) || Math.abs(Number(k)) > MAX_K) return { field: 'k', message: `Enter k as one whole number from -${MAX_K} to ${MAX_K}.` }
+  if (!/^-?\d+$/.test(k) || Math.abs(Number(k)) > MAX_K) return { field: 'k', message: t('subarraySum.invalidK', { max: MAX_K }) }
   return { values: parts.map(Number), k: Number(k) }
 }
 
@@ -58,25 +61,26 @@ function mapStyle(frame: SumFrame, sum: number) {
   return ''
 }
 
-function diagramLabel(frame: SumFrame) {
-  const known = frame.prefixes.filter((p) => p !== null)
-  const reading = frame.read !== null ? ` Reading position ${frame.read}.` : ''
-  return `Numbers: ${frame.values.join(' ')}. Totals so far, starting with the empty prefix: ${known.join(' ')}.${reading}`
+function diagramLabel(frame: SumFrame, t: T) {
+  const params = { values: frame.values.join(' '), totals: frame.prefixes.filter((p) => p !== null).join(' '), read: frame.read }
+  return frame.read !== null ? t('subarraySum.diagramReading', params) : t('subarraySum.diagram', params)
 }
 
-function mapLabel(frame: SumFrame) {
-  return `Map, total to times seen: ${frame.map.map((entry) => `${entry.sum} seen ${entry.times}`).join(', ')}.`
+function mapLabel(frame: SumFrame, t: T) {
+  const entries = frame.map.map((entry) => t('subarraySum.mapEntry', { sum: entry.sum, times: entry.times })).join(t('common.listSeparator'))
+  return t('subarraySum.mapLabel', { entries })
 }
 
 // Subarray sum equals k: running totals and a map of how often each total has appeared.
 export default function SubarraySumVisual() {
+  const { t } = useTranslation('visuals')
   const id = useId()
   const [example, setExample] = useState(randomExample)
   const [valuesText, setValuesText] = useState('')
   const [kText, setKText] = useState('')
   const [inputError, setInputError] = useState<{ field: Field; message: string } | null>(null)
 
-  const frames = useMemo(() => subarraySumFrames(example.values, example.k), [example])
+  const frames = useMemo(() => subarraySumFrames(example.values, example.k, t), [example, t])
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
@@ -88,7 +92,7 @@ export default function SubarraySumVisual() {
 
   function handleCustom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const parsed = parseInput(valuesText, kText)
+    const parsed = parseInput(valuesText, kText, t)
     if ('message' in parsed) {
       setInputError(parsed)
       return
@@ -119,7 +123,7 @@ export default function SubarraySumVisual() {
         ].map(([name, value]) => (
           <p key={name} className="inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-1.5">
             <span className="font-mono text-sm text-muted">{name}</span>
-            <span className="text-lg font-semibold tabular-nums">{value}</span>
+            <span dir="ltr" className="text-lg font-semibold tabular-nums">{value}</span>
           </p>
         ))}
       </div>
@@ -127,16 +131,17 @@ export default function SubarraySumVisual() {
       <div
         tabIndex={0}
         role="region"
-        aria-label="Numbers and running totals, scrolls sideways when wider than the screen"
+        aria-label={t('subarraySum.diagramRegion')}
+        dir="ltr"
         className="mt-3 overflow-x-auto rounded border border-line bg-surface p-3"
       >
-        <div role="img" aria-label={diagramLabel(current)} className="flex w-max gap-1">
+        <div role="img" aria-label={diagramLabel(current, t)} className="flex w-max gap-1">
           <div className="flex flex-col pe-1 text-xs text-muted">
-            <span className="mt-4 flex h-10 items-center">number</span>
+            <span className="mt-4 flex h-10 items-center">{t('subarraySum.rowNumber')}</span>
             <span className="mt-1 flex h-10 items-center">sum</span>
           </div>
           <div className="flex flex-col items-center">
-            <span className="h-4 text-xs text-muted">start</span>
+            <span className="h-4 text-xs text-muted">{t('subarraySum.columnStart')}</span>
             <span className="flex h-10 min-w-14 items-center justify-center text-sm text-muted">-</span>
             <span
               className={`mt-1 flex h-10 min-w-14 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 ${prefixStyle(current, 0)}`}
@@ -162,18 +167,21 @@ export default function SubarraySumVisual() {
         </div>
       </div>
 
-      <p className="mt-3 text-sm font-medium">Map: total to times seen</p>
+      <p className="mt-3 text-sm font-medium">
+        <TextWithCode text={t('subarraySum.mapTitle')} />
+      </p>
       <div
         tabIndex={0}
         role="region"
-        aria-label="Map of totals, scrolls sideways when wider than the screen"
+        aria-label={t('subarraySum.mapRegion')}
+        dir="ltr"
         className="mt-1 overflow-x-auto rounded border border-line bg-surface"
       >
-        <table aria-label={mapLabel(current)} className="border-collapse text-sm tabular-nums">
+        <table aria-label={mapLabel(current, t)} className="border-collapse text-sm tabular-nums">
           <tbody>
             <tr className="border-b border-line">
               <th scope="row" className="px-2 py-1 text-start text-xs font-medium text-muted">
-                Total
+                {t('subarraySum.total')}
               </th>
               {current.map.map((entry) => (
                 <th key={entry.sum} scope="col" className={`min-w-12 px-2 py-1 text-center font-semibold motion-safe:transition-colors motion-safe:duration-300 ${mapStyle(current, entry.sum)}`}>
@@ -183,7 +191,7 @@ export default function SubarraySumVisual() {
             </tr>
             <tr>
               <th scope="row" className="px-2 py-1 text-start text-xs font-medium text-muted">
-                Times
+                {t('subarraySum.timesHeader')}
               </th>
               {current.map.map((entry) => (
                 <td key={entry.sum} className={`min-w-12 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-300 ${mapStyle(current, entry.sum)}`}>
@@ -198,53 +206,54 @@ export default function SubarraySumVisual() {
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-warn bg-warn" aria-hidden="true" />
-          Number being read
+          {t('subarraySum.legendRead')}
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border-2 border-warn bg-surface" aria-hidden="true" />
-          Its running total
+          <TextWithCode text={t('subarraySum.legendTotal')} />
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-pass bg-pass" aria-hidden="true" />
-          Earlier totals equal to sum - k
+          <TextWithCode text={t('subarraySum.legendMatch')} />
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-line bg-accent-soft" aria-hidden="true" />
-          Stored in this step
+          {t('subarraySum.legendStored')}
         </li>
-        <li>Small numbers: positions.</li>
+        <li>{t('common.smallPositions')}</li>
       </ul>
 
       {current.output !== null && (
         <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
-          Output: <span className="font-mono">{current.output}</span>
+          {t('common.output')} <span className="font-mono">{current.output}</span>
         </p>
       )}
 
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
-        {current.description}
+        <TextWithCode text={current.description} />
       </p>
 
       <PlaybackControls playback={playback} />
 
       <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
         <button type="button" onClick={() => restart(randomExample())} className={buttonClass}>
-          New random example
+          {t('common.newRandomExample')}
         </button>
         <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
           <div className="flex flex-wrap items-end gap-2">
             <div className="min-w-0 flex-1 basis-40">
               <label htmlFor={`${id}-values`} className="block text-sm font-medium">
-                Your own numbers
+                {t('common.yourOwnNumbers')}
               </label>
               <input
                 id={`${id}-values`}
                 type="text"
                 autoComplete="off"
                 spellCheck={false}
+                dir="ltr"
                 value={valuesText}
                 onChange={(event) => setValuesText(event.target.value)}
-                placeholder="e.g. 1 2 3"
+                placeholder={t('subarraySum.placeholderValues')}
                 aria-invalid={inputError?.field === 'values'}
                 aria-describedby={describedBy('values')}
                 className={`mt-1 ${inputClass('values')}`}
@@ -259,25 +268,25 @@ export default function SubarraySumVisual() {
                 type="text"
                 autoComplete="off"
                 spellCheck={false}
+                dir="ltr"
                 value={kText}
                 onChange={(event) => setKText(event.target.value)}
-                placeholder="e.g. 3"
+                placeholder={t('subarraySum.placeholderK')}
                 aria-invalid={inputError?.field === 'k'}
                 aria-describedby={describedBy('k')}
                 className={`mt-1 ${inputClass('k')}`}
               />
             </div>
             <button type="submit" className={`${buttonClass} shrink-0`}>
-              Use these
+              {t('common.useThese')}
             </button>
           </div>
           <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
-            1 to {MAX_NUMBERS} whole numbers from -{MAX_VALUE} to {MAX_VALUE}, and k from -{MAX_K} to {MAX_K}, as in the problem
-            (which allows up to 1000 numbers).
+            <TextWithCode text={t('subarraySum.hint', { count: MAX_NUMBERS, max: MAX_VALUE, maxK: MAX_K })} />
           </p>
           {inputError && (
             <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
-              {inputError.message}
+              <TextWithCode text={inputError.message} />
             </p>
           )}
         </form>

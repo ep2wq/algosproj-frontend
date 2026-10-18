@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { SubmitResult, SubmitStatus, TestResult, VisibleTestResult } from '../api'
+import { TextWithCode } from './LessonBody'
 
 const STATUS_STYLES: Record<SubmitStatus, string> = {
   passed: 'bg-pass/10 text-pass border-pass/30',
@@ -59,7 +60,9 @@ export default function SubmitResultPanel({ result }: { result: SubmitResult }) 
 
       {result.compile_error && (
         <div className="mt-4">
-          <h4 className="text-sm font-medium text-fail">{t('result.compileError')}</h4>
+          <h4 className="text-sm font-medium text-fail">
+            <TextWithCode text={t('result.compileError')} />
+          </h4>
           <pre dir="ltr" lang="en" className="mt-1 overflow-x-auto whitespace-pre-wrap rounded bg-paper p-3 font-mono text-sm text-ink">
             {result.compile_error}
           </pre>

@@ -1,4 +1,7 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TextWithCode } from '../components/LessonBody'
+import type { T } from './i18n'
 import { inversionFrames, type InversionFrame } from './inversionFrames'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
@@ -12,11 +15,11 @@ function randomArray() {
 }
 
 // Returns the numbers, or an error message to show. Empty is allowed: the problem has n = 0.
-function parseNumbers(text: string): number[] | string {
+function parseNumbers(text: string, t: T): number[] | string {
   const parts = text.split(/[\s,]+/).filter(Boolean)
-  if (parts.length > MAX_NUMBERS) return `Enter at most ${MAX_NUMBERS} numbers.`
+  if (parts.length > MAX_NUMBERS) return t('common.atMostNumbers', { count: MAX_NUMBERS })
   if (parts.some((part) => !/^-?\d+$/.test(part) || Math.abs(Number(part)) > LIMIT)) {
-    return `Use whole numbers from -${LIMIT} to ${LIMIT}, separated by spaces or commas.`
+    return t('inversions.invalid', { limit: LIMIT })
   }
   return parts.map(Number)
 }
@@ -31,13 +34,18 @@ function arrayCellStyle(frame: InversionFrame, index: number) {
 
 // One sorted run with its pointer: taken numbers are dimmed, the next one is marked.
 function Run({ label, values, pointer, mark }: { label: string; values: number[]; pointer: number; mark: string }) {
+  const { t } = useTranslation('visuals')
   const rest = values.slice(pointer)
   return (
     <div className="min-w-0 flex-1">
       <p className="text-sm font-medium">{label}</p>
       <div
         role="img"
-        aria-label={`${label}: ${values.join(' ')}. ${rest.length === 0 ? 'All taken.' : `Waiting: ${rest.join(' ')}.`}`}
+        aria-label={
+          rest.length === 0
+            ? t('inversions.runAllTaken', { label, values: values.join(' ') })
+            : t('inversions.runWaiting', { label, values: values.join(' '), rest: rest.join(' ') })
+        }
         className="mt-1 flex flex-wrap gap-x-1.5 gap-y-2 rounded border border-line bg-surface p-2"
       >
         {values.map((value, index) => (
@@ -57,19 +65,15 @@ function Run({ label, values, pointer, mark }: { label: string; values: number[]
   )
 }
 
-function pairs(n: number) {
-  const count = (n * (n - 1)) / 2
-  return `${count} ${count === 1 ? 'pair' : 'pairs'}`
-}
-
 // Merge sort that counts inversions while it merges.
 export default function InversionsVisual() {
+  const { t } = useTranslation('visuals')
   const id = useId()
   const [array, setArray] = useState(randomArray)
   const [customText, setCustomText] = useState('')
   const [inputError, setInputError] = useState('')
 
-  const frames = useMemo(() => inversionFrames(array), [array])
+  const frames = useMemo(() => inversionFrames(array, t), [array, t])
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
@@ -82,7 +86,7 @@ export default function InversionsVisual() {
 
   function handleCustom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const parsed = parseNumbers(customText)
+    const parsed = parseNumbers(customText, t)
     if (typeof parsed === 'string') {
       setInputError(parsed)
       return
@@ -99,10 +103,15 @@ export default function InversionsVisual() {
 
       <div
         role="img"
-        aria-label={`Array: ${current.array.join(' ') || 'empty'}.${merging ? ` Merging positions ${current.range![0]} to ${current.range![1] - 1}.` : ''}`}
+        aria-label={
+          merging
+            ? t('inversions.arrayMerging', { values: current.array.join(' ') || t('inversions.emptyWord'), from: current.range![0], to: current.range![1] - 1 })
+            : t('inversions.arrayLabel', { values: current.array.join(' ') || t('inversions.emptyWord') })
+        }
+        dir="ltr"
         className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
       >
-        {current.array.length === 0 && <p className="text-sm text-muted">No numbers.</p>}
+        {current.array.length === 0 && <p className="text-sm text-muted">{t('inversions.noNumbers')}</p>}
         {current.array.map((value, index) => (
           <div key={index} className="flex min-w-10 flex-col items-center">
             <span className={`${cellClass} ${arrayCellStyle(current, index)}`}>{value}</span>
@@ -113,17 +122,19 @@ export default function InversionsVisual() {
 
       {merging && (
         <>
-          <div className="mt-3 flex flex-col gap-3 sm:flex-row">
-            <Run label="Left half" values={current.left} pointer={current.leftPointer} mark="i" />
-            <Run label="Right half" values={current.right} pointer={current.rightPointer} mark="j" />
+          {/* Left to right in both languages: the left half is drawn on the left. */}
+          <div dir="ltr" className="mt-3 flex flex-col gap-3 sm:flex-row">
+            <Run label={t('inversions.leftHalf')} values={current.left} pointer={current.leftPointer} mark="i" />
+            <Run label={t('inversions.rightHalf')} values={current.right} pointer={current.rightPointer} mark="j" />
           </div>
-          <p className="mt-3 text-sm font-medium">Merged so far</p>
+          <p className="mt-3 text-sm font-medium">{t('inversions.mergedSoFar')}</p>
           <div
             role="img"
-            aria-label={`Merged so far: ${current.merged.join(' ') || 'nothing yet'}.`}
+            aria-label={t('inversions.mergedLabel', { list: current.merged.join(' ') || t('inversions.nothingYetWord') })}
+            dir="ltr"
             className="mt-1 flex min-h-14 flex-wrap gap-x-1.5 gap-y-2 rounded border border-line bg-surface p-2"
           >
-            {current.merged.length === 0 && <p className="self-center text-sm text-muted">Nothing yet.</p>}
+            {current.merged.length === 0 && <p className="self-center text-sm text-muted">{t('inversions.nothingYet')}</p>}
             {current.merged.map((value, index) => (
               <span
                 key={index}
@@ -141,53 +152,60 @@ export default function InversionsVisual() {
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-accent bg-accent-soft" aria-hidden="true" />
-          Range being merged
+          {t('inversions.legendRange')}
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border-2 border-warn bg-surface" aria-hidden="true" />
-          Next in each half (i, j)
+          <TextWithCode text={t('inversions.legendNext')} />
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-accent bg-accent" aria-hidden="true" />
-          Just taken
+          {t('inversions.legendTaken')}
         </li>
-        <li>Small numbers: positions.</li>
+        <li>{t('common.smallPositions')}</li>
       </ul>
 
       <p className="mt-3 inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-2">
-        <span className="text-sm text-muted">Inversions so far</span>
-        <span className={`text-xl font-semibold tabular-nums ${current.done ? 'text-pass' : 'text-ink'}`}>{current.total}</span>
+        <span className="text-sm text-muted">
+          <TextWithCode text={t('inversions.soFar')} />
+        </span>
+        <span dir="ltr" className={`text-xl font-semibold tabular-nums ${current.done ? 'text-pass' : 'text-ink'}`}>{current.total}</span>
       </p>
 
       {current.done && (
         <div className="mt-3">
-          <p className="inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">Inversions: {current.total}</p>
-          <p className="mt-1 text-sm text-muted">Brute force would check {pairs(current.array.length)}.</p>
+          <p className="inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
+            <TextWithCode text={t('inversions.total', { total: current.total })} />
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            <TextWithCode text={t('inversions.bruteForce', { count: (current.array.length * (current.array.length - 1)) / 2 })} />
+          </p>
         </div>
       )}
 
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
-        {current.description}
+        <TextWithCode text={current.description} />
       </p>
 
       <PlaybackControls playback={playback} />
 
       <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
         <button type="button" onClick={() => restart(randomArray())} className={buttonClass}>
-          New random example
+          {t('common.newRandomExample')}
         </button>
         <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
           <label htmlFor={`${id}-numbers`} className="block text-sm font-medium">
-            Your own numbers
+            {t('common.yourOwnNumbers')}
           </label>
           <div className="mt-1 flex gap-2">
             <input
               id={`${id}-numbers`}
               type="text"
               autoComplete="off"
+              dir="ltr"
               value={customText}
               onChange={(event) => setCustomText(event.target.value)}
-              placeholder="e.g. 2 4 1 3 5"
+              placeholder={t('inversions.placeholder')}
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-numbers-hint${inputError ? ` ${id}-numbers-error` : ''}`}
               className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
@@ -195,16 +213,15 @@ export default function InversionsVisual() {
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>
-              Use these
+              {t('common.useThese')}
             </button>
           </div>
           <p id={`${id}-numbers-hint`} className="mt-1 text-xs text-muted">
-            0 to {MAX_NUMBERS} whole numbers from -{LIMIT} to {LIMIT}, as in the problem (leave it empty for n = 0). Equal
-            values are not inversions.
+            <TextWithCode text={t('inversions.hint', { count: MAX_NUMBERS, limit: LIMIT })} />
           </p>
           {inputError && (
             <p id={`${id}-numbers-error`} role="alert" className="mt-1 text-sm text-fail">
-              {inputError}
+              <TextWithCode text={inputError} />
             </p>
           )}
         </form>

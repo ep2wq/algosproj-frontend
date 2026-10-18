@@ -1,4 +1,7 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TextWithCode } from '../components/LessonBody'
+import type { T } from './i18n'
 import { longestSubstringFrames, type WindowFrame } from './longestSubstringFrames'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
@@ -23,10 +26,10 @@ function randomExample(current?: string) {
   return Array.from({ length: randomInt(7, 12) }, () => alphabet[randomInt(0, alphabet.length - 1)]).join('')
 }
 
-function parseInput(text: string): string | { message: string } {
+function parseInput(text: string, t: T): string | { message: string } {
   const s = text.trim()
-  if (!/^[a-z]*$/.test(s)) return { message: 'Use only lowercase letters a to z, with no spaces.' }
-  if (s.length > MAX_LETTERS) return { message: `Use at most ${MAX_LETTERS} letters, so the diagram fits.` }
+  if (!/^[a-z]*$/.test(s)) return { message: t('longestSubstring.invalid') }
+  if (s.length > MAX_LETTERS) return { message: t('longestSubstring.tooLong', { count: MAX_LETTERS }) }
   return s
 }
 
@@ -53,27 +56,29 @@ function pointerNames(frame: WindowFrame, index: number) {
   return names
 }
 
-function stringLabel(frame: WindowFrame) {
-  if (frame.s === '') return 'The line is empty.'
-  const letters = `Letters: ${[...frame.s].join(' ')}.`
-  if (frame.output !== null) return `${letters} Longest window: positions ${frame.bestStart} to ${frame.bestStart + frame.best - 1}.`
-  if (frame.right === null) return `${letters} left = ${frame.left}.`
-  return `${letters} left = ${frame.left}, right = ${frame.right}, window "${frame.s.slice(frame.left, frame.right + 1)}".`
+function stringLabel(frame: WindowFrame, t: T) {
+  if (frame.s === '') return t('longestSubstring.stringEmpty')
+  const letters = [...frame.s].join(' ')
+  if (frame.output !== null) return t('longestSubstring.stringBest', { letters, from: frame.bestStart, to: frame.bestStart + frame.best - 1 })
+  if (frame.right === null) return t('longestSubstring.stringStart', { letters, left: frame.left })
+  return t('longestSubstring.stringWindow', { letters, left: frame.left, right: frame.right, window: frame.s.slice(frame.left, frame.right + 1) })
 }
 
-function mapLabel(frame: WindowFrame) {
-  if (frame.last.length === 0) return 'Last seen: empty.'
-  return `Last seen, letter to position: ${frame.last.map((entry) => `${entry.letter} at ${entry.index}`).join(', ')}.`
+function mapLabel(frame: WindowFrame, t: T) {
+  if (frame.last.length === 0) return t('longestSubstring.mapEmpty')
+  const entries = frame.last.map((entry) => t('longestSubstring.mapEntry', { letter: entry.letter, index: entry.index })).join(t('common.listSeparator'))
+  return t('longestSubstring.mapLabel', { entries })
 }
 
 // Longest substring without a repeated letter: a sliding window and a last-seen map.
 export default function LongestSubstringVisual() {
+  const { t } = useTranslation('visuals')
   const id = useId()
   const [text, setText] = useState(() => randomExample())
   const [customText, setCustomText] = useState('')
   const [inputError, setInputError] = useState('')
 
-  const frames = useMemo(() => longestSubstringFrames(text), [text])
+  const frames = useMemo(() => longestSubstringFrames(text, t), [text, t])
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
@@ -86,7 +91,7 @@ export default function LongestSubstringVisual() {
 
   function handleCustom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const parsed = parseInput(customText)
+    const parsed = parseInput(customText, t)
     if (typeof parsed !== 'string') {
       setInputError(parsed.message)
       return
@@ -111,7 +116,7 @@ export default function LongestSubstringVisual() {
         ].map(([name, value]) => (
           <p key={name} className="inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-1.5">
             <span className="font-mono text-sm text-muted">{name}</span>
-            <span className="text-lg font-semibold tabular-nums">{value}</span>
+            <span dir="ltr" className="text-lg font-semibold tabular-nums">{value}</span>
           </p>
         ))}
       </div>
@@ -119,12 +124,13 @@ export default function LongestSubstringVisual() {
       <div
         tabIndex={0}
         role="region"
-        aria-label="The letters, scrolls sideways when wider than the screen"
+        aria-label={t('longestSubstring.lettersRegion')}
+        dir="ltr"
         className="mt-3 overflow-x-auto rounded border border-line bg-surface p-3"
       >
-        <div role="img" aria-label={stringLabel(current)} className="w-max">
+        <div role="img" aria-label={stringLabel(current, t)} className="w-max">
           {current.s === '' ? (
-            <p className="text-sm text-muted">(an empty line)</p>
+            <p className="text-sm text-muted">{t('longestSubstring.emptyLine')}</p>
           ) : (
             <div className="flex gap-1">
               {[...current.s].map((letter, index) => {
@@ -147,20 +153,21 @@ export default function LongestSubstringVisual() {
         </div>
       </div>
 
-      <p className="mt-3 text-sm font-medium">Last seen</p>
+      <p className="mt-3 text-sm font-medium">{t('longestSubstring.lastSeen')}</p>
       <div
         tabIndex={0}
         role="region"
-        aria-label="Last-seen map, scrolls sideways when wider than the screen"
+        aria-label={t('longestSubstring.mapRegion')}
+        dir="ltr"
         className="mt-1 overflow-x-auto rounded border border-line bg-surface"
       >
-        <table aria-label={mapLabel(current)} className="border-collapse text-sm tabular-nums">
+        <table aria-label={mapLabel(current, t)} className="border-collapse text-sm tabular-nums">
           <tbody>
             <tr className="border-b border-line">
               <th scope="row" className="px-2 py-1 text-start text-xs font-medium text-muted">
-                Letter
+                {t('longestSubstring.letter')}
               </th>
-              {current.last.length === 0 && <td className="px-2 py-1 text-muted">empty</td>}
+              {current.last.length === 0 && <td className="px-2 py-1 text-muted">{t('longestSubstring.tableEmpty')}</td>}
               {current.last.map((entry) => (
                 <th
                   key={entry.letter}
@@ -173,7 +180,7 @@ export default function LongestSubstringVisual() {
             </tr>
             <tr>
               <th scope="row" className="px-2 py-1 text-start text-xs font-medium text-muted">
-                Position
+                {t('longestSubstring.position')}
               </th>
               {current.last.length === 0 && <td className="px-2 py-1 text-muted">-</td>}
               {current.last.map((entry) => (
@@ -192,69 +199,69 @@ export default function LongestSubstringVisual() {
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-warn bg-warn" aria-hidden="true" />
-          Letter at right, and its map entry
+          <TextWithCode text={t('longestSubstring.legendRight')} />
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-dashed border-warn bg-surface" aria-hidden="true" />
-          Where that letter was last seen
+          {t('longestSubstring.legendEarlier')}
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-accent bg-accent-soft" aria-hidden="true" />
-          Window from left to right
+          <TextWithCode text={t('longestSubstring.legendWindow')} />
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-pass bg-pass" aria-hidden="true" />
-          Longest window
+          <TextWithCode text={t('longestSubstring.legendBest')} />
         </li>
-        <li>Small numbers: positions.</li>
+        <li>{t('common.smallPositions')}</li>
       </ul>
 
       {current.output !== null && (
         <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
-          Output: <span className="font-mono">{current.output}</span>
+          {t('common.output')} <span className="font-mono">{current.output}</span>
         </p>
       )}
 
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
-        {current.description}
+        <TextWithCode text={current.description} />
       </p>
 
       <PlaybackControls playback={playback} />
 
       <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
         <button type="button" onClick={() => restart(randomExample(text))} className={buttonClass}>
-          New random example
+          {t('common.newRandomExample')}
         </button>
         <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
           <div className="flex flex-wrap items-end gap-2">
             <div className="min-w-0 flex-1 basis-40">
               <label htmlFor={`${id}-input`} className="block text-sm font-medium">
-                Your own word
+                {t('longestSubstring.ownWord')}
               </label>
               <input
                 id={`${id}-input`}
                 type="text"
                 autoComplete="off"
                 spellCheck={false}
+                dir="ltr"
                 value={customText}
                 onChange={(event) => setCustomText(event.target.value)}
-                placeholder="e.g. abba"
+                placeholder={t('longestSubstring.placeholder')}
                 aria-invalid={Boolean(inputError)}
                 aria-describedby={describedBy}
                 className={`mt-1 block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${inputError ? 'border-fail' : 'border-field hover:border-muted'}`}
               />
             </div>
             <button type="submit" className={`${buttonClass} shrink-0`}>
-              Use this
+              {t('common.useThis')}
             </button>
           </div>
           <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
-            0 to {MAX_LETTERS} lowercase letters a to z. The problem allows up to 1000; {MAX_LETTERS} fit in the diagram. Leave it
-            empty for an empty line.
+            <TextWithCode text={t('longestSubstring.hint', { count: MAX_LETTERS })} />
           </p>
           {inputError && (
             <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
-              {inputError}
+              <TextWithCode text={inputError} />
             </p>
           )}
         </form>

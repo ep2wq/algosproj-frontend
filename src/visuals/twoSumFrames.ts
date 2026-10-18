@@ -1,6 +1,8 @@
 // Pure function for Two Sum with a hash map: one walk, look up the partner, then store.
 // The player only reads these.
 
+import type { T } from './i18n'
+
 export type MapEntry = { value: number; index: number }
 
 export type TwoSumFrame = {
@@ -32,7 +34,7 @@ export function pairsAddingUpTo(values: number[], target: number) {
 }
 
 // Expects input with exactly one pair, as the problem guarantees.
-export function twoSumFrames(values: number[], target: number): TwoSumFrame[] {
+export function twoSumFrames(values: number[], target: number, t: T): TwoSumFrame[] {
   const map: MapEntry[] = []
   const frame = (parts: Partial<Omit<TwoSumFrame, 'values' | 'target' | 'map' | 'description'>> & { description: string }): TwoSumFrame => ({
     values: [...values],
@@ -46,11 +48,11 @@ export function twoSumFrames(values: number[], target: number): TwoSumFrame[] {
     description: parts.description,
   })
 
-  const frames = [frame({ description: `Start with an empty map. Look for two positions that add up to ${target}.` })]
+  const frames = [frame({ description: t('twoSum.start', { target }) })]
   for (let i = 0; i < values.length; i++) {
     const value = values[i]
     const partner = target - value
-    const question = `Position ${i}, value ${value}: the partner would be ${target} - ${term(value)} = ${partner}. Is ${partner} in the map?`
+    const question = t('twoSum.question', { i, value, target, term: term(value), partner })
 
     // Look up first. The map only holds earlier positions, so a value never pairs with itself.
     const found = map.find((entry) => entry.value === partner)
@@ -62,7 +64,7 @@ export function twoSumFrames(values: number[], target: number): TwoSumFrame[] {
           partner,
           foundAt: found.index,
           answer,
-          description: `${question} Yes, at position ${found.index}. The answer is ${found.index} ${i}.`,
+          description: `${question} ${t('twoSum.yes', { at: found.index, i })}`,
         }),
       )
       return frames
@@ -72,8 +74,8 @@ export function twoSumFrames(values: number[], target: number): TwoSumFrame[] {
     const existing = map.find((entry) => entry.value === value)
     if (existing) existing.index = i
     else map.push({ value, index: i })
-    const replaced = existing ? ` ${value} was already in the map, so its position becomes ${i}.` : ''
-    frames.push(frame({ current: i, partner, stored: value, description: `${question} No. Store ${value} at position ${i}.${replaced}` }))
+    const replaced = existing ? ` ${t('twoSum.replaced', { value, i })}` : ''
+    frames.push(frame({ current: i, partner, stored: value, description: `${question} ${t('twoSum.no', { value, i })}${replaced}` }))
   }
   return frames
 }

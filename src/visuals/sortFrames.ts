@@ -1,6 +1,8 @@
 // Pure functions that turn an array into a list of frames, one per step of a sort.
 // The player only reads these; there is no animation logic here.
 
+import type { T } from './i18n'
+
 export type Frame = {
   array: number[]
   compared: number[] // indices being compared
@@ -24,23 +26,23 @@ function allIndices(array: number[]) {
 }
 
 // Frames for arrays too short to need any work. Returns null if there is work to do.
-function trivialFrames(array: number[]): Frame[] | null {
-  if (array.length === 0) return [frame(array, 'The array is empty, so there is nothing to sort.')]
-  if (array.length === 1) return [frame(array, 'A single number is already sorted.', { sorted: [0] })]
+function trivialFrames(array: number[], t: T): Frame[] | null {
+  if (array.length === 0) return [frame(array, t('sorting.empty'))]
+  if (array.length === 1) return [frame(array, t('sorting.single'), { sorted: [0] })]
   return null
 }
 
-function doneFrame(array: number[]) {
-  return frame(array, 'Done: the array is sorted.', { sorted: allIndices(array) })
+function doneFrame(array: number[], t: T) {
+  return frame(array, t('sorting.done'), { sorted: allIndices(array) })
 }
 
-export function bubbleSortFrames(input: number[]): Frame[] {
-  const trivial = trivialFrames(input)
+export function bubbleSortFrames(input: number[], t: T): Frame[] {
+  const trivial = trivialFrames(input, t)
   if (trivial) return trivial
 
   const a = [...input]
   const sorted: number[] = []
-  const frames = [frame(a, 'Bubble sort walks through the array and swaps neighbours that are in the wrong order.')]
+  const frames = [frame(a, t('sorting.bubbleIntro'))]
 
   for (let pass = 0; pass < a.length - 1; pass++) {
     let swapped = false
@@ -49,49 +51,49 @@ export function bubbleSortFrames(input: number[]): Frame[] {
       const left = a[j]
       const right = a[j + 1]
       if (left > right) {
-        frames.push(frame(a, `Compare ${left} and ${right}: ${left} is bigger, so swap them.`, { compared: [j, j + 1], sorted }))
+        frames.push(frame(a, t('sorting.compareSwap', { left, right }), { compared: [j, j + 1], sorted }))
         a[j] = right
         a[j + 1] = left
         swapped = true
-        frames.push(frame(a, `Swapped: ${right} now comes before ${left}.`, { changed: [j, j + 1], sorted }))
+        frames.push(frame(a, t('sorting.swapped', { left, right }), { changed: [j, j + 1], sorted }))
       } else {
         frames.push(
-          frame(a, `Compare ${left} and ${right}: ${left} is not bigger, so leave them.`, { compared: [j, j + 1], sorted }),
+          frame(a, t('sorting.compareLeave', { left, right }), { compared: [j, j + 1], sorted }),
         )
       }
     }
     if (!swapped) {
-      frames.push(frame(a, 'No swaps in this pass, so everything is in order.', { sorted: allIndices(a) }))
+      frames.push(frame(a, t('sorting.noSwaps'), { sorted: allIndices(a) }))
       break
     }
     sorted.push(end)
-    frames.push(frame(a, `${a[end]} has bubbled up to its final place.`, { sorted }))
+    frames.push(frame(a, t('sorting.bubbled', { value: a[end] }), { sorted }))
   }
 
-  frames.push(doneFrame(a))
+  frames.push(doneFrame(a, t))
   return frames
 }
 
-export function insertionSortFrames(input: number[]): Frame[] {
-  const trivial = trivialFrames(input)
+export function insertionSortFrames(input: number[], t: T): Frame[] {
+  const trivial = trivialFrames(input, t)
   if (trivial) return trivial
 
   const a = [...input]
-  const frames = [frame(a, 'Insertion sort takes each number in turn and moves it left until it fits.')]
+  const frames = [frame(a, t('sorting.insertionIntro'))]
 
   for (let i = 1; i < a.length; i++) {
-    frames.push(frame(a, `Take ${a[i]} and insert it into the part on its left.`, { compared: [i] }))
+    frames.push(frame(a, t('sorting.take', { value: a[i] }), { compared: [i] }))
     for (let j = i; j > 0; j--) {
       const left = a[j - 1]
       const current = a[j]
       if (left > current) {
-        frames.push(frame(a, `Compare ${left} and ${current}: ${left} is bigger, so swap them.`, { compared: [j - 1, j] }))
+        frames.push(frame(a, t('sorting.compareSwap', { left, right: current }), { compared: [j - 1, j] }))
         a[j - 1] = current
         a[j] = left
-        frames.push(frame(a, `Swapped: ${current} moves one place left.`, { changed: [j - 1, j] }))
+        frames.push(frame(a, t('sorting.movesLeft', { value: current }), { changed: [j - 1, j] }))
       } else {
         frames.push(
-          frame(a, `Compare ${left} and ${current}: ${left} is not bigger, so ${current} stays here.`, {
+          frame(a, t('sorting.compareStays', { left, right: current }), {
             compared: [j - 1, j],
           }),
         )
@@ -100,16 +102,16 @@ export function insertionSortFrames(input: number[]): Frame[] {
     }
   }
 
-  frames.push(doneFrame(a))
+  frames.push(doneFrame(a, t))
   return frames
 }
 
-export function mergeSortFrames(input: number[]): Frame[] {
-  const trivial = trivialFrames(input)
+export function mergeSortFrames(input: number[], t: T): Frame[] {
+  const trivial = trivialFrames(input, t)
   if (trivial) return trivial
 
   const a = [...input]
-  const frames = [frame(a, 'Merge sort splits the array into halves, sorts each half, then merges them back together.')]
+  const frames = [frame(a, t('sorting.mergeIntro'))]
 
   function sort(start: number, end: number) {
     // Sorts a[start..end), end exclusive.
@@ -120,7 +122,7 @@ export function mergeSortFrames(input: number[]): Frame[] {
 
     const leftPart = a.slice(start, mid)
     const rightPart = a.slice(mid, end)
-    frames.push(frame(a, `Merge ${leftPart.join(' ')} with ${rightPart.join(' ')}.`))
+    frames.push(frame(a, t('sorting.merge', { left: leftPart.join(' '), right: rightPart.join(' ') })))
 
     // Compare the front of each half. The array isn't touched until the merged result is written back.
     const merged: number[] = []
@@ -131,11 +133,11 @@ export function mergeSortFrames(input: number[]): Frame[] {
       const right = rightPart[j]
       const compared = [start + i, mid + j]
       if (left <= right) {
-        frames.push(frame(a, `Compare ${left} and ${right}: ${left} is not bigger, so ${left} goes next.`, { compared }))
+        frames.push(frame(a, t('sorting.leftNext', { left, right }), { compared }))
         merged.push(left)
         i++
       } else {
-        frames.push(frame(a, `Compare ${left} and ${right}: ${right} is smaller, so ${right} goes next.`, { compared }))
+        frames.push(frame(a, t('sorting.rightNext', { left, right }), { compared }))
         merged.push(right)
         j++
       }
@@ -144,10 +146,10 @@ export function mergeSortFrames(input: number[]): Frame[] {
 
     for (let k = 0; k < merged.length; k++) a[start + k] = merged[k]
     const changed = merged.map((_, k) => start + k)
-    frames.push(frame(a, `Write the merged numbers back: ${merged.join(' ')}.`, { changed }))
+    frames.push(frame(a, t('sorting.writeBack', { merged: merged.join(' ') }), { changed }))
   }
 
   sort(0, a.length)
-  frames.push(doneFrame(a))
+  frames.push(doneFrame(a, t))
   return frames
 }

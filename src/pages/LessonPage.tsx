@@ -75,12 +75,10 @@ export default function LessonPage() {
             {t('lesson.visualization')}
           </h2>
           <Suspense fallback={<p className="mt-4 text-sm text-muted">{t('lesson.loadingVisualization')}</p>}>
-            {/* English and left-to-right in both interface languages (drawing, controls, step text). */}
-            <div lang="en" dir="ltr">
-              {/* Looked up from a module-level map, so it is the same component on every render. */}
-              {/* oxlint-disable-next-line react/static-components */}
-              <Visual />
-            </div>
+            {/* Text and controls follow the interface language; the drawings stay left to right. */}
+            {/* Looked up from a module-level map, so it is the same component on every render. */}
+            {/* oxlint-disable-next-line react/static-components */}
+            <Visual />
           </Suspense>
         </section>
       )}

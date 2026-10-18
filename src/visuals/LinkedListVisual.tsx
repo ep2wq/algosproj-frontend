@@ -1,4 +1,7 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TextWithCode } from '../components/LessonBody'
+import type { T } from './i18n'
 import { cycleFrames, middleFrames, reverseFrames, type ListFrame, type ListMode } from './linkedListFrames'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
@@ -17,49 +20,43 @@ function randomValues(min: number, max: number) {
 const MAX_NODES = 12
 const MAX_VALUE = 1000000
 
-function parseValues(text: string, minCount: number): number[] | string {
+function parseValues(text: string, minCount: number, t: T): number[] | string {
   const parts = text.split(/[\s,]+/).filter(Boolean)
-  if (parts.length < minCount) return 'Enter at least one number.'
-  if (parts.length > MAX_NODES) return `Enter at most ${MAX_NODES} numbers.`
+  if (parts.length < minCount) return t('common.atLeastOneNumber')
+  if (parts.length > MAX_NODES) return t('common.atMostNumbers', { count: MAX_NODES })
   if (parts.some((part) => !/^-?\d+$/.test(part) || Math.abs(Number(part)) > MAX_VALUE)) {
-    return 'Use whole numbers from -1000000 to 1000000, separated by spaces or commas.'
+    return t('linkedList.invalid')
   }
   return parts.map(Number)
 }
 
-function parsePos(text: string, n: number): number | string {
+function parsePos(text: string, n: number, t: T): number | string {
   const trimmed = text.trim()
-  if (n === 0) return trimmed === '-1' ? -1 : 'With no numbers, pos must be -1.'
+  if (n === 0) return trimmed === '-1' ? -1 : t('linkedList.posEmpty')
   if (!/^-?\d+$/.test(trimmed) || Number(trimmed) < -1 || Number(trimmed) > n - 1) {
-    return `pos must be -1 (no cycle) or a position from 0 to ${n - 1}.`
+    return t('linkedList.posInvalid', { last: n - 1 })
   }
   return Number(trimmed)
 }
 
 const MODES = {
   reverse: {
-    frames: (source: Source) => reverseFrames(source.values),
+    frames: (source: Source, t: T) => reverseFrames(source.values, t),
     random: (): Source => ({ values: randomValues(3, 7), pos: -1 }),
     minCount: 0,
-    placeholder: 'e.g. 1 2 3 4',
-    hint: '0 to 12 whole numbers from -1000000 to 1000000, as in the problem. Leave it empty for an empty list.',
   },
   middle: {
-    frames: (source: Source) => middleFrames(source.values),
+    frames: (source: Source, t: T) => middleFrames(source.values, t),
     random: (): Source => ({ values: randomValues(4, 9), pos: -1 }),
     minCount: 1,
-    placeholder: 'e.g. 1 2 3 4 5 6',
-    hint: '1 to 12 whole numbers from -1000000 to 1000000, as in the problem. For an even count, the middle is the second of the two middle nodes.',
   },
   cycle: {
-    frames: (source: Source) => cycleFrames(source.values, source.pos),
+    frames: (source: Source, t: T) => cycleFrames(source.values, source.pos, t),
     random: (): Source => {
       const values = randomValues(3, 8)
       return { values, pos: Math.random() < 0.3 ? -1 : randomInt(0, values.length - 1) }
     },
     minCount: 0,
-    placeholder: 'e.g. 3 2 0 -4',
-    hint: '0 to 12 whole numbers from -1000000 to 1000000, and pos: the position the last node links back to, or -1 for none, as in the problem.',
   },
 }
 
@@ -113,18 +110,18 @@ function Arrow({ from, to, tone }: { from: number; to: number; tone: Tone }) {
   return <line x1={from} y1={BOX_MID} x2={to - 2 * dir} y2={BOX_MID} className={TONES[tone].line} strokeWidth={2} markerEnd={`url(#arrow-${tone})`} />
 }
 
-function listLabel(frame: ListFrame) {
+function listLabel(frame: ListFrame, t: T) {
   const { values, next } = frame
-  if (values.length === 0) return 'The list is empty.'
+  if (values.length === 0) return t('linkedList.listEmpty')
   const nodes = values.map((value, i) => {
-    const target = next[i] === null ? 'null' : `${values[next[i]!]} (index ${next[i]})`
-    return `${value} (index ${i}) points to ${target}`
+    const target = next[i] === null ? 'null' : t('linkedList.atIndex', { value: values[next[i]!], index: next[i] })
+    return t('linkedList.pointsTo', { value, index: i, target })
   })
   const pointers = frame.pointers.map((pointer) => {
-    const where = typeof pointer.at === 'number' ? `${values[pointer.at]} (index ${pointer.at})` : 'null'
-    return `${pointer.name} is at ${where}`
+    const where = typeof pointer.at === 'number' ? t('linkedList.atIndex', { value: values[pointer.at], index: pointer.at }) : 'null'
+    return t('linkedList.pointerAt', { name: pointer.name, where })
   })
-  return `Nodes: ${nodes.join('; ')}. ${pointers.join(', ')}.`
+  return t('linkedList.label', { nodes: nodes.join(t('linkedList.nodeSeparator')), pointers: pointers.join(t('common.listSeparator')) })
 }
 
 function Diagram({ frame }: { frame: ListFrame }) {
@@ -239,6 +236,7 @@ function Diagram({ frame }: { frame: ListFrame }) {
 
 // One diagram, three algorithms: reverse a list, find its middle, detect a cycle.
 export default function LinkedListVisual({ mode }: { mode: ListMode }) {
+  const { t } = useTranslation('visuals')
   const id = useId()
   const config = MODES[mode]
   const [source, setSource] = useState(config.random)
@@ -246,7 +244,7 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
   const [posText, setPosText] = useState('-1')
   const [inputError, setInputError] = useState<{ field: 'values' | 'pos'; message: string } | null>(null)
 
-  const frames = useMemo(() => config.frames(source), [config, source])
+  const frames = useMemo(() => config.frames(source, t), [config, source, t])
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
@@ -258,12 +256,12 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
 
   function handleCustom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const values = parseValues(valuesText, config.minCount)
+    const values = parseValues(valuesText, config.minCount, t)
     if (typeof values === 'string') {
       setInputError({ field: 'values', message: values })
       return
     }
-    const pos = mode === 'cycle' ? parsePos(posText, values.length) : -1
+    const pos = mode === 'cycle' ? parsePos(posText, values.length, t) : -1
     if (typeof pos === 'string') {
       setInputError({ field: 'pos', message: pos })
       return
@@ -288,10 +286,11 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
       <div
         tabIndex={0}
         role="region"
-        aria-label="Linked list diagram, scrolls sideways when it is wider than the screen"
+        aria-label={t('linkedList.region')}
+        dir="ltr"
         className="mt-4 overflow-x-auto rounded border border-line bg-surface p-3"
       >
-        <div role="img" aria-label={listLabel(current)} className="w-max">
+        <div role="img" aria-label={listLabel(current, t)} className="w-max">
           <Diagram frame={current} />
         </div>
       </div>
@@ -299,58 +298,60 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border-2 border-warn bg-surface" aria-hidden="true" />
-          {mode === 'reverse' ? 'Node under curr or next' : 'Node under slow or fast'}
+          <TextWithCode text={mode === 'reverse' ? t('linkedList.legendCurrNext') : t('linkedList.legendSlowFast')} />
         </li>
         {mode === 'reverse' ? (
           <>
             <li className="flex items-center gap-1.5">
               <span className="inline-block h-0.5 w-4 bg-accent" aria-hidden="true" />
-              Arrow already turned around
+              {t('linkedList.legendTurned')}
             </li>
             <li className="flex items-center gap-1.5">
               <span className="inline-block h-0.5 w-4 bg-warn" aria-hidden="true" />
-              Arrow changed in this step
+              {t('linkedList.legendChanged')}
             </li>
           </>
         ) : (
           <li className="flex items-center gap-1.5">
             <span className="inline-block size-3 rounded-sm border border-pass bg-pass" aria-hidden="true" />
-            {mode === 'middle' ? 'Middle node' : 'Where slow and fast meet'}
+            <TextWithCode text={mode === 'middle' ? t('linkedList.legendMiddle') : t('linkedList.legendMeet')} />
           </li>
         )}
-        <li>Small numbers: positions.</li>
+        <li>{t('common.smallPositions')}</li>
       </ul>
 
       {current.output !== null && (
         <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
-          Output: {current.output === '' ? <span className="font-normal text-muted">(an empty line)</span> : <span className="font-mono">{current.output}</span>}
+          {t('common.output')}{' '}
+          {current.output === '' ? <span className="font-normal text-muted">{t('linkedList.emptyLine')}</span> : <span className="font-mono">{current.output}</span>}
         </p>
       )}
 
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
-        {current.description}
+        <TextWithCode text={current.description} />
       </p>
 
       <PlaybackControls playback={playback} />
 
       <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
         <button type="button" onClick={() => restart(config.random())} className={buttonClass}>
-          New random example
+          {t('common.newRandomExample')}
         </button>
         <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
           <div className="flex flex-wrap items-end gap-2">
             <div className="min-w-0 flex-1 basis-40">
               <label htmlFor={`${id}-input`} className="block text-sm font-medium">
-                Your own numbers
+                {t('common.yourOwnNumbers')}
               </label>
               <input
                 id={`${id}-input`}
                 type="text"
                 autoComplete="off"
                 spellCheck={false}
+                dir="ltr"
                 value={valuesText}
                 onChange={(event) => setValuesText(event.target.value)}
-                placeholder={config.placeholder}
+                placeholder={mode === 'reverse' ? t('linkedList.placeholderReverse') : mode === 'middle' ? t('linkedList.placeholderMiddle') : t('linkedList.placeholderCycle')}
                 aria-invalid={inputError?.field === 'values'}
                 aria-describedby={describedBy('values')}
                 className={`mt-1 ${inputClass('values')}`}
@@ -367,6 +368,7 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
                   inputMode="numeric"
                   autoComplete="off"
                   spellCheck={false}
+                  dir="ltr"
                   value={posText}
                   onChange={(event) => setPosText(event.target.value)}
                   aria-invalid={inputError?.field === 'pos'}
@@ -376,15 +378,15 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
               </div>
             )}
             <button type="submit" className={`${buttonClass} shrink-0`}>
-              Use this
+              {t('common.useThis')}
             </button>
           </div>
           <p id={`${id}-input-hint`} className="mt-1 text-xs text-muted">
-            {config.hint}
+            <TextWithCode text={mode === 'reverse' ? t('linkedList.hintReverse') : mode === 'middle' ? t('linkedList.hintMiddle') : t('linkedList.hintCycle')} />
           </p>
           {inputError && (
             <p id={`${id}-input-error`} role="alert" className="mt-1 text-sm text-fail">
-              {inputError.message}
+              <TextWithCode text={inputError.message} />
             </p>
           )}
         </form>

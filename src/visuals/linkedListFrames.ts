@@ -2,6 +2,8 @@
 // and detecting a cycle. Nodes are numbered 0..n-1 in input order and keep their place on
 // screen; only the next pointers change. The player only reads these.
 
+import type { T } from './i18n'
+
 export type ListMode = 'reverse' | 'middle' | 'cycle'
 
 // Where a pointer variable points: a node index, or null. Null is drawn at the left end
@@ -37,15 +39,15 @@ function frameMaker(values: number[], next: (number | null)[], flipped: boolean[
 }
 
 // "the node with 7 (index 2)" or "null".
-function describe(values: number[], at: number | null) {
-  return at === null ? 'null' : `the node with ${values[at]} (index ${at})`
+function describe(t: T, values: number[], at: number | null) {
+  return at === null ? t('linkedList.null') : t('linkedList.nodeWith', { value: values[at], index: at })
 }
 
 function straightList(n: number) {
   return Array.from({ length: n }, (_, i) => (i + 1 < n ? i + 1 : null))
 }
 
-export function reverseFrames(values: number[]): ListFrame[] {
+export function reverseFrames(values: number[], t: T): ListFrame[] {
   const n = values.length
   const next = straightList(n)
   const flipped = values.map(() => false)
@@ -56,7 +58,7 @@ export function reverseFrames(values: number[]): ListFrame[] {
       frame({
         pointers: [{ name: 'head', at: 'null-right' }],
         output: '',
-        description: 'The list is empty: head is null, so the loop never runs. Print an empty line.',
+        description: t('linkedList.reverseEmpty'),
       }),
     ]
   }
@@ -74,14 +76,14 @@ export function reverseFrames(values: number[]): ListFrame[] {
   const frames = [
     frame({
       pointers: [{ name: 'head', at: 0 }, ...pointers(false)],
-      description: `Start with prev = null and curr = head, ${describe(values, 0)}.`,
+      description: t('linkedList.reverseStart', { node: describe(t, values, 0) }),
     }),
   ]
 
   while (curr !== null) {
     const c: number = curr
     saved = next[c]
-    frames.push(frame({ pointers: pointers(true), description: `Save next = curr.next, which is ${describe(values, saved)}.` }))
+    frames.push(frame({ pointers: pointers(true), description: t('linkedList.save', { node: describe(t, values, saved) }) }))
 
     next[c] = prev
     flipped[c] = true
@@ -89,7 +91,7 @@ export function reverseFrames(values: number[]): ListFrame[] {
       frame({
         pointers: pointers(true),
         changed: c,
-        description: `Point curr.next back at prev: ${describe(values, c)} now points to ${describe(values, prev)}.`,
+        description: t('linkedList.point', { node: describe(t, values, c), target: describe(t, values, prev) }),
       }),
     )
 
@@ -98,7 +100,7 @@ export function reverseFrames(values: number[]): ListFrame[] {
     frames.push(
       frame({
         pointers: pointers(true),
-        description: `Move prev forward to ${describe(values, prev)} and curr forward to ${describe(values, curr)}.`,
+        description: t('linkedList.move', { prev: describe(t, values, prev), curr: describe(t, values, curr) }),
       }),
     )
   }
@@ -109,7 +111,7 @@ export function reverseFrames(values: number[]): ListFrame[] {
     frame({
       pointers: [{ name: 'head', at: prev! }, ...pointers(true)],
       output: reversed.join(' '),
-      description: `curr is null, so the loop stops. prev, ${describe(values, prev)}, is the new head. Walk from it and print ${reversed.join(' ')}.`,
+      description: t('linkedList.reverseEnd', { node: describe(t, values, prev), output: reversed.join(' ') }),
     }),
   )
   return frames
@@ -123,13 +125,13 @@ function slowFast(slow: number | null, fast: number | null): ListPointer[] {
 }
 
 // Expects 1 or more values. For an even n, slow stops on the second middle node.
-export function middleFrames(values: number[]): ListFrame[] {
+export function middleFrames(values: number[], t: T): ListFrame[] {
   const n = values.length
   const next = straightList(n)
   const frame = frameMaker(values, next, values.map(() => false), false)
   let slow = 0
   let fast: number | null = 0
-  const frames = [frame({ pointers: slowFast(slow, fast), description: `slow and fast both start at the head, ${describe(values, 0)}.` })]
+  const frames = [frame({ pointers: slowFast(slow, fast), description: t('linkedList.middleStart', { node: describe(t, values, 0) }) })]
 
   while (fast !== null && next[fast] !== null) {
     slow = next[slow]!
@@ -137,26 +139,33 @@ export function middleFrames(values: number[]): ListFrame[] {
     frames.push(
       frame({
         pointers: slowFast(slow, fast),
-        description: `fast and fast.next are not null, so slow moves one node to ${values[slow]} and fast moves two, to ${describe(values, fast)}.`,
+        description: t('linkedList.middleMove', { value: values[slow], node: describe(t, values, fast) }),
       }),
     )
   }
 
-  const why = fast === null ? 'fast is null' : `fast.next is null (fast is on the last node, ${values[fast]})`
-  const which = n % 2 === 0 ? `n = ${n} is even, so this is the second of the two middle nodes` : 'this is the middle node'
+  const params = { index: slow, n, value: values[slow], last: fast === null ? null : values[fast] }
+  const even = n % 2 === 0
   frames.push(
     frame({
       pointers: slowFast(slow, fast),
       highlight: slow,
       output: String(values[slow]),
-      description: `The loop stops because ${why}. slow is on index ${slow}; ${which}. Print ${values[slow]}.`,
+      description:
+        fast === null
+          ? even
+            ? t('linkedList.middleEndNullEven', params)
+            : t('linkedList.middleEndNullOdd', params)
+          : even
+            ? t('linkedList.middleEndNextEven', params)
+            : t('linkedList.middleEndNextOdd', params),
     }),
   )
   return frames
 }
 
 // Expects -1 <= pos <= n - 1, and pos = -1 when n = 0.
-export function cycleFrames(values: number[], pos: number): ListFrame[] {
+export function cycleFrames(values: number[], pos: number, t: T): ListFrame[] {
   const n = values.length
   const next = straightList(n)
   if (pos >= 0) next[n - 1] = pos
@@ -167,26 +176,25 @@ export function cycleFrames(values: number[], pos: number): ListFrame[] {
       frame({
         pointers: slowFast(null, null),
         output: 'no',
-        description: 'The list is empty: head is null, so fast is null and the loop never runs. No cycle. Print no.',
+        description: t('linkedList.cycleEmpty'),
       }),
     ]
   }
 
-  const link = pos >= 0 ? `The last node links back to ${describe(values, pos)}.` : 'The last node points to null.'
   let slow = 0
   let fast: number | null = 0
-  const frames = [frame({ pointers: slowFast(slow, fast), description: `${link} slow and fast both start at the head.` })]
+  const start = pos >= 0 ? t('linkedList.cycleStartBack', { node: describe(t, values, pos) }) : t('linkedList.cycleStartNull')
+  const frames = [frame({ pointers: slowFast(slow, fast), description: start })]
 
   // slow and fast meet within n moves when there is a cycle, and fast reaches null within
   // n / 2 moves when there isn't, so this bound is never the reason the loop ends.
   for (let moves = 0; moves < 2 * n + 2; moves++) {
     if (fast === null || next[fast] === null) {
-      const why = fast === null ? 'fast is null' : 'fast.next is null'
       frames.push(
         frame({
           pointers: slowFast(slow, fast),
           output: 'no',
-          description: `The loop stops because ${why}: fast reached the end of the list. No cycle. Print no.`,
+          description: fast === null ? t('linkedList.cycleStopNull') : t('linkedList.cycleStopNext'),
         }),
       )
       return frames
@@ -196,7 +204,7 @@ export function cycleFrames(values: number[], pos: number): ListFrame[] {
     frames.push(
       frame({
         pointers: slowFast(slow, fast),
-        description: `slow moves one node to ${values[slow]} (index ${slow}); fast moves two, to ${describe(values, fast)}.`,
+        description: t('linkedList.cycleMove', { value: values[slow], index: slow, node: describe(t, values, fast) }),
       }),
     )
     if (slow === fast) {
@@ -205,7 +213,7 @@ export function cycleFrames(values: number[], pos: number): ListFrame[] {
           pointers: slowFast(slow, fast),
           highlight: slow,
           output: 'yes',
-          description: `slow and fast are on the same node, ${describe(values, slow)}. There is a cycle. Print yes.`,
+          description: t('linkedList.meet', { node: describe(t, values, slow) }),
         }),
       )
       return frames

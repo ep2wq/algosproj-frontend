@@ -1,6 +1,8 @@
 // Pure functions for the two-pointer technique on a string: reversing it, and checking
 // whether it is a palindrome. The player only reads these.
 
+import type { T } from './i18n'
+
 export type PointerMode = 'reverse' | 'palindrome'
 
 export type PointerFrame = {
@@ -14,8 +16,8 @@ export type PointerFrame = {
   description: string
 }
 
-function name(c: string) {
-  return c === ' ' ? 'the space' : `"${c}"`
+function name(c: string, t: T) {
+  return c === ' ' ? t('twoPointer.space') : t('twoPointer.quoted', { c })
 }
 
 function frameMaker(chars: string[]) {
@@ -31,14 +33,14 @@ function frameMaker(chars: string[]) {
   })
 }
 
-export function reverseFrames(text: string): PointerFrame[] {
+export function reverseFrames(text: string, t: T): PointerFrame[] {
   const chars = [...text]
   const frame = frameMaker(chars)
   const settled: number[] = []
   let left = 0
   let right = chars.length - 1
   const frames = [
-    frame({ left, right, active: [], settled, description: 'Put L on the first character and R on the last.' }),
+    frame({ left, right, active: [], settled, description: t('twoPointer.start') }),
   ]
 
   while (left < right) {
@@ -52,7 +54,7 @@ export function reverseFrames(text: string): PointerFrame[] {
         right,
         active: [left, right],
         settled,
-        description: `Swap ${name(a)} and ${name(b)} at positions ${left} and ${right}, then move both pointers inward.`,
+        description: t('twoPointer.swap', { a: name(a, t), b: name(b, t), left, right }),
       }),
     )
     settled.push(left, right)
@@ -68,25 +70,25 @@ export function reverseFrames(text: string): PointerFrame[] {
         right,
         active: [],
         settled,
-        description: `L and R meet at position ${left}. The middle character, ${name(chars[left])}, stays where it is.`,
+        description: t('twoPointer.meet', { position: left, c: name(chars[left], t) }),
       }),
     )
   }
 
   const reversed = chars.join('')
-  frames.push(frame({ left: null, right: null, active: [], settled, result: `Reversed: "${reversed}"`, description: `Done: the reversed text is "${reversed}".` }))
+  frames.push(frame({ left: null, right: null, active: [], settled, result: t('twoPointer.reversed', { text: reversed }), description: t('twoPointer.reverseDone', { text: reversed }) }))
   return frames
 }
 
 // The problem's rule: the word is lowercase letters a-z, compared exactly as given.
-export function palindromeFrames(text: string): PointerFrame[] {
+export function palindromeFrames(text: string, t: T): PointerFrame[] {
   const chars = [...text]
   const frame = frameMaker(chars)
   const settled: number[] = []
   let left = 0
   let right = chars.length - 1
   const frames = [
-    frame({ left, right, active: [], settled, description: 'Put L on the first character and R on the last.' }),
+    frame({ left, right, active: [], settled, description: t('twoPointer.start') }),
   ]
 
   while (left < right) {
@@ -100,8 +102,8 @@ export function palindromeFrames(text: string): PointerFrame[] {
           active: [left, right],
           settled,
           mismatch: true,
-          result: 'Not a palindrome',
-          description: `${name(a)} and ${name(b)} differ, so stop here. Not a palindrome.`,
+          result: t('twoPointer.notPalindrome'),
+          description: t('twoPointer.differ', { a: name(a, t), b: name(b, t) }),
         }),
       )
       return frames
@@ -112,7 +114,7 @@ export function palindromeFrames(text: string): PointerFrame[] {
         right,
         active: [left, right],
         settled,
-        description: `${name(a)} and ${name(b)} match, so move both pointers inward.`,
+        description: t('twoPointer.match', { a: name(a, t), b: name(b, t) }),
       }),
     )
     settled.push(left, right)
@@ -121,12 +123,12 @@ export function palindromeFrames(text: string): PointerFrame[] {
   }
 
   if (left === right) settled.push(left)
-  const why =
+  const description =
     chars.length === 1
-      ? 'A single character reads the same both ways.'
+      ? t('twoPointer.single')
       : left === right
-        ? `L and R meet at the middle character, ${name(chars[left])}, and every pair matched.`
-        : 'L and R have crossed, and every pair matched.'
-  frames.push(frame({ left: null, right: null, active: [], settled, result: 'Palindrome', description: `${why} Palindrome.` }))
+        ? t('twoPointer.meetMiddle', { c: name(chars[left], t) })
+        : t('twoPointer.crossed')
+  frames.push(frame({ left: null, right: null, active: [], settled, result: t('twoPointer.palindromeResult'), description }))
   return frames
 }

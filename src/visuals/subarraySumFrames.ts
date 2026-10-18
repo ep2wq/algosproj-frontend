@@ -2,6 +2,8 @@
 // (prefix sum) and a map from each total to how many times it has appeared, starting with
 // {0: 1} for the empty prefix. The player only reads these.
 
+import { joinAnd, type T } from './i18n'
+
 export type SumEntry = { sum: number; times: number }
 
 export type SumFrame = {
@@ -23,21 +25,9 @@ function term(n: number) {
   return n < 0 ? `(${n})` : String(n)
 }
 
-function span(from: number, to: number) {
-  return from === to ? `position ${to}` : `positions ${from} to ${to}`
-}
-
-function list(items: string[]) {
-  if (items.length <= 1) return items.join('')
-  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
-}
-
-function times(n: number) {
-  return n === 1 ? 'once' : `${n} times`
-}
-
 // Expects 1 or more values.
-export function subarraySumFrames(values: number[], k: number): SumFrame[] {
+export function subarraySumFrames(values: number[], k: number, t: T): SumFrame[] {
+  const span = (from: number, to: number) => (from === to ? t('subarraySum.spanOne', { to }) : t('subarraySum.spanRange', { from, to }))
   const n = values.length
   const prefixes: (number | null)[] = [0, ...values.map(() => null)]
   const map: SumEntry[] = [{ sum: 0, times: 1 }]
@@ -58,7 +48,7 @@ export function subarraySumFrames(values: number[], k: number): SumFrame[] {
   })
 
   const frames = [
-    frame({ description: `The map starts as {0: 1}: before the first number the total is 0, the empty prefix. sum = 0 and count = 0. Look for subarrays that add up to ${k}.` }),
+    frame({ description: t('subarraySum.start', { k }) }),
   ]
 
   for (let i = 0; i < n; i++) {
@@ -66,26 +56,26 @@ export function subarraySumFrames(values: number[], k: number): SumFrame[] {
     sum += values[i]
     prefixes[i + 1] = sum
     const lookup = sum - k
-    const read = `Read ${values[i]} (position ${i}): sum = ${before} + ${term(values[i])} = ${sum}. Look up sum - k = ${sum} - ${term(k)} = ${lookup}:`
+    const read = { value: values[i], i, before, term: term(values[i]), sum, termK: term(k), lookup, k }
 
     // Look up before storing, so the subarray is never empty.
     const entry = map.find((e) => e.sum === lookup)
     if (!entry) {
-      frames.push(frame({ read: i, lookup, description: `${read} not in the map, so count stays ${count}.` }))
+      frames.push(frame({ read: i, lookup, description: t('subarraySum.readMissing', { ...read, current: count }) }))
     } else {
       const matches: number[] = []
       for (let j = 0; j <= i; j++) if (prefixes[j] === lookup) matches.push(j)
       const old = count
       count += entry.times
-      const totals = matches.map((j) => (j === 0 ? 'before position 0 (the empty prefix)' : `before position ${j}`))
-      const subarrays = matches.map((j) => span(j, i))
-      const which = matches.length === 1 ? `the total ${totals[0]}, so ${subarrays[0]} adds up` : `the totals ${list(totals)}, so ${list(subarrays)} each add up`
+      const totals = joinAnd(t, matches.map((j) => (j === 0 ? t('subarraySum.beforeEmpty') : t('subarraySum.before', { j }))))
+      const subarrays = joinAnd(t, matches.map((j) => span(j, i)))
+      const found = { ...read, times: t('subarraySum.times', { count: entry.times }), old, added: entry.times, total: count, totals, subarrays }
       frames.push(
         frame({
           read: i,
           lookup,
           matches,
-          description: `${read} seen ${times(entry.times)}, so count = ${old} + ${entry.times} = ${count}. It matches ${which} to ${k}.`,
+          description: matches.length === 1 ? t('subarraySum.readFoundOne', found) : t('subarraySum.readFoundMany', found),
         }),
       )
     }
@@ -93,9 +83,9 @@ export function subarraySumFrames(values: number[], k: number): SumFrame[] {
     const stored = map.find((e) => e.sum === sum)
     if (stored) stored.times++
     else map.push({ sum, times: 1 })
-    frames.push(frame({ read: i, stored: sum, description: `Store ${sum}: the map now has ${sum}: ${stored ? stored.times : 1}.` }))
+    frames.push(frame({ read: i, stored: sum, description: t('subarraySum.store', { sum, times: stored ? stored.times : 1 }) }))
   }
 
-  frames.push(frame({ output: String(count), description: `All ${n === 1 ? '1 number is' : `${n} numbers are`} read. Print ${count}.` }))
+  frames.push(frame({ output: String(count), description: t('subarraySum.allRead', { count: n, result: count }) }))
   return frames
 }

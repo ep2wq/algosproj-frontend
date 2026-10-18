@@ -1,39 +1,41 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TextWithCode } from '../components/LessonBody'
 import { maxFrames, sumFrames, type ScanMode } from './arrayScanFrames'
+import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 
 const MAX_NUMBERS = 12
 
-const MODES = {
-  sum: { frames: sumFrames, valueLabel: 'Running total' },
-  max: { frames: maxFrames, valueLabel: 'Best so far' },
-}
+const MODES = { sum: sumFrames, max: maxFrames }
 
 function randomArray() {
   return Array.from({ length: 8 }, () => -20 + Math.floor(Math.random() * 71))
 }
 
 // Returns the numbers, or an error message to show.
-function parseNumbers(text: string): number[] | string {
+function parseNumbers(text: string, t: T): number[] | string {
   const parts = text.split(/[\s,]+/).filter(Boolean)
-  if (parts.length === 0) return 'Enter at least one number.'
-  if (parts.length > MAX_NUMBERS) return `Enter at most ${MAX_NUMBERS} numbers.`
+  if (parts.length === 0) return t('common.atLeastOneNumber')
+  if (parts.length > MAX_NUMBERS) return t('common.atMostNumbers', { count: MAX_NUMBERS })
   if (parts.some((part) => !/^-?\d+$/.test(part) || Number(part) < -99 || Number(part) > 99)) {
-    return 'Use whole numbers from -99 to 99, separated by spaces or commas.'
+    return t('arrayScan.invalid')
   }
   return parts.map(Number)
 }
 
 // One left-to-right pass over an array: a running total (sum) or a running best (max).
 export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
+  const { t } = useTranslation('visuals')
   const id = useId()
   const [array, setArray] = useState(randomArray)
   const [customText, setCustomText] = useState('')
   const [inputError, setInputError] = useState('')
 
-  const { frames: makeFrames, valueLabel } = MODES[mode]
-  const frames = useMemo(() => makeFrames(array), [makeFrames, array])
+  const makeFrames = MODES[mode]
+  const valueLabel = mode === 'sum' ? t('arrayScan.runningTotal') : t('arrayScan.bestSoFar')
+  const frames = useMemo(() => makeFrames(array, t), [makeFrames, array, t])
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
@@ -45,7 +47,7 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
 
   function handleCustom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const parsed = parseNumbers(customText)
+    const parsed = parseNumbers(customText, t)
     if (typeof parsed === 'string') {
       setInputError(parsed)
       return
@@ -62,7 +64,8 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
 
       <div
         role="img"
-        aria-label={`Array: ${current.array.join(', ')}. ${valueLabel}: ${current.value}.`}
+        aria-label={mode === 'sum' ? t('arrayScan.labelSum', { values: current.array.join(', '), value: current.value }) : t('arrayScan.labelMax', { values: current.array.join(', '), value: current.value })}
+        dir="ltr"
         className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
       >
         {current.array.map((value, index) => (
@@ -83,37 +86,42 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-warn bg-warn" aria-hidden="true" />
-          Number being looked at (marked i)
+          {t('arrayScan.legendCurrent')}
         </li>
-        <li>Small numbers: indices.</li>
+        <li>
+          <TextWithCode text={t('common.smallIndices')} />
+        </li>
       </ul>
 
       <p className="mt-3 inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-2">
-        <span className="text-sm text-muted">{valueLabel}</span>
-        <span className={`text-xl font-semibold tabular-nums ${current.done ? 'text-pass' : 'text-ink'}`}>{current.value}</span>
+        <span className="text-sm text-muted">
+          <TextWithCode text={valueLabel} />
+        </span>
+        <span dir="ltr" className={`text-xl font-semibold tabular-nums ${current.done ? 'text-pass' : 'text-ink'}`}>{current.value}</span>
       </p>
 
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
-        {current.description}
+        <TextWithCode text={current.description} />
       </p>
 
       <PlaybackControls playback={playback} />
 
       <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
         <button type="button" onClick={() => restart(randomArray())} className={buttonClass}>
-          New random array
+          <TextWithCode text={t('common.newRandomArray')} />
         </button>
         <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
           <label htmlFor={`${id}-numbers`} className="block text-sm font-medium">
-            Your own numbers
+            {t('common.yourOwnNumbers')}
           </label>
           <div className="mt-1 flex gap-2">
             <input
               id={`${id}-numbers`}
               type="text"
+              dir="ltr"
               value={customText}
               onChange={(event) => setCustomText(event.target.value)}
-              placeholder="e.g. 10 -2 7 0 5"
+              placeholder={t('arrayScan.placeholder')}
               aria-invalid={Boolean(inputError)}
               aria-describedby={`${id}-numbers-hint${inputError ? ` ${id}-numbers-error` : ''}`}
               className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
@@ -121,15 +129,15 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
               }`}
             />
             <button type="submit" className={`${buttonClass} shrink-0`}>
-              Use these
+              {t('common.useThese')}
             </button>
           </div>
           <p id={`${id}-numbers-hint`} className="mt-1 text-xs text-muted">
-            1 to {MAX_NUMBERS} whole numbers from -99 to 99, separated by spaces or commas.
+            <TextWithCode text={t('arrayScan.hint', { count: MAX_NUMBERS })} />
           </p>
           {inputError && (
             <p id={`${id}-numbers-error`} role="alert" className="mt-1 text-sm text-fail">
-              {inputError}
+              <TextWithCode text={inputError} />
             </p>
           )}
         </form>

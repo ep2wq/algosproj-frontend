@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   adjustUserPoints,
@@ -19,12 +20,13 @@ import { useAuth } from '../../auth'
 import BannedBadge from '../../components/BannedBadge'
 import ConfirmAction from '../../components/ConfirmAction'
 import Pagination from '../../components/Pagination'
-import { controlClass, EVENT_LABELS, formatTime, ROLE_LABELS } from './format'
+import { controlClass, formatTime } from './format'
 import { alertClass } from './styles'
 
 // /admin/users/:id. Only the actions the current role may use are shown; the backend checks
 // every one of them again (403 with a message, shown next to the action).
 export default function AdminUserPage() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const userId = Number(id)
   const { user: me } = useAuth()
@@ -47,9 +49,9 @@ export default function AdminUserPage() {
         setRole(user.role === 'admin' ? 'admin' : 'user')
       })
       .catch((err) =>
-        setLoadError(err instanceof ApiError && err.status === 404 ? "This user doesn't exist." : err instanceof ApiError ? err.message : 'Could not load the user.'),
+        setLoadError(err instanceof ApiError && err.status === 404 ? t('admin.user.notFound') : err instanceof ApiError ? err.message : t('admin.user.loadFailed')),
       )
-  }, [userId])
+  }, [userId, t])
 
   const loadActivity = useCallback(() => {
     getUserActivity(userId, activityPage)
@@ -77,13 +79,13 @@ export default function AdminUserPage() {
           {loadError}
         </p>
         <Link to="/admin/users" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
-          Back to the users
+          {t('admin.user.backToUsers')}
         </Link>
       </div>
     )
   }
 
-  if (!detail || !me) return <p className="text-muted">Loading user...</p>
+  if (!detail || !me) return <p className="text-muted">{t('admin.user.loading')}</p>
 
   // The same rules as the backend: never yourself, never an owner, and admins only act on users.
   const isSelf = me.id === detail.id
@@ -93,7 +95,7 @@ export default function AdminUserPage() {
   return (
     <div className="max-w-4xl">
       <Link to="/admin/users" className="rounded text-sm text-muted hover:text-accent">
-        Users
+        {t('admin.nav.users')}
       </Link>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <h1 className="min-w-0 break-words text-3xl font-semibold tracking-tight" dir="auto">
@@ -103,29 +105,27 @@ export default function AdminUserPage() {
       </div>
 
       <dl className="mt-4 grid gap-x-6 gap-y-2 rounded border border-line bg-surface p-4 sm:grid-cols-[auto_1fr]">
-        <dt className="text-sm text-muted">Email</dt>
+        <dt className="text-sm text-muted">{t('admin.users.email')}</dt>
         <dd className="break-all">{detail.email}</dd>
-        <dt className="text-sm text-muted">Role</dt>
-        <dd>{ROLE_LABELS[detail.role]}</dd>
-        <dt className="text-sm text-muted">Points</dt>
+        <dt className="text-sm text-muted">{t('admin.users.role')}</dt>
+        <dd>{t(`admin.roles.${detail.role}`)}</dd>
+        <dt className="text-sm text-muted">{t('admin.users.points')}</dt>
         <dd className="tabular-nums">{detail.points}</dd>
-        <dt className="text-sm text-muted">Solved</dt>
+        <dt className="text-sm text-muted">{t('admin.users.solved')}</dt>
         <dd className="tabular-nums">{detail.solved_count}</dd>
-        <dt className="text-sm text-muted">Joined</dt>
+        <dt className="text-sm text-muted">{t('admin.users.joined')}</dt>
         <dd>{formatTime(detail.created_at)}</dd>
         {detail.banned_at && (
           <>
-            <dt className="text-sm text-muted">Banned</dt>
-            <dd className="break-words">
-              {formatTime(detail.banned_at)}. Reason: {detail.ban_reason}
-            </dd>
+            <dt className="text-sm text-muted">{t('admin.common.banned')}</dt>
+            <dd className="break-words">{t('admin.user.bannedAt', { time: formatTime(detail.banned_at), reason: detail.ban_reason ?? '' })}</dd>
           </>
         )}
       </dl>
 
       <section className="mt-8" aria-labelledby="actions-heading">
         <h2 id="actions-heading" className="text-xl font-semibold">
-          Actions
+          {t('admin.user.actions')}
         </h2>
         {notice && (
           <p role="status" className="mt-2 text-pass">
@@ -134,40 +134,36 @@ export default function AdminUserPage() {
         )}
         {!canModerate && !ownerActions && (
           <p className="mt-2 text-sm text-muted">
-            {isSelf
-              ? "You can't act on your own account here."
-              : detail.role === 'owner'
-                ? 'Owners can only be changed with the artisan command.'
-                : 'Only an owner can act on an admin.'}
+            {isSelf ? t('admin.user.notSelf') : detail.role === 'owner' ? t('admin.user.notOwner') : t('admin.user.onlyOwner')}
           </p>
         )}
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           {canModerate &&
             (detail.banned_at ? (
               <ConfirmAction
-                label="Unban"
-                question={`Unban ${detail.name}? Their points and progress are kept.`}
-                confirmLabel="Yes, unban"
+                label={t('admin.user.unban')}
+                question={t('admin.user.unbanQuestion', { name: detail.name })}
+                confirmLabel={t('admin.user.unbanConfirm')}
                 onConfirm={async () => {
                   await unbanUser(detail.id)
-                  done('Unbanned.')
+                  done(t('admin.user.unbanned'))
                 }}
               />
             ) : (
               <ConfirmAction
-                label="Ban"
-                question={`Ban ${detail.name}? They are logged out everywhere and can't log in.`}
-                confirmLabel="Yes, ban"
+                label={t('admin.user.ban')}
+                question={t('admin.user.banQuestion', { name: detail.name })}
+                confirmLabel={t('admin.user.banConfirm')}
                 danger
                 onClose={() => setBanReason('')}
                 onConfirm={async () => {
                   await banUser(detail.id, banReason)
-                  done('Banned.')
+                  done(t('admin.user.banned'))
                 }}
               >
                 <div>
                   <label htmlFor="ban-reason" className="text-sm font-medium">
-                    Reason (shown to the user, at most 255 characters)
+                    {t('admin.user.banReason')}
                   </label>
                   <textarea
                     id="ban-reason"
@@ -182,59 +178,59 @@ export default function AdminUserPage() {
             ))}
           {canModerate && (
             <ConfirmAction
-              label="Log out everywhere"
-              question={`End every session of ${detail.name}?`}
-              confirmLabel="Yes, log out everywhere"
+              label={t('admin.user.logoutEverywhere')}
+              question={t('admin.user.logoutQuestion', { name: detail.name })}
+              confirmLabel={t('admin.user.logoutConfirm')}
               onConfirm={async () => {
                 await logoutUserEverywhere(detail.id)
-                done('Logged out everywhere.')
+                done(t('admin.user.loggedOut'))
               }}
             />
           )}
           {ownerActions && (
             <ConfirmAction
-              label="Change role"
-              question={`Change the role of ${detail.name}?`}
-              confirmLabel="Save role"
+              label={t('admin.user.changeRole')}
+              question={t('admin.user.roleQuestion', { name: detail.name })}
+              confirmLabel={t('admin.user.saveRole')}
               onConfirm={async () => {
                 await setUserRole(detail.id, role)
-                done('Role changed.')
+                done(t('admin.user.roleChanged'))
               }}
             >
               <div>
                 <label htmlFor="user-role" className="text-sm font-medium">
-                  New role
+                  {t('admin.user.newRole')}
                 </label>
                 <select id="user-role" value={role} onChange={(event) => setRole(event.target.value as 'user' | 'admin')} className={controlClass}>
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
+                  <option value="user">{t('admin.roles.user')}</option>
+                  <option value="admin">{t('admin.roles.admin')}</option>
                 </select>
               </div>
             </ConfirmAction>
           )}
           {ownerActions && (
             <ConfirmAction
-              label="Adjust points"
-              question={`Add or remove points for ${detail.name}? Points can't go below 0.`}
-              confirmLabel="Adjust points"
+              label={t('admin.user.adjustPoints')}
+              question={t('admin.user.pointsQuestion', { name: detail.name })}
+              confirmLabel={t('admin.user.adjustPoints')}
               onClose={() => {
                 setAmount('')
                 setPointsReason('')
               }}
               onConfirm={async () => {
                 await adjustUserPoints(detail.id, amount, pointsReason)
-                done('Points adjusted.')
+                done(t('admin.user.pointsAdjusted'))
               }}
             >
               <div>
                 <label htmlFor="points-amount" className="text-sm font-medium">
-                  Amount (negative to remove)
+                  {t('admin.user.amount')}
                 </label>
                 <input id="points-amount" type="number" value={amount} onChange={(event) => setAmount(event.target.value)} className={controlClass} />
               </div>
               <div>
                 <label htmlFor="points-reason" className="text-sm font-medium">
-                  Reason
+                  {t('admin.user.reason')}
                 </label>
                 <input
                   id="points-reason"
@@ -249,21 +245,21 @@ export default function AdminUserPage() {
           )}
           {ownerActions && (
             <ConfirmAction
-              label="Reset progress"
-              question={`Delete every solved problem of ${detail.name} and set their points to 0? Submissions are kept.`}
-              confirmLabel="Yes, reset"
+              label={t('admin.user.resetProgress')}
+              question={t('admin.user.resetQuestion', { name: detail.name })}
+              confirmLabel={t('admin.user.resetConfirm')}
               danger
               onConfirm={async () => {
                 await resetUserProgress(detail.id)
-                done('Progress reset.')
+                done(t('admin.user.progressReset'))
               }}
             />
           )}
           {ownerActions && (
             <ConfirmAction
-              label="Delete user"
-              question={`Delete ${detail.name} for good? Their submissions and solved problems are deleted too.`}
-              confirmLabel="Delete user"
+              label={t('admin.user.deleteUser')}
+              question={t('admin.user.deleteQuestion', { name: detail.name })}
+              confirmLabel={t('admin.user.deleteUser')}
               danger
               onClose={() => setConfirmEmail('')}
               onConfirm={async () => {
@@ -273,7 +269,7 @@ export default function AdminUserPage() {
             >
               <div>
                 <label htmlFor="delete-email" className="text-sm font-medium">
-                  Type the email <span className="break-all font-mono">{detail.email}</span> to confirm
+                  {t('admin.user.typeEmail')} <span className="break-all font-mono">{detail.email}</span> {t('admin.user.toConfirm')}
                 </label>
                 <input
                   id="delete-email"
@@ -291,10 +287,10 @@ export default function AdminUserPage() {
 
       <section className="mt-8" aria-labelledby="solved-heading">
         <h2 id="solved-heading" className="text-xl font-semibold">
-          Solved problems
+          {t('admin.user.solvedProblems')}
         </h2>
         {detail.solved.length === 0 ? (
-          <p className="mt-2 text-sm text-muted">None yet.</p>
+          <p className="mt-2 text-sm text-muted">{t('admin.user.noneYet')}</p>
         ) : (
           <ul className="mt-2 divide-y divide-line rounded border border-line bg-surface">
             {detail.solved.map((problem) => (
@@ -309,10 +305,10 @@ export default function AdminUserPage() {
 
       <section className="mt-8" aria-labelledby="submissions-heading">
         <h2 id="submissions-heading" className="text-xl font-semibold">
-          Recent submissions
+          {t('admin.user.recentSubmissions')}
         </h2>
         {detail.submissions.length === 0 ? (
-          <p className="mt-2 text-sm text-muted">None yet.</p>
+          <p className="mt-2 text-sm text-muted">{t('admin.user.noneYet')}</p>
         ) : (
           <ul className="mt-2 divide-y divide-line rounded border border-line bg-surface">
             {detail.submissions.map((submission) => (
@@ -323,8 +319,8 @@ export default function AdminUserPage() {
                 </div>
                 <p className="text-sm text-muted tabular-nums">
                   {submission.language} · <span className={submission.status === 'passed' ? 'text-pass' : 'text-fail'}>{submission.status}</span> ·{' '}
-                  {submission.passed_count}/{submission.total_count} tests
-                  {submission.runtime_ms !== null && ` · ${submission.runtime_ms} ms`}
+                  {t('admin.user.tests', { passed: submission.passed_count, total: submission.total_count })}
+                  {submission.runtime_ms !== null && t('admin.user.runtime', { ms: submission.runtime_ms })}
                 </p>
               </li>
             ))}
@@ -334,24 +330,24 @@ export default function AdminUserPage() {
 
       <section className="mt-8" aria-labelledby="activity-heading">
         <h2 id="activity-heading" className="text-xl font-semibold">
-          Recent activity
+          {t('admin.user.recentActivity')}
         </h2>
         {activity === null ? (
-          <p className="mt-2 text-sm text-muted">Loading activity...</p>
+          <p className="mt-2 text-sm text-muted">{t('admin.activity.loading')}</p>
         ) : activity.data.length === 0 ? (
-          <p className="mt-2 text-sm text-muted">No activity recorded.</p>
+          <p className="mt-2 text-sm text-muted">{t('admin.user.noActivity')}</p>
         ) : (
           <>
             <ul className="mt-2 divide-y divide-line rounded border border-line bg-surface">
               {activity.data.map((entry) => (
                 <li key={entry.id} className="px-4 py-2">
                   <div className="flex flex-wrap justify-between gap-x-4">
-                    <span className="font-medium">{EVENT_LABELS[entry.event] ?? entry.event}</span>
+                    <span className="font-medium">{t(`admin.events.${entry.event}`, { defaultValue: entry.event })}</span>
                     <span className="text-sm text-muted">{formatTime(entry.created_at)}</span>
                   </div>
                   {(entry.ip || entry.user_agent) && (
                     <p className="break-all text-sm text-muted">
-                      {entry.ip ?? 'No IP'} · {entry.user_agent ?? 'No browser'}
+                      {entry.ip ?? t('admin.user.noIp')} · {entry.user_agent ?? t('admin.user.noBrowser')}
                     </p>
                   )}
                 </li>

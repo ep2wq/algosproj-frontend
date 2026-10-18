@@ -1,4 +1,7 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TextWithCode } from '../components/LessonBody'
+import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { pairsAddingUpTo, twoSumFrames, type TwoSumFrame } from './twoSumFrames'
 import { usePlayback } from './usePlayback'
@@ -24,21 +27,21 @@ function randomExample() {
 }
 
 // Returns the numbers and target, or an error message to show.
-function parseInput(numbersText: string, targetText: string): { values: number[]; target: number } | string {
+function parseInput(numbersText: string, targetText: string, t: T): { values: number[]; target: number } | string {
   const parts = numbersText.split(/[\s,]+/).filter(Boolean)
-  if (parts.length < 2) return 'Enter at least 2 numbers.'
-  if (parts.length > MAX_NUMBERS) return `Enter at most ${MAX_NUMBERS} numbers.`
+  if (parts.length < 2) return t('tree.atLeast', { count: 2 })
+  if (parts.length > MAX_NUMBERS) return t('common.atMostNumbers', { count: MAX_NUMBERS })
   if (parts.some((part) => !/^-?\d+$/.test(part) || Math.abs(Number(part)) > LIMIT)) {
-    return `Use whole numbers from -${LIMIT} to ${LIMIT}, separated by spaces or commas.`
+    return t('inversions.invalid', { limit: LIMIT })
   }
-  if (!/^-?\d+$/.test(targetText.trim())) return 'Enter the target as one whole number.'
+  if (!/^-?\d+$/.test(targetText.trim())) return t('twoSum.targetInvalid')
   const values = parts.map(Number)
   const target = Number(targetText.trim())
   const pairs = pairsAddingUpTo(values, target)
-  if (pairs.length === 0) return `No pair adds up to ${target}. The problem guarantees exactly one.`
+  if (pairs.length === 0) return t('twoSum.noPair', { target })
   if (pairs.length > 1) {
     const shown = pairs.map(([i, j]) => `${i} ${j}`).join(', ')
-    return `${pairs.length} pairs add up to ${target} (positions ${shown}). The problem allows exactly one.`
+    return t('twoSum.manyPairs', { count: pairs.length, target, positions: shown })
   }
   return { values, target }
 }
@@ -56,20 +59,22 @@ function rowStyle(frame: TwoSumFrame, value: number) {
   return ''
 }
 
-function mapLabel(frame: TwoSumFrame) {
-  if (frame.map.length === 0) return 'Map: empty.'
-  return `Map, value to position: ${frame.map.map((entry) => `${entry.value} at ${entry.index}`).join(', ')}.`
+function mapLabel(frame: TwoSumFrame, t: T) {
+  if (frame.map.length === 0) return t('twoSum.mapEmpty')
+  const entries = frame.map.map((entry) => t('longestSubstring.mapEntry', { letter: entry.value, index: entry.index })).join(t('common.listSeparator'))
+  return t('twoSum.mapLabel', { entries })
 }
 
 // Two Sum in one walk: look up target - value in a hash map, then store the value.
 export default function TwoSumVisual() {
+  const { t } = useTranslation('visuals')
   const id = useId()
   const [example, setExample] = useState(randomExample)
   const [numbersText, setNumbersText] = useState('')
   const [targetText, setTargetText] = useState('')
   const [inputError, setInputError] = useState('')
 
-  const frames = useMemo(() => twoSumFrames(example.values, example.target), [example])
+  const frames = useMemo(() => twoSumFrames(example.values, example.target, t), [example, t])
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
@@ -81,7 +86,7 @@ export default function TwoSumVisual() {
 
   function handleCustom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const parsed = parseInput(numbersText, targetText)
+    const parsed = parseInput(numbersText, targetText, t)
     if (typeof parsed === 'string') {
       setInputError(parsed)
       return
@@ -100,14 +105,17 @@ export default function TwoSumVisual() {
       </div>
 
       <p className="mt-4 inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-2">
-        <span className="text-sm text-muted">Target</span>
-        <span className="text-xl font-semibold tabular-nums">{current.target}</span>
+        <span className="text-sm text-muted">
+          <TextWithCode text={t('binarySearch.target')} />
+        </span>
+        <span dir="ltr" className="text-xl font-semibold tabular-nums">{current.target}</span>
       </p>
 
       <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-start">
         <div
           role="img"
-          aria-label={`Numbers: ${current.values.join(' ')}.`}
+          aria-label={t('twoSum.label', { values: current.values.join(' ') })}
+          dir="ltr"
           className="flex min-w-0 flex-1 flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
         >
           {current.values.map((value, index) => (
@@ -124,25 +132,33 @@ export default function TwoSumVisual() {
         </div>
 
         <div className="sm:w-44">
-          <p className="text-sm font-medium">Hash map</p>
-          <table aria-label={mapLabel(current)} className="mt-1 w-full border-collapse rounded border border-line bg-surface text-sm tabular-nums">
+          <p className="text-sm font-medium">
+            <TextWithCode text={t('twoSum.hashMap')} />
+          </p>
+          <table aria-label={mapLabel(current, t)} className="mt-1 w-full border-collapse rounded border border-line bg-surface text-sm tabular-nums">
             <thead>
               <tr className="border-b border-line text-start text-xs text-muted">
-                <th scope="col" className="px-2 py-1 font-medium">Value</th>
-                <th scope="col" className="px-2 py-1 font-medium">Position</th>
+                <th scope="col" className="px-2 py-1 font-medium">
+                  {t('twoSum.value')}
+                </th>
+                <th scope="col" className="px-2 py-1 font-medium">
+                  {t('longestSubstring.position')}
+                </th>
               </tr>
             </thead>
             <tbody>
               {current.map.length === 0 && (
                 <tr>
                   <td colSpan={2} className="px-2 py-1.5 text-muted">
-                    empty
+                    {t('stack.empty')}
                   </td>
                 </tr>
               )}
               {current.map.map((entry) => (
                 <tr key={entry.value} className={`border-b border-line last:border-b-0 motion-safe:transition-colors motion-safe:duration-300 ${rowStyle(current, entry.value)}`}>
-                  <td className="px-2 py-1.5">{entry.value}</td>
+                  <td className="px-2 py-1.5">
+                    <span dir="ltr">{entry.value}</span>
+                  </td>
                   <td className="px-2 py-1.5">{entry.index}</td>
                 </tr>
               ))}
@@ -154,46 +170,49 @@ export default function TwoSumVisual() {
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-warn bg-warn" aria-hidden="true" />
-          Being read (marked i)
+          {t('stack.legendReading')}
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-line bg-accent-soft" aria-hidden="true" />
-          Stored in this step
+          {t('subarraySum.legendStored')}
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-pass bg-pass" aria-hidden="true" />
-          The pair
+          {t('twoSum.legendPair')}
         </li>
-        <li>Small numbers: positions.</li>
+        <li>{t('common.smallPositions')}</li>
       </ul>
 
       {current.answer && (
-        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">Answer: {current.answer.join(' ')}</p>
+        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
+          <TextWithCode text={t('twoSum.answer', { answer: current.answer.join(' ') })} />
+        </p>
       )}
 
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
-        {current.description}
+        <TextWithCode text={current.description} />
       </p>
 
       <PlaybackControls playback={playback} />
 
       <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
         <button type="button" onClick={() => restart(randomExample())} className={buttonClass}>
-          New random example
+          {t('common.newRandomExample')}
         </button>
         <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
           <div className="flex flex-wrap items-end gap-2">
             <div className="min-w-0 flex-1 basis-40">
               <label htmlFor={`${id}-numbers`} className="block text-sm font-medium">
-                Your own numbers
+                {t('common.yourOwnNumbers')}
               </label>
               <input
                 id={`${id}-numbers`}
                 type="text"
                 autoComplete="off"
+                dir="ltr"
                 value={numbersText}
                 onChange={(event) => setNumbersText(event.target.value)}
-                placeholder="e.g. 2 7 11 15"
+                placeholder={t('twoSum.placeholderNumbers')}
                 aria-invalid={Boolean(inputError)}
                 aria-describedby={describedBy}
                 className={`mt-1 ${inputClass}`}
@@ -201,31 +220,31 @@ export default function TwoSumVisual() {
             </div>
             <div className="w-28">
               <label htmlFor={`${id}-target`} className="block text-sm font-medium">
-                Target
+                <TextWithCode text={t('binarySearch.target')} />
               </label>
               <input
                 id={`${id}-target`}
                 type="text"
                 autoComplete="off"
+                dir="ltr"
                 value={targetText}
                 onChange={(event) => setTargetText(event.target.value)}
-                placeholder="e.g. 9"
+                placeholder={t('twoSum.placeholderTarget')}
                 aria-invalid={Boolean(inputError)}
                 aria-describedby={describedBy}
                 className={`mt-1 ${inputClass}`}
               />
             </div>
             <button type="submit" className={`${buttonClass} shrink-0`}>
-              Use these
+              {t('common.useThese')}
             </button>
           </div>
           <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
-            2 to {MAX_NUMBERS} whole numbers from -{LIMIT} to {LIMIT}, and a target. As in the problem, exactly one pair of
-            positions must add up to the target.
+            <TextWithCode text={t('twoSum.hint', { max: MAX_NUMBERS, limit: LIMIT })} />
           </p>
           {inputError && (
             <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
-              {inputError}
+              <TextWithCode text={inputError} />
             </p>
           )}
         </form>

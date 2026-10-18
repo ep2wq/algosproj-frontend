@@ -1,5 +1,8 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { TextWithCode } from '../components/LessonBody'
 import { anagramFrames, type AnagramFrame } from './anagramFrames'
+import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 
@@ -39,10 +42,10 @@ function randomExample() {
 
 type Field = 's' | 't'
 
-function parseWord(text: string, name: string): string | { message: string } {
+function parseWord(text: string, name: string, t: T): string | { message: string } {
   const word = text.trim()
-  if (!/^[a-z]*$/.test(word)) return { message: `Use only lowercase letters a to z in ${name}, with no spaces.` }
-  if (word.length > MAX_LETTERS) return { message: `Use at most ${MAX_LETTERS} letters in ${name}, so it fits on screen.` }
+  if (!/^[a-z]*$/.test(word)) return { message: t('anagram.invalidLetters', { word: name }) }
+  if (word.length > MAX_LETTERS) return { message: t('anagram.tooLong', { word: name, count: MAX_LETTERS }) }
   return word
 }
 
@@ -61,24 +64,25 @@ function countStyle(frame: AnagramFrame, letter: string) {
   return ''
 }
 
-function wordsLabel(frame: AnagramFrame) {
-  const spell = (word: string) => (word === '' ? 'empty' : [...word].join(' '))
-  const reading = frame.pass === 's' || frame.pass === 't' ? ` Reading position ${frame.index} of ${frame.pass}.` : ''
-  return `s: ${spell(frame.s)}. t: ${spell(frame.t)}.${reading}`
+function wordsLabel(frame: AnagramFrame, t: T) {
+  const spell = (word: string) => (word === '' ? t('anagram.spellEmpty') : [...word].join(' '))
+  if (frame.pass === 's' || frame.pass === 't') return t('anagram.wordsLabelReading', { s: spell(frame.s), t: spell(frame.t), index: frame.index, word: frame.pass })
+  return t('anagram.wordsLabel', { s: spell(frame.s), t: spell(frame.t) })
 }
 
-function countsLabel(frame: AnagramFrame) {
-  if (frame.counts.length === 0) return 'Counts: empty.'
-  return `Counts: ${frame.counts.map((entry) => `${entry.letter} ${entry.count}`).join(', ')}.`
+function countsLabel(frame: AnagramFrame, t: T) {
+  if (frame.counts.length === 0) return t('anagram.countsEmpty')
+  return t('anagram.countsLabel', { entries: frame.counts.map((entry) => `${entry.letter} ${entry.count}`).join(t('common.listSeparator')) })
 }
 
 function WordRow({ frame, word }: { frame: AnagramFrame; word: Field }) {
+  const { t } = useTranslation('visuals')
   const text = frame[word]
   return (
     <div className="flex items-start gap-2">
       <span className="mt-1.5 w-4 shrink-0 font-mono text-sm font-semibold">{word}</span>
       {text === '' ? (
-        <span className="mt-1.5 text-sm text-muted">(empty)</span>
+        <span className="mt-1.5 text-sm text-muted">{t('anagram.empty')}</span>
       ) : (
         <div className="flex gap-1">
           {[...text].map((letter, index) => (
@@ -99,13 +103,14 @@ function WordRow({ frame, word }: { frame: AnagramFrame; word: Field }) {
 
 // Valid anagram: compare the lengths, count the letters of s, then take away the letters of t.
 export default function AnagramVisual() {
+  const { t: tr } = useTranslation('visuals')
   const id = useId()
   const [example, setExample] = useState(randomExample)
   const [sText, setSText] = useState('')
   const [tText, setTText] = useState('')
   const [inputError, setInputError] = useState<{ field: Field; message: string } | null>(null)
 
-  const frames = useMemo(() => anagramFrames(example.s, example.t), [example])
+  const frames = useMemo(() => anagramFrames(example.s, example.t, tr), [example, tr])
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
@@ -117,12 +122,12 @@ export default function AnagramVisual() {
 
   function handleCustom(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const s = parseWord(sText, 's')
+    const s = parseWord(sText, 's', tr)
     if (typeof s !== 'string') {
       setInputError({ field: 's', message: s.message })
       return
     }
-    const t = parseWord(tText, 't')
+    const t = parseWord(tText, 't', tr)
     if (typeof t !== 'string') {
       setInputError({ field: 't', message: t.message })
       return
@@ -146,29 +151,31 @@ export default function AnagramVisual() {
       <div
         tabIndex={0}
         role="region"
-        aria-label="The two words, scrolls sideways when wider than the screen"
+        aria-label={tr('anagram.wordsRegion')}
+        dir="ltr"
         className="mt-4 overflow-x-auto rounded border border-line bg-surface p-3"
       >
-        <div role="img" aria-label={wordsLabel(current)} className="flex w-max flex-col gap-2">
+        <div role="img" aria-label={wordsLabel(current, tr)} className="flex w-max flex-col gap-2">
           <WordRow frame={current} word="s" />
           <WordRow frame={current} word="t" />
         </div>
       </div>
 
-      <p className="mt-3 text-sm font-medium">Counts</p>
+      <p className="mt-3 text-sm font-medium">{tr('anagram.counts')}</p>
       <div
         tabIndex={0}
         role="region"
-        aria-label="Letter counts, scrolls sideways when wider than the screen"
+        aria-label={tr('anagram.countsRegion')}
+        dir="ltr"
         className="mt-1 overflow-x-auto rounded border border-line bg-surface"
       >
-        <table aria-label={countsLabel(current)} className="border-collapse text-sm tabular-nums">
+        <table aria-label={countsLabel(current, tr)} className="border-collapse text-sm tabular-nums">
           <tbody>
             <tr className="border-b border-line">
               <th scope="row" className="px-2 py-1 text-start text-xs font-medium text-muted">
-                Letter
+                {tr('anagram.letter')}
               </th>
-              {current.counts.length === 0 && <td className="px-2 py-1 text-muted">empty</td>}
+              {current.counts.length === 0 && <td className="px-2 py-1 text-muted">{tr('anagram.tableEmpty')}</td>}
               {current.counts.map((entry) => (
                 <th key={entry.letter} scope="col" className={`min-w-9 px-2 py-1 text-center font-mono font-semibold motion-safe:transition-colors motion-safe:duration-300 ${countStyle(current, entry.letter)}`}>
                   {entry.letter}
@@ -177,7 +184,7 @@ export default function AnagramVisual() {
             </tr>
             <tr>
               <th scope="row" className="px-2 py-1 text-start text-xs font-medium text-muted">
-                Count
+                {tr('anagram.count')}
               </th>
               {current.counts.length === 0 && <td className="px-2 py-1 text-muted">-</td>}
               {current.counts.map((entry) => (
@@ -193,40 +200,40 @@ export default function AnagramVisual() {
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-warn bg-warn" aria-hidden="true" />
-          Letter being read and its count
+          {tr('anagram.legendRead')}
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-fail bg-fail" aria-hidden="true" />
-          Count below 0
+          <TextWithCode text={tr('anagram.legendBelow')} />
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block size-3 rounded-sm border border-pass bg-pass" aria-hidden="true" />
-          Every count is 0
+          <TextWithCode text={tr('anagram.legendZero')} />
         </li>
-        <li>Small numbers: positions.</li>
+        <li>{tr('common.smallPositions')}</li>
       </ul>
 
       {current.output !== null && (
         <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
-          Output: <span className="font-mono">{current.output}</span>
+          {tr('common.output')} <span className="font-mono">{current.output}</span>
         </p>
       )}
 
       <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
-        {current.description}
+        <TextWithCode text={current.description} />
       </p>
 
       <PlaybackControls playback={playback} />
 
       <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
         <button type="button" onClick={() => restart(randomExample())} className={buttonClass}>
-          New random example
+          {tr('common.newRandomExample')}
         </button>
         <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
           <div className="flex flex-wrap items-end gap-2">
             <div className="min-w-0 flex-1 basis-28">
               <label htmlFor={`${id}-s`} className="block text-sm font-medium">
-                Your own s
+                <TextWithCode text={tr('anagram.ownS')} />
               </label>
               <input
                 id={`${id}-s`}
@@ -235,7 +242,8 @@ export default function AnagramVisual() {
                 spellCheck={false}
                 value={sText}
                 onChange={(event) => setSText(event.target.value)}
-                placeholder="e.g. anagram"
+                dir="ltr"
+                placeholder={tr('anagram.placeholderS')}
                 aria-invalid={inputError?.field === 's'}
                 aria-describedby={describedBy('s')}
                 className={`mt-1 ${inputClass('s')}`}
@@ -243,7 +251,7 @@ export default function AnagramVisual() {
             </div>
             <div className="min-w-0 flex-1 basis-28">
               <label htmlFor={`${id}-t`} className="block text-sm font-medium">
-                Your own t
+                <TextWithCode text={tr('anagram.ownT')} />
               </label>
               <input
                 id={`${id}-t`}
@@ -252,23 +260,23 @@ export default function AnagramVisual() {
                 spellCheck={false}
                 value={tText}
                 onChange={(event) => setTText(event.target.value)}
-                placeholder="e.g. nagaram"
+                dir="ltr"
+                placeholder={tr('anagram.placeholderT')}
                 aria-invalid={inputError?.field === 't'}
                 aria-describedby={describedBy('t')}
                 className={`mt-1 ${inputClass('t')}`}
               />
             </div>
             <button type="submit" className={`${buttonClass} shrink-0`}>
-              Use these
+              {tr('common.useThese')}
             </button>
           </div>
           <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
-            Two words of 0 to {MAX_LETTERS} lowercase letters a to z each. The problem allows up to 1000; {MAX_LETTERS} fit on
-            screen. Leave a box empty for an empty word.
+            <TextWithCode text={tr('anagram.hint', { count: MAX_LETTERS })} />
           </p>
           {inputError && (
             <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
-              {inputError.message}
+              <TextWithCode text={inputError.message} />
             </p>
           )}
         </form>
