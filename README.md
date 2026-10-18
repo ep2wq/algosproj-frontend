@@ -91,15 +91,48 @@ by field: whatever is not translated yet comes in English and is shown left to r
 Arabic page. The translated modules are listed in the backend's Arabic seed files
 (`database/seeders/data/ar/*.php`) and the `GLOSSARY.md` next to them (rules: the backend
 README, "Content languages").
-Visualizations stay English.
+Visualizations are translated too; their drawings stay left to right.
 
-- **Translation:** i18next with react-i18next, with the strings bundled (no network loading,
-  no detector or backend plugins). `src/i18n.ts` sets it up; the strings are in
-  `src/locales/en.json` (the source and the fallback) and `src/locales/ar.json`, grouped by
-  page or component. Rule: every new user-visible string (text, labels, placeholders,
-  `aria-label`s, screen-reader text, errors built in the frontend) goes through `t()` and into
-  both files with the same keys. A count uses i18next plurals: `_one`/`_other` in English and
-  all six Arabic forms (`_zero`, `_one`, `_two`, `_few`, `_many`, `_other`).
+- **Where strings live:** no user-visible text is written in components, visual code or
+  frame functions. i18next with react-i18next, strings bundled (no network loading, no
+  detector or backend plugins); `src/i18n.ts` sets it up.
+  - `src/locales/en.json` (the source and the fallback) and `src/locales/ar.json`: pages and
+    components, grouped by area (`nav`, `common`, `auth`, `lesson`, `challenges`, `solver`,
+    `result`, `errors`, ...). `admin.*` is in `en.json` only (see "Admin area").
+  - `src/locales/visuals.en.json` and `visuals.ar.json`: the `visuals` namespace, one group per
+    visualization plus `common` and `callTree`. `src/visuals/i18n.ts` registers it, and every
+    visual imports it (through `PlaybackControls`), so these strings (about 130 kB, both
+    languages) load with the first visualization instead of in the main bundle.
+- **Adding a string:** add the key to `en.json` and `ar.json` (or the two `visuals.*` files),
+  then call `t('group.key', { params })`. Whole sentences only: interpolate values
+  (`{{count}}`), never join sentence fragments; joining whole sentences with a space is fine.
+  A count uses i18next plurals (`count` is reserved for them): `_one`/`_other` in English and
+  all six Arabic forms (`_zero`, `_one`, `_two`, `_few`, `_many`, `_other`). Lists use
+  `joinAnd()` in `src/visuals/i18n.ts` ("1, 2 and 3" / "1، 2 و3").
+- **Frame functions** take the translate function as their last argument
+  (`sumFrames(array, t)`), so they stay pure (same input and language, same frames) and
+  each sentence stays next to the logic that picks it. Components pass
+  `useTranslation('visuals').t` and recompute the frames when the language changes.
+- **Arabic text with English terms:** visual step text, hints, errors and labels are shown
+  through `TextWithCode`, the lesson renderer: `~term~` for an English term and `` `code` ``
+  for values, expressions and identifiers, as in the lessons. Negative numbers and
+  expressions must be in `` `code` `` in Arabic, or they reorder in right-to-left text.
+  `aria-label`s and placeholders can't use markers, so their Arabic has none. English strings
+  never contain `~`.
+- **Guards** (`npm run lint` runs both): oxlint's `react/jsx-no-literals` fails on literal
+  text in JSX; the exceptions (`.oxlintrc.json`) are spacing, punctuation and symbols (`✓`,
+  `♛`, `·`, ...), the brand name and the code labels `null`, `top`, `sum`, `count`, `n`, `k`,
+  `pos`. The rule doesn't see attributes: never write a literal `aria-label`, `title`,
+  `placeholder` or `alt`. `npm run check:i18n` (`scripts/check-i18n.mjs`) fails when
+  `en.json`/`ar.json` or the two `visuals.*` files have different keys (`admin.*` may be
+  missing from `ar.json`), when a plural key lacks a form, when the code uses a key that is
+  not in English (a `${...}` part of a key matches anything), or when an English string has a
+  `~`.
+- **Adding a language** (for example French): add `fr.json` and `visuals.fr.json` with the
+  same keys, register them in `src/i18n.ts` and `src/visuals/i18n.ts`, add the code to
+  `AppLanguage`, the language button in `Layout.tsx` and the inline script in `index.html`,
+  extend `PLURALS` in `scripts/check-i18n.mjs`, and add its rules for `ar` in
+  `SetContentLanguage` and the backend `lang/` folder.
 - **The language button** in the main navigation shows the other language in that language
   ("العربية" with `lang="ar"` while in English, "English" with `lang="en"` while in Arabic),
   plus hidden text saying what it does. First visit: Arabic if `navigator.languages` lists
@@ -114,8 +147,9 @@ Visualizations stay English.
   columns use `text-end`. Header cells inherit their table's alignment (a base rule in
   `src/index.css`, because the browser's own `th` style would center them).
 - **Always English and left to right:** the Monaco editor, code blocks, test inputs and
-  outputs, every visualization (wrapped in `lang="en" dir="ltr"`), email inputs (`dir="ltr"`)
-  and the whole admin area (`/admin/*`, staff only, wrapped in `lang="en" dir="ltr"` in
+  outputs, the visualization drawings and data inputs (`dir="ltr"` on each drawing, list,
+  value box and input, because the step text says "left", "right" and "front on the left"),
+  email inputs (`dir="ltr"`) and the whole admin area (`/admin/*`, staff only, wrapped in `lang="en" dir="ltr"` in
   `AdminRoute`). Names people chose (header, leaderboard, admin lists) use `dir="auto"`.
 - **Course text language:** every request sends `Accept-Language` with the app language (`ar`
   or `en`; admin requests always `en`). Both values are CORS-safelisted, so no extra preflight.
@@ -240,6 +274,15 @@ show under their fields. Deleting asks "Delete ...?" in place (`DeleteButton`, n
 dialog), and a refusal (409: a module with lessons, a lesson with problems, a problem users
 have solved) is shown next to the button. Edits show on the public pages at once.
 
+Admin strings: every admin text is a key under `admin.*` in `src/locales/en.json` only (the
+shared `BannedBadge`, `ConfirmAction`, `DeleteButton` and `Pagination` use them too). In
+Arabic mode they fall back to English, and `AdminRoute` keeps the area `lang="en" dir="ltr"`.
+To enable Arabic for admin (not done): remove the `lang="en" dir="ltr"` wrapper in
+`AdminRoute.tsx` and the `admin` rule in `api.ts` (`Accept-Language: en` for `/admin`), add
+`admin.*` to `ar.json` (then `npm run check:i18n` requires every key), make `formatTime` in
+`pages/admin/format.ts` use the app language, and check every admin page right to left
+(tables, the test case form, the user actions, the audit log details) at 375 px.
+
 ## Visualizations
 
 `src/visuals/index.ts` maps a lesson slug to a lazy-loaded component, shown between the
@@ -291,7 +334,8 @@ Bit manipulation and math lessons (38 in all) have none yet:
   and the queen removed on a backtrack, a row-by-row trail of the columns tried, and the
   solutions found; n from 4 to 5 (`QueensVisual.tsx`, `queensFrames.ts`).
 
-Each visualization's steps come from a pure function. The player components share
+Each visualization's steps come from a pure function that takes the translate function as
+its last argument (README "Languages"). The player components share
 `usePlayback.ts` (state and timer) and `PlaybackControls.tsx` (Play/Pause, step buttons,
 Reset, step counter, `SpeedSelect`, `buttonClass`). No charting or animation library is
 used.

@@ -23,13 +23,13 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Only the token, `theme`, `lang` in `localStorage` (try/catch). No `dangerouslySetInnerHTML`.
 - Themes (README "Themes"): toggle, `src/theme.ts` + inline script in `index.html`. Tokens in
   `src/index.css`, other colors need `dark:`. Text 4.5:1, borders/shapes 3:1, both themes.
-- English/Arabic (README "Languages"): every user-visible string through `t()`, in `en.json`
-  and `ar.json` (six Arabic plural forms). Logical Tailwind classes only. Course text comes in
-  the app language (`Accept-Language`) via `Content`: `body_lang`/`description_lang`, titles
-  `lang="auto"`, `` `inline code` `` LTR, `~term~` = English `<bdi>` (`TextWithCode`). Pages
-  refetch on a language switch, editor kept. Code, visuals, emails, `/admin/*` (with `*_ar`)
-  stay English LTR. Western digits; dates via `formatDateTime`. No letter-spacing on Arabic.
-- Commands: `npm install`, `npm run dev`, `npm run build`, `npm run lint`.
+- English/Arabic (README "Languages"): no literal UI text anywhere; `t()` with keys in
+  `en.json`/`ar.json`, visuals in the lazy `visuals` namespace (`visuals.en.json`/`.ar.json`),
+  `admin.*` in `en.json` only. Whole sentences, six Arabic plural forms. Frame functions take
+  `t` last. Arabic marks terms `~term~` and values `` `code` `` (shown by `TextWithCode`).
+  Course text via `Content` (`*_lang`, titles `lang="auto"`). Code, drawings, data inputs,
+  emails, `/admin/*` stay LTR. Logical Tailwind classes; Western digits; `formatDateTime`.
+- Commands: `npm install`, `npm run dev`, `npm run build`, `npm run lint` (oxlint + `check:i18n`).
 
 ## Working rules
 
@@ -52,7 +52,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## Current status
 
 - Done: lessons, Monaco + submit, auth, leaderboard, 404, Challenges, admin, dark mode, Arabic
-  interface + content (all 19 modules translated, `~term~` markers). Next: AI hint UI.
+  interface + content (all 19 modules), visualizations translated. Next: AI hint UI.
 - Decisions: oxlint. Lint/build pass. A 401 with a token (not login/register/logout), or a
   403 with `reason`, clears it; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.
