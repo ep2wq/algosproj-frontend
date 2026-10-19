@@ -316,12 +316,10 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (token) headers.Authorization = `Bearer ${token}`
 
-  // Messages the frontend decides by HTTP status are translated. The server only speaks English:
-  // in English its own message is shown as before; in Arabic a generic message for the status is
-  // shown instead, except field errors and the ban reason, which stay as the server sent them.
-  // The admin area is English only, so its requests always get English messages.
+  // The server answers in the Accept-Language language, so its message is shown when it sends
+  // one; the frontend's own messages (by HTTP status) cover the rest. The admin area is English
+  // only, so its requests always get English messages. The ban reason stays as staff typed it.
   const t = i18n.getFixedT(admin ? 'en' : i18n.language)
-  const useServerText = admin || i18n.language !== 'ar'
 
   let response: Response
   try {
@@ -338,7 +336,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   if (response.ok) return data as T
 
-  const serverMessage = useServerText && typeof data?.message === 'string' ? data.message : ''
+  const serverMessage = typeof data?.message === 'string' ? data.message : ''
 
   // A dead token. Not for login and register (a wrong password keeps its own message) or logout
   // (the user is leaving anyway, and auth.tsx clears the token).

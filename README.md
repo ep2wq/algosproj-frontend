@@ -183,18 +183,13 @@ Visualizations are translated too; their drawings stay left to right.
   system font and lines are a little taller; English passages (`[lang="en"]`) inside an
   Arabic page keep the English font and line heights. `letter-spacing` and `text-transform`
   never apply to Arabic text (a rule on `:lang(ar)`), because they break letter joining.
-- **Server messages:** the backend speaks English. In Arabic, the messages the frontend picks
-  by status are Arabic (network error, session ended, 401 wrong login, 403, 404, 429, 503,
-  other failures); the server's own English text is shown only for field errors and the ban
-  reason, marked `lang="en"`. English shows the server's text as before; admin requests are
-  always English. English server messages that can still appear in Arabic mode:
-  - register and login field errors from Laravel's validation, such as "The email has
-    already been taken.", "The password field must be at least 8 characters.", "The email
-    field must be a valid email address.", "The name field is required.";
-  - submit field errors: "The code may not be larger than 64 KB.", "The code field is
-    required.", "The selected language is invalid.";
-  - the ban reason, written by staff;
-  - compiler and runtime error output from the sandbox (program output, shown left to right).
+- **Server messages:** the backend answers in the `Accept-Language` language (its `lang/`
+  files), so its message is shown as sent: login and register errors, field errors, the ban
+  message, submit errors and 503s are Arabic in Arabic mode. The frontend's own messages
+  (`errors.*`) cover a network error, an ended session (401 with a token), 429 and any
+  response without a message. Admin requests always send `en`, so admin messages are English.
+  Still not translated: the ban reason (typed by staff, shown `lang="en" dir="auto"`) and
+  compiler or runtime output from the sandbox (shown left to right).
 
 ## Pages
 

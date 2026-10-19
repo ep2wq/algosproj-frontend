@@ -151,7 +151,7 @@ export default function ProblemSolver({
         )}
         {error && (
           <p role="alert" className="text-sm text-fail">
-            {/* May be the server's English field errors; dir="auto" keeps their punctuation in place. */}
+            {/* The server's message or field errors, in the page language; dir="auto" for safety. */}
             <span dir="auto">{error}</span>
           </p>
         )}
