@@ -53,8 +53,13 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen">
+      {/* Focuses <main> itself: following #main would push a history entry and drop location.state. */}
       <a
         href="#main"
+        onClick={(event) => {
+          event.preventDefault()
+          document.getElementById('main')?.focus()
+        }}
         className="sr-only focus:not-sr-only focus:fixed focus:start-2 focus:top-2 focus:z-10 focus:rounded focus:border focus:border-accent focus:bg-surface focus:px-3 focus:py-2 focus:text-accent"
       >
         {t('nav.skipToContent')}

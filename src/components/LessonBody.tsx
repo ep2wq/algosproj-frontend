@@ -2,11 +2,18 @@ import type { ReactNode } from 'react'
 import { parseLessonText, splitInlineCode, splitTerms } from '../lessonText'
 import Content from './Content'
 
-// The non-space characters of text that touch a code part ("(", ").", "،", "و"), or '' when
-// taking them would split a ~term~.
-function touching(text: string, pattern: RegExp) {
-  const run = text.match(pattern)?.[0] ?? ''
-  return run.split('~').length % 2 ? run : ''
+// The non-space characters at the start or end of text that touch a code part ("(", ").", "،",
+// "و"), or '' when cutting them off would cut through a ~term~ marker.
+function touching(text: string, side: 'start' | 'end') {
+  const run = text.match(side === 'start' ? /^\S+/ : /\S+$/)?.[0] ?? ''
+  const cut = side === 'start' ? run.length : text.length - run.length
+  let offset = 0
+  for (const part of splitTerms(text)) {
+    const end = offset + part.text.length + (part.term ? 2 : 0)
+    if (part.term && offset < cut && cut < end) return ''
+    offset = end
+  }
+  return run
 }
 
 // Text with `inline code` and ~term~ markers (code is split off first, so a ~ inside code stays).
@@ -46,14 +53,14 @@ export function TextWithCode({ text }: { text: string }) {
     }
     let rest = part.text
     if (group.length > 0) {
-      const lead = touching(rest, /^\S+/)
+      const lead = touching(rest, 'start')
       group.push(<Terms key={index} text={lead} />)
       // Text without spaces between two code parts keeps them together.
       if (lead === rest) return
       rest = rest.slice(lead.length)
       flush()
     }
-    const tail = parts[index + 1]?.code ? touching(rest, /\S+$/) : ''
+    const tail = parts[index + 1]?.code ? touching(rest, 'end') : ''
     nodes.push(<Terms key={`t${index}`} text={rest.slice(0, rest.length - tail.length)} />)
     if (tail) group.push(<Terms key={index} text={tail} />)
   })

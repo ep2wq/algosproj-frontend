@@ -58,6 +58,8 @@ export default function ChallengesPage() {
   const error = failure === null ? '' : failure instanceof ApiError ? failure.message : t('challenges.loadFailed')
 
   function retry() {
+    // The button goes away; keep keyboard focus in the page.
+    document.getElementById('main')?.focus()
     setFailure(null)
     setReload((count) => count + 1)
   }

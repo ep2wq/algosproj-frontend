@@ -16,7 +16,8 @@ export default function Pagination({
   const buttonClass =
     'rounded border border-field bg-surface px-3 py-1 text-sm hover:border-muted disabled:cursor-not-allowed disabled:opacity-60'
 
-  if (lastPage <= 1) return null
+  // Kept on a page past the end (an old link), so Previous leads back.
+  if (lastPage <= 1 && page <= 1) return null
 
   return (
     <nav aria-label={t('admin.pagination.label')} className="mt-4 flex flex-wrap items-center gap-3">

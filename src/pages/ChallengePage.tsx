@@ -51,6 +51,8 @@ export default function ChallengePage() {
   const retryable = !(failure instanceof ApiError && failure.status === 404)
 
   function retry() {
+    // The button goes away; keep keyboard focus in the page.
+    document.getElementById('main')?.focus()
     setLoaded(null)
     setReload((count) => count + 1)
   }
