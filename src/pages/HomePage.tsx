@@ -9,13 +9,13 @@ import { CheckIcon } from '../components/Icons'
 
 const DIFFICULTIES = ['easy', 'medium', 'hard']
 
-// One to three filled bars; the word is for screen readers and the tooltip.
+// One to three filled bars; the word is for screen readers.
 function DifficultyBars({ difficulty }: { difficulty: string }) {
   const { t } = useTranslation()
   const level = DIFFICULTIES.indexOf(difficulty) + 1
   const label = t(`difficulty.${difficulty}`, { defaultValue: difficulty })
   return (
-    <span title={label} className="flex shrink-0 items-end gap-0.5" dir="ltr">
+    <span className="flex shrink-0 items-end gap-0.5" dir="ltr">
       {['h-1.5', 'h-2.5', 'h-3.5'].map((height, index) => (
         <span key={height} aria-hidden="true" className={`w-1 rounded-sm ${height} ${index < level ? 'bg-muted' : 'bg-line'}`} />
       ))}

@@ -103,7 +103,7 @@ function AccountMenu({ name, staff, onLogOut }: { name: string; staff: boolean; 
       <div
         id={panelId}
         hidden={!open}
-        className="absolute end-0 top-full z-10 mt-1 w-64 max-w-[calc(100vw-2rem)] rounded-lg border border-line bg-surface p-1 shadow-float"
+        className="absolute end-0 top-full z-10 mt-1 w-64 max-w-[calc(100vw-2rem)] rounded-lg border border-line bg-surface p-1 shadow-(--float-shadow)"
       >
         <p dir="auto" className="break-words px-3 py-2 font-medium text-ink">
           {name}
@@ -153,7 +153,7 @@ export default function Layout() {
           event.preventDefault()
           document.getElementById('main')?.focus()
         }}
-        className="sr-only focus:not-sr-only focus:fixed focus:start-2 focus:top-2 focus:z-10 focus:rounded focus:border focus:border-accent focus:bg-surface focus:px-3 focus:py-2 focus:text-accent focus:shadow-float"
+        className="sr-only focus:not-sr-only focus:fixed focus:start-2 focus:top-2 focus:z-10 focus:rounded focus:border focus:border-accent focus:bg-surface focus:px-3 focus:py-2 focus:text-accent focus:shadow-(--float-shadow)"
       >
         {t('nav.skipToContent')}
       </a>
