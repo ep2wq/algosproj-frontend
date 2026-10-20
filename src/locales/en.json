@@ -162,15 +162,15 @@
     "home": "Go to the lessons"
   },
   "errors": {
-    "network": "Can't reach the server",
+    "network": "Can't reach the server. Check your connection and try again.",
     "sessionEnded": "Your session has ended. Please log in again.",
     "validation": "Check the highlighted fields.",
-    "tooMany": "Too many requests, wait a minute",
-    "unavailable": "The service is unavailable, try again shortly",
-    "invalidCredentials": "Invalid credentials",
+    "tooMany": "Too many attempts. Wait a minute, then try again.",
+    "unavailable": "The service is unavailable, try again shortly.",
+    "invalidCredentials": "Wrong email or password.",
     "forbidden": "You are not allowed to do this.",
     "notFound": "This was not found.",
-    "status": "Request failed ({{status}})"
+    "status": "Request failed ({{status}})."
   },
   "admin": {
     "pageTitle": "Admin · AlgosProj",

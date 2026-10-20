@@ -39,15 +39,19 @@ export default function SubmitResultPanel({ result }: { result: SubmitResult }) 
   )
 
   return (
-    <section aria-label={t('result.label')} aria-live="polite" className="mt-4 rounded border border-line bg-surface p-4">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+    <section aria-label={t('result.label')} className="mt-4 rounded border border-line bg-surface p-4">
+      {/* Only the summary is announced; the tests below are there to read. No test ran after a
+          compile error, so it has no count or runtime. */}
+      <div aria-live="polite" aria-atomic="true" className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <span className={`rounded border px-2 py-0.5 text-sm font-semibold ${STATUS_STYLES[result.status]}`}>
           {t(`result.status.${result.status}`)}
         </span>
-        <span className="text-sm text-ink tabular-nums">
-          {t('result.testsPassed', { passed: result.passed_count, count: result.total_count })}
-        </span>
-        {result.runtime_ms !== null && (
+        {!result.compile_error && (
+          <span className="text-sm text-ink tabular-nums">
+            {t('result.testsPassed', { passed: result.passed_count, count: result.total_count })}
+          </span>
+        )}
+        {!result.compile_error && result.runtime_ms !== null && (
           <span className="text-sm text-muted tabular-nums">{t('result.milliseconds', { ms: result.runtime_ms })}</span>
         )}
         {result.points_awarded > 0 && (
