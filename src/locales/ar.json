@@ -1,6 +1,7 @@
 {
   "nav": {
     "main": "التنقل الرئيسي",
+    "skipToContent": "انتقل إلى المحتوى",
     "lessons": "الدروس",
     "challenges": "التحديات",
     "leaderboard": "لوحة الصدارة",
@@ -8,6 +9,9 @@
     "logIn": "تسجيل الدخول",
     "logOut": "تسجيل الخروج",
     "register": "إنشاء حساب"
+  },
+  "titles": {
+    "page": "{{name}} · AlgosProj"
   },
   "header": {
     "points_zero": "{{count}} نقطة",
@@ -25,6 +29,7 @@
     "hint": "(تبديل لغة الواجهة)"
   },
   "common": {
+    "tryAgain": "حاول مرة أخرى",
     "points_zero": "{{count}} نقطة",
     "points_one": "نقطة واحدة",
     "points_two": "نقطتان",

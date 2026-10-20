@@ -1,6 +1,7 @@
 {
   "nav": {
     "main": "Main",
+    "skipToContent": "Skip to content",
     "lessons": "Lessons",
     "challenges": "Challenges",
     "leaderboard": "Leaderboard",
@@ -8,6 +9,9 @@
     "logIn": "Log in",
     "logOut": "Log out",
     "register": "Register"
+  },
+  "titles": {
+    "page": "{{name}} · AlgosProj"
   },
   "header": {
     "points_one": "{{count}} point",
@@ -21,6 +25,7 @@
     "hint": "(switch the interface language)"
   },
   "common": {
+    "tryAgain": "Try again",
     "points_one": "{{count}} point",
     "points_other": "{{count}} points",
     "noTopic": "No topic",
@@ -168,6 +173,7 @@
     "status": "Request failed ({{status}})"
   },
   "admin": {
+    "pageTitle": "Admin · AlgosProj",
     "nav": {
       "label": "Admin",
       "content": "Content",

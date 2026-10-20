@@ -5,6 +5,7 @@ export default function NotFoundPage() {
   const { t } = useTranslation()
   return (
     <div className="max-w-prose">
+      <title>{t('titles.page', { name: t('notFound.title') })}</title>
       <h1 className="text-2xl font-semibold">{t('notFound.title')}</h1>
       <p className="mt-2 text-muted">
         {t('notFound.body')}{' '}

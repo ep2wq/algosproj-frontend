@@ -17,6 +17,7 @@ export default function AdminRoute() {
   // Staff only: always English and left to right, whatever the interface language.
   return (
     <div lang="en" dir="ltr">
+      <title>{t('admin.pageTitle')}</title>
       <nav aria-label={t('admin.nav.label')} className="mb-6 flex flex-wrap gap-1 border-b border-line pb-3 text-sm">
         <NavLink to="/admin" end className={tabClass}>
           {t('admin.nav.content')}

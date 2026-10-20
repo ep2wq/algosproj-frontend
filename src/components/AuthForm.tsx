@@ -1,4 +1,5 @@
-import type { FormEvent, ReactNode } from 'react'
+import { useEffect, useRef, type FormEvent, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 type AuthFormProps = {
   title: string
@@ -13,6 +14,15 @@ type AuthFormProps = {
 
 // Shared frame for the login and register pages.
 export default function AuthForm({ title, submitLabel, busyLabel, busy, error, onSubmit, footer, children }: AuthFormProps) {
+  const { t } = useTranslation()
+  const formRef = useRef<HTMLFormElement>(null)
+
+  // When a submit fails (busy goes back to false), focus the first field the server marked
+  // invalid, so its label and error are read out. A successful submit leaves the page instead.
+  useEffect(() => {
+    if (!busy) formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
+  }, [busy])
+
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     onSubmit()
@@ -20,8 +30,9 @@ export default function AuthForm({ title, submitLabel, busyLabel, busy, error, o
 
   return (
     <div className="mx-auto max-w-sm">
+      <title>{t('titles.page', { name: title })}</title>
       <h1 className="text-2xl font-semibold">{title}</h1>
-      <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
+      <form ref={formRef} onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
         {children}
         {error && (
           <p role="alert" className="rounded border border-fail/30 bg-fail/5 px-3 py-2 text-sm text-fail">

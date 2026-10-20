@@ -30,6 +30,7 @@ export default function ChallengesPage() {
   const { user, loading } = useAuth()
   const [challenges, setChallenges] = useState<ChallengeSummary[] | null>(null)
   const [failure, setFailure] = useState<unknown>(null)
+  const [reload, setReload] = useState(0)
   const [search, setSearch] = useState('')
   const [difficulty, setDifficulty] = useState('')
   const [topic, setTopic] = useState('')
@@ -52,9 +53,14 @@ export default function ChallengesPage() {
     return () => {
       active = false
     }
-  }, [loading, userId, language])
+  }, [loading, userId, language, reload])
 
   const error = failure === null ? '' : failure instanceof ApiError ? failure.message : t('challenges.loadFailed')
+
+  function retry() {
+    setFailure(null)
+    setReload((count) => count + 1)
+  }
 
   // Topics in the order the list arrives (module order).
   const topics = new Map<string, string>()
@@ -84,13 +90,21 @@ export default function ChallengesPage() {
 
   return (
     <div className="max-w-4xl">
+      <title>{t('titles.page', { name: t('challenges.title') })}</title>
       <h1 className="text-3xl font-semibold tracking-tight">{t('challenges.title')}</h1>
       <p className="mt-2 text-muted">{t('challenges.intro')}</p>
 
       {error && (
-        <p role="alert" className="mt-6 rounded border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
-          {error}
-        </p>
+        <div role="alert" className="mt-6 rounded border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
+          <p>{error}</p>
+          <button
+            type="button"
+            onClick={retry}
+            className="mt-2 rounded border border-current px-3 py-1 text-sm font-medium hover:bg-fail/10"
+          >
+            {t('common.tryAgain')}
+          </button>
+        </div>
       )}
       {!error && challenges === null && <p className="mt-6 text-muted">{t('challenges.loading')}</p>}
       {challenges !== null && challenges.length === 0 && <p className="mt-6 text-muted">{t('challenges.empty')}</p>}

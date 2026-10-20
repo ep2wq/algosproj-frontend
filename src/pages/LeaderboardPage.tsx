@@ -8,13 +8,14 @@ export default function LeaderboardPage() {
   const { user } = useAuth()
   const [entries, setEntries] = useState<LeaderboardEntry[] | null>(null)
   const [failure, setFailure] = useState<unknown>(null)
+  const [reload, setReload] = useState(0)
   const [myRank, setMyRank] = useState<{ userId: number; rank: MyRank } | null>(null)
 
   useEffect(() => {
     getLeaderboard(50)
       .then(setEntries)
       .catch(setFailure)
-  }, [])
+  }, [reload])
 
   const userId = user?.id
   const userPoints = user?.points
@@ -36,8 +37,14 @@ export default function LeaderboardPage() {
   const rank = user && myRank?.userId === user.id ? myRank.rank : null
   const error = failure === null ? '' : failure instanceof ApiError ? failure.message : t('leaderboard.loadFailed')
 
+  function retry() {
+    setFailure(null)
+    setReload((count) => count + 1)
+  }
+
   return (
     <div className="max-w-2xl">
+      <title>{t('titles.page', { name: t('leaderboard.title') })}</title>
       <h1 className="text-3xl font-semibold tracking-tight">{t('leaderboard.title')}</h1>
       <p className="mt-2 text-muted">{t('leaderboard.intro')}</p>
 
@@ -49,9 +56,16 @@ export default function LeaderboardPage() {
       )}
 
       {error && (
-        <p role="alert" className="mt-6 rounded border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
-          {error}
-        </p>
+        <div role="alert" className="mt-6 rounded border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
+          <p>{error}</p>
+          <button
+            type="button"
+            onClick={retry}
+            className="mt-2 rounded border border-current px-3 py-1 text-sm font-medium hover:bg-fail/10"
+          >
+            {t('common.tryAgain')}
+          </button>
+        </div>
       )}
       {!error && entries === null && <p className="mt-6 text-muted">{t('leaderboard.loading')}</p>}
       {entries !== null && entries.length === 0 && (

@@ -14,6 +14,7 @@ export default function HomePage() {
   const { t, i18n } = useTranslation()
   const [modules, setModules] = useState<Module[] | null>(null)
   const [failure, setFailure] = useState<unknown>(null)
+  const [reload, setReload] = useState(0)
 
   // Titles come in the app language, so load again when it changes (the old list stays until then).
   const language = i18n.language
@@ -29,9 +30,14 @@ export default function HomePage() {
     return () => {
       active = false
     }
-  }, [language])
+  }, [language, reload])
 
   const error = failure === null ? '' : failure instanceof ApiError ? failure.message : t('home.loadFailed')
+
+  function retry() {
+    setFailure(null)
+    setReload((count) => count + 1)
+  }
 
   // Modules arrive in sort_order; group them by track, keeping that order.
   const tracks = new Map<string, Module[]>()
@@ -41,13 +47,21 @@ export default function HomePage() {
 
   return (
     <div className="max-w-3xl">
+      <title>{t('titles.page', { name: t('home.title') })}</title>
       <h1 className="text-3xl font-semibold tracking-tight">{t('home.title')}</h1>
       <p className="mt-2 text-muted">{t('home.intro')}</p>
 
       {error && (
-        <p role="alert" className="mt-6 rounded border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
-          {error}
-        </p>
+        <div role="alert" className="mt-6 rounded border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
+          <p>{error}</p>
+          <button
+            type="button"
+            onClick={retry}
+            className="mt-2 rounded border border-current px-3 py-1 text-sm font-medium hover:bg-fail/10"
+          >
+            {t('common.tryAgain')}
+          </button>
+        </div>
       )}
       {!error && modules === null && <p className="mt-6 text-muted">{t('home.loading')}</p>}
       {modules !== null && modules.length === 0 && <p className="mt-6 text-muted">{t('home.empty')}</p>}
