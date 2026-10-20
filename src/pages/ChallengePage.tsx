@@ -80,7 +80,7 @@ export default function ChallengePage() {
     )
   }
 
-  if (!challenge) return <p className="text-muted">{t('challenge.loading')}</p>
+  if (!challenge) return <p className="text-muted motion-safe:animate-appear motion-safe:[animation-delay:300ms]">{t('challenge.loading')}</p>
 
   const solved = user !== null && (challenge.solved || solvedNow === challenge.slug)
 

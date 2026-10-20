@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError, getLeaderboard, getMyRank, type LeaderboardEntry, type MyRank } from '../api'
 import { useAuth } from '../auth'
+import EmptyState from '../components/EmptyState'
 
 export default function LeaderboardPage() {
   const { t } = useTranslation()
@@ -69,9 +70,9 @@ export default function LeaderboardPage() {
           </button>
         </div>
       )}
-      {!error && entries === null && <p className="mt-6 text-muted">{t('leaderboard.loading')}</p>}
+      {!error && entries === null && <p className="mt-6 text-muted motion-safe:animate-appear motion-safe:[animation-delay:300ms]">{t('leaderboard.loading')}</p>}
       {entries !== null && entries.length === 0 && (
-        <p className="mt-6 text-muted">{t('leaderboard.empty')}</p>
+        <EmptyState>{t('leaderboard.empty')}</EmptyState>
       )}
 
       {entries !== null && entries.length > 0 && (

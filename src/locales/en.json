@@ -163,7 +163,8 @@
   "notFound": {
     "title": "Page not found",
     "body": "There is nothing at this address.",
-    "home": "Go to the lessons"
+    "home": "Go to the lessons",
+    "hint": "The link may be out of date or have a typo."
   },
   "errors": {
     "network": "Can't reach the server. Check your connection and try again.",

@@ -76,7 +76,7 @@ export default function LessonPage() {
     )
   }
 
-  if (!lesson) return <p className="text-muted">{t('lesson.loading')}</p>
+  if (!lesson) return <p className="text-muted motion-safe:animate-appear motion-safe:[animation-delay:300ms]">{t('lesson.loading')}</p>
 
   return (
     <div>
@@ -94,7 +94,7 @@ export default function LessonPage() {
           <h2 id="visual-heading" className="text-xl font-semibold">
             {t('lesson.visualization')}
           </h2>
-          <Suspense fallback={<p className="mt-4 text-sm text-muted">{t('lesson.loadingVisualization')}</p>}>
+          <Suspense fallback={<p className="mt-4 text-sm text-muted motion-safe:animate-appear motion-safe:[animation-delay:300ms]">{t('lesson.loadingVisualization')}</p>}>
             {/* Text and controls follow the interface language; the drawings stay left to right. */}
             {/* Looked up from a module-level map, so it is the same component on every render. */}
             {/* oxlint-disable-next-line react/static-components */}
