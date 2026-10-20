@@ -115,7 +115,7 @@ export default function LessonBody({ text, lang }: { text: string; lang: string 
                 tabIndex={0}
                 dir="ltr"
                 lang="en"
-                className="mt-3 overflow-x-auto rounded border border-line bg-surface p-3 font-mono text-sm leading-normal"
+                className="mt-3 overflow-x-auto rounded-lg border border-line bg-surface p-3 font-mono text-sm leading-normal"
               >
                 <code>{block.text}</code>
               </pre>

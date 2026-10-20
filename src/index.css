@@ -19,14 +19,45 @@
   --color-fail: #b42318;
   --color-warn: #8a5300;
   --color-inverse: #ffffff;
+
+  /* Elevation, radius and motion: docs/ui-restyle.md (outside this repo) and README "Themes". Only
+     floating things (the account menu, the skip link) get a shadow; cards are a border on paper. */
+  --shadow-float: 0 8px 24px -6px rgb(15 20 27 / 0.18), 0 2px 6px -2px rgb(15 20 27 / 0.1);
+  --ease-calm: cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-check: check-draw 450ms var(--ease-calm) both;
+  --animate-bump: bump 400ms var(--ease-calm);
+  --animate-appear: appear 200ms var(--ease-calm) both;
 }
 
+@keyframes check-draw {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes bump {
+  40% {
+    transform: scale(1.12);
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Dark depth comes from surface layers: cards sit one step above the paper and code and values sit
+   back down on the paper inside them, so dark mode is not a plain inversion. */
 .dark {
   --color-paper: #0f141b;
-  --color-surface: #171d26;
+  --color-surface: #19202a;
   --color-ink: #e5e9f0;
   --color-muted: #a1abba;
-  --color-line: #2e3846;
+  --color-line: #313b49;
   --color-field: #6f7a8b;
   --color-accent: #5bbfc8;
   --color-accent-soft: #163a40;
@@ -34,6 +65,7 @@
   --color-fail: #f2867d;
   --color-warn: #e2ac4a;
   --color-inverse: #0f141b;
+  --shadow-float: 0 8px 24px -6px rgb(0 0 0 / 0.5), 0 2px 6px -2px rgb(0 0 0 / 0.4);
 }
 
 body {
@@ -55,6 +87,37 @@ body {
   input::placeholder,
   textarea::placeholder {
     color: var(--color-muted);
+  }
+
+  ::selection {
+    background: var(--color-accent-soft);
+    color: var(--color-ink);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p,
+  li {
+    text-wrap: pretty;
+  }
+
+  /* One hover and press language for every link and button (README "Themes"): colours ease in
+     150 ms and a pressed button moves down 1 px. Only with motion allowed, and never inside Monaco,
+     which styles its own widgets. */
+  @media (prefers-reduced-motion: no-preference) {
+    :where(a, button, select, summary, input):not(.monaco-editor *) {
+      transition-property: color, background-color, border-color, text-decoration-color, transform;
+      transition-duration: 150ms;
+      transition-timing-function: var(--ease-calm);
+    }
+
+    :where(button):not(:disabled, [aria-disabled='true'], .monaco-editor *):active {
+      transform: translateY(1px);
+    }
   }
 
   :root[lang='ar'] {

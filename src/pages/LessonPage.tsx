@@ -57,7 +57,7 @@ export default function LessonPage() {
   if (error) {
     return (
       <div className="max-w-prose">
-        <div role="alert" className="rounded border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
+        <div role="alert" className="rounded-lg border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
           <p>{error}</p>
           {retryable && (
             <button

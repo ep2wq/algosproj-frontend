@@ -97,7 +97,7 @@ export default function ChallengesPage() {
       <p className="mt-2 text-muted">{t('challenges.intro')}</p>
 
       {error && (
-        <div role="alert" className="mt-6 rounded border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
+        <div role="alert" className="mt-6 rounded-lg border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
           <p>{error}</p>
           <button
             type="button"
@@ -197,13 +197,13 @@ export default function ChallengesPage() {
           </div>
 
           {shown.length === 0 ? (
-            <p className="mt-4 rounded border border-line bg-surface px-4 py-6 text-center text-muted">
+            <p className="mt-4 rounded-lg border border-line bg-surface px-4 py-6 text-center text-muted">
               {t('challenges.noMatch')}
             </p>
           ) : (
             <>
               {/* Cards on narrow screens, a table from md up. */}
-              <ul className="mt-4 divide-y divide-line rounded border border-line bg-surface md:hidden">
+              <ul className="mt-4 divide-y divide-line rounded-lg border border-line bg-surface md:hidden">
                 {shown.map((challenge) => (
                   <li key={challenge.slug} className="px-4 py-3">
                     <div className="flex items-baseline gap-2">
@@ -221,7 +221,7 @@ export default function ChallengesPage() {
                 ))}
               </ul>
 
-              <div className="mt-4 hidden overflow-x-auto rounded border border-line bg-surface md:block">
+              <div className="mt-4 hidden overflow-x-auto rounded-lg border border-line bg-surface md:block">
                 <table className="w-full text-start">
                   <thead className="border-b border-line text-sm text-muted">
                     <tr>

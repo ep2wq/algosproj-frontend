@@ -68,7 +68,7 @@ export default function ProblemSolver({
           <ExamplesHeading className="text-sm font-medium">{t('solver.examples')}</ExamplesHeading>
           <div className="mt-2 grid gap-3 sm:grid-cols-2">
             {problem.test_cases.map((testCase) => (
-              <dl key={testCase.id} className="grid grid-cols-2 gap-2 rounded border border-line bg-surface p-3">
+              <dl key={testCase.id} className="grid grid-cols-2 gap-2 rounded-lg border border-line bg-surface p-3">
                 <div className="min-w-0">
                   <dt className="text-xs text-muted">{t('solver.input')}</dt>
                   <dd>
@@ -106,7 +106,7 @@ export default function ProblemSolver({
       </div>
 
       {/* Code is always left to right, in both interface languages. */}
-      <div dir="ltr" className="mt-3 overflow-hidden rounded border border-line bg-surface">
+      <div dir="ltr" className="mt-3 overflow-hidden rounded-lg border border-line bg-surface">
         <Editor
           height="280px"
           language={language}

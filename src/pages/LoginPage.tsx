@@ -73,7 +73,7 @@ export default function LoginPage() {
       }
     >
       {sessionEnded && (
-        <p role="status" className="rounded border border-line bg-accent-soft px-3 py-2 text-sm text-ink">
+        <p role="status" className="rounded-lg border border-line bg-accent-soft px-3 py-2 text-sm text-ink">
           {t('auth.sessionEnded')}
         </p>
       )}

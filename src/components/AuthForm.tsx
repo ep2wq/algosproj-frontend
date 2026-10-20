@@ -35,7 +35,7 @@ export default function AuthForm({ title, submitLabel, busyLabel, busy, error, o
       <form ref={formRef} onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
         {children}
         {error && (
-          <p role="alert" className="rounded border border-fail/30 bg-fail/5 px-3 py-2 text-sm text-fail">
+          <p role="alert" className="rounded-lg border border-fail/30 bg-fail/5 px-3 py-2 text-sm text-fail">
             {error}
           </p>
         )}

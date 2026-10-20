@@ -54,7 +54,7 @@ export default function HomePage() {
       <p className="mt-2 text-muted">{t('home.intro')}</p>
 
       {error && (
-        <div role="alert" className="mt-6 rounded border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
+        <div role="alert" className="mt-6 rounded-lg border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
           <p>{error}</p>
           <button
             type="button"
@@ -81,7 +81,7 @@ export default function HomePage() {
               {module.lessons.length === 0 ? (
                 <p className="mt-1 text-sm text-muted">{t('home.moduleEmpty')}</p>
               ) : (
-                <ul className="mt-2 divide-y divide-line rounded border border-line bg-surface">
+                <ul className="mt-2 divide-y divide-line rounded-lg border border-line bg-surface">
                   {module.lessons.map((lesson) => (
                     <li key={lesson.id}>
                       <Link

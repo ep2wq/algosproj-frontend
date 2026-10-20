@@ -39,7 +39,7 @@ export default function SubmitResultPanel({ result }: { result: SubmitResult }) 
   )
 
   return (
-    <section aria-label={t('result.label')} className="mt-4 rounded border border-line bg-surface p-4">
+    <section aria-label={t('result.label')} className="mt-4 rounded-lg border border-line bg-surface p-4">
       {/* Only the summary is announced; the tests below are there to read. No test ran after a
           compile error, so it has no count or runtime. The runtime is LTR, so Arabic shows "47 ms". */}
       <div aria-live="polite" aria-atomic="true" className="flex flex-wrap items-center gap-x-4 gap-y-2">
