@@ -134,6 +134,16 @@ export default function Layout() {
   const location = useLocation()
   const staff = user?.role === 'admin' || user?.role === 'owner'
 
+  // The points badge pulses once when the points go up (after a passing submit), not on page load.
+  // bumps remounts the badge, which replays the motion-safe animation.
+  const points = user?.points ?? null
+  const [shownPoints, setShownPoints] = useState(points)
+  const [bumps, setBumps] = useState(0)
+  if (points !== shownPoints) {
+    if (points !== null && shownPoints !== null && points > shownPoints) setBumps(bumps + 1)
+    setShownPoints(points)
+  }
+
   return (
     <div className="min-h-screen">
       {/* Focuses <main> itself: following #main would push a history entry and drop location.state. */}
@@ -183,7 +193,10 @@ export default function Layout() {
                   <span dir="auto" className="hidden sm:inline">
                     {user.name}
                   </span>{' '}
-                  <span className="rounded sm:ms-1 bg-accent-soft px-1.5 py-0.5 text-accent tabular-nums">
+                  <span
+                    key={bumps}
+                    className={`inline-block rounded sm:ms-1 bg-accent-soft px-1.5 py-0.5 text-accent tabular-nums ${bumps > 0 ? 'motion-safe:animate-bump' : ''}`}
+                  >
                     {t('header.points', { count: user.points })}
                   </span>
                 </span>

@@ -5,6 +5,7 @@ import { ApiError, getChallenge, type Challenge } from '../api'
 import { useAuth } from '../auth'
 import Content from '../components/Content'
 import DifficultyBadge from '../components/DifficultyBadge'
+import { CheckIcon } from '../components/Icons'
 import ProblemSolver from '../components/ProblemSolver'
 
 // Loaded with React.lazy, like the lesson page, so Monaco stays out of the first bundle.
@@ -97,8 +98,8 @@ export default function ChallengePage() {
         <DifficultyBadge difficulty={challenge.difficulty} />
         <span className="tabular-nums">{t('common.points', { count: challenge.points })}</span>
         {solved && (
-          <span className="rounded border border-pass/30 bg-pass/10 px-1.5 py-0.5 text-xs font-medium text-pass">
-            <span aria-hidden="true">✓ </span>
+          <span className="inline-flex items-center gap-1 rounded border border-pass/30 bg-pass/10 px-1.5 py-0.5 text-xs font-medium text-pass">
+            <CheckIcon className="size-3.5" />
             {t('common.solved')}
           </span>
         )}

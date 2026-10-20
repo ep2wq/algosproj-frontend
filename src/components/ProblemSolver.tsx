@@ -35,6 +35,8 @@ export default function ProblemSolver({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<SubmitResult | null>(null)
+  // Counts results, so the result panel can replay its pass moment for each new one.
+  const [attempt, setAttempt] = useState(0)
 
   const languageId = `language-${problem.id}`
   const hintId = `editor-hint-${problem.id}`
@@ -45,6 +47,7 @@ export default function ProblemSolver({
     try {
       const submitted = await submitSolution(problem.id, language, code[language])
       setResult(submitted)
+      setAttempt((count) => count + 1)
       if (submitted.status === 'passed') {
         // Update the points in the header.
         refreshUser().catch(() => {})
@@ -183,7 +186,7 @@ export default function ProblemSolver({
         )}
       </div>
 
-      {result && <SubmitResultPanel result={result} />}
+      {result && <SubmitResultPanel result={result} attempt={attempt} />}
     </>
   )
 }
