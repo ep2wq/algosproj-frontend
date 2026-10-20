@@ -109,7 +109,7 @@ export default function PermutationsVisual() {
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div className="min-w-0 rounded border border-line bg-surface p-3">
+        <div className="min-w-0 rounded-lg border border-line bg-surface p-3">
           <p className="text-sm font-medium">{t('permutations.itemsTitle')}</p>
           <ul
             aria-label={t('permutations.itemsLabel', {
@@ -123,7 +123,7 @@ export default function PermutationsVisual() {
               return (
                 <li key={item} className="flex w-14 flex-col items-center">
                   <span
-                    className={`flex size-10 items-center justify-center rounded font-mono text-lg font-semibold motion-safe:transition-colors motion-safe:duration-300 ${
+                    className={`flex size-10 items-center justify-center rounded font-mono text-lg font-semibold motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
                       current.focus === index ? 'border-4 border-warn' : 'border-2'
                     } ${current.used[index] ? 'border-accent bg-accent-soft text-ink' : 'border-muted bg-surface text-ink'}`}
                   >
@@ -135,7 +135,7 @@ export default function PermutationsVisual() {
             })}
           </ul>
         </div>
-        <div className="min-w-0 rounded border border-line bg-surface p-3">
+        <div className="min-w-0 rounded-lg border border-line bg-surface p-3">
           <p className="text-sm font-medium">
             <TextWithCode text={t('permutations.curTitle')} />
           </p>
@@ -186,7 +186,7 @@ export default function PermutationsVisual() {
       <ol
         aria-label={t('callTree.resultsLabel', { list: current.results.length === 0 ? t('callTree.none') : current.results.join(', ') })}
         dir="ltr"
-        className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-surface p-1.5">
+        className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded-lg border border-line bg-surface p-1.5">
         {current.results.length === 0 && <li className="px-1 text-sm text-muted">{t('callTree.noneYet')}</li>}
         {current.results.map((result, index) => {
           const isNew = current.kind === 'print' && index === current.results.length - 1
@@ -199,7 +199,7 @@ export default function PermutationsVisual() {
         })}
       </ol>
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 

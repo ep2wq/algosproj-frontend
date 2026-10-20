@@ -104,7 +104,7 @@ export default function TwoSumVisual() {
         <SpeedSelect playback={playback} />
       </div>
 
-      <p className="mt-4 inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-2">
+      <p className="mt-4 inline-flex items-baseline gap-2 rounded-lg border border-line bg-surface px-3 py-2">
         <span className="text-sm text-muted">
           <TextWithCode text={t('binarySearch.target')} />
         </span>
@@ -116,13 +116,13 @@ export default function TwoSumVisual() {
           role="img"
           aria-label={t('twoSum.label', { values: current.values.join(' ') })}
           dir="ltr"
-          className="flex min-w-0 flex-1 flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
+          className="flex min-w-0 flex-1 flex-wrap gap-x-1.5 gap-y-3 rounded-lg border border-line bg-surface p-3"
         >
           {current.values.map((value, index) => (
             <div key={index} className="flex min-w-10 flex-col items-center">
               <span className="h-4 text-xs font-semibold text-ink">{current.current === index ? 'i' : ''}</span>
               <span
-                className={`mt-0.5 flex h-10 min-w-10 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 ${cellStyle(current, index)}`}
+                className={`mt-0.5 flex h-10 min-w-10 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${cellStyle(current, index)}`}
               >
                 {value}
               </span>
@@ -135,7 +135,7 @@ export default function TwoSumVisual() {
           <p className="text-sm font-medium">
             <TextWithCode text={t('twoSum.hashMap')} />
           </p>
-          <table aria-label={mapLabel(current, t)} className="mt-1 w-full border-collapse rounded border border-line bg-surface text-sm tabular-nums">
+          <table aria-label={mapLabel(current, t)} className="mt-1 w-full border-collapse rounded-lg border border-line bg-surface text-sm tabular-nums">
             <thead>
               <tr className="border-b border-line text-start text-xs text-muted">
                 <th scope="col" className="px-2 py-1 font-medium">
@@ -155,7 +155,7 @@ export default function TwoSumVisual() {
                 </tr>
               )}
               {current.map.map((entry) => (
-                <tr key={entry.value} className={`border-b border-line last:border-b-0 motion-safe:transition-colors motion-safe:duration-300 ${rowStyle(current, entry.value)}`}>
+                <tr key={entry.value} className={`border-b border-line last:border-b-0 motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${rowStyle(current, entry.value)}`}>
                   <td className="px-2 py-1.5">
                     <span dir="ltr">{entry.value}</span>
                   </td>
@@ -184,12 +184,12 @@ export default function TwoSumVisual() {
       </ul>
 
       {current.answer && (
-        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold">
           <TextWithCode text={t('twoSum.answer', { answer: current.answer.join(' ') })} />
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 

@@ -67,7 +67,7 @@ const LEGEND = [
   { key: 'middle', style: 'border-warn bg-warn' },
   { key: 'found', style: 'border-pass bg-pass' },
   { key: 'possible', style: 'border-muted bg-surface' },
-  { key: 'ruledOut', style: 'border-muted/40 bg-paper' },
+  { key: 'ruledOut', style: 'border-line bg-paper' },
 ]
 
 export default function BinarySearchVisual() {
@@ -155,13 +155,13 @@ export default function BinarySearchVisual() {
         role="img"
         aria-label={t('binarySearch.label', { values: current.array.join(', '), target })}
         dir="ltr"
-        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
+        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded-lg border border-line bg-surface p-3"
       >
         {current.array.map((value, index) => (
           <div key={index} className="flex w-10 flex-col items-center">
             <span className="h-4 text-xs font-semibold text-ink">{pointerLabels(current, index)}</span>
             <span
-              className={`mt-0.5 flex size-10 items-center justify-center rounded border-2 font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 ${cellStyle(current, index)}`}
+              className={`mt-0.5 flex size-10 items-center justify-center rounded border-2 font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${cellStyle(current, index)}`}
             >
               {value}
             </span>
@@ -173,7 +173,7 @@ export default function BinarySearchVisual() {
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         {LEGEND.map(({ key, style }) => (
           <li key={key} className="flex items-center gap-1.5">
-            <span className={`inline-block size-3 rounded-sm border ${style}`} aria-hidden="true" />
+            <span className={`inline-block h-3.5 w-5 rounded border-2 ${style}`} aria-hidden="true" />
             {t(`binarySearch.legend.${key}`)}
           </li>
         ))}
@@ -182,7 +182,7 @@ export default function BinarySearchVisual() {
         </li>
       </ul>
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 

@@ -6,6 +6,7 @@ import { cellText, islandsFrames, shortestPathFrames, type Cell, type GridFrame,
 import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
+import { useScrollCue } from './useScrollCue'
 
 // The problems allow grids up to 50 by 50; 8 by 8 fits on screen.
 const MAX_SIDE = 8
@@ -109,6 +110,7 @@ function gridLabel(mode: GridMode, frame: GridFrame, t: T) {
 // Two grid searches: counting islands with a stack, and the shortest path with a BFS queue.
 export default function GridVisual({ mode }: { mode: GridMode }) {
   const { t } = useTranslation('visuals')
+  const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
   const id = useId()
   const config = MODES[mode]
   const [grid, setGrid] = useState(config.random)
@@ -159,7 +161,8 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
           role="region"
           aria-label={t('grid.region')}
           dir="ltr"
-          className="overflow-x-auto rounded border border-line bg-surface p-3"
+          ref={scrollRef}
+          className={`overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
         >
           <div role="img" aria-label={gridLabel(mode, current, t)} className="w-max">
             <div className="flex gap-0.5 ps-5">
@@ -179,7 +182,7 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
                   return (
                     <span
                       key={c}
-                      className={`relative flex size-8 items-center justify-center rounded border-2 text-sm font-semibold tabular-nums motion-safe:transition-colors motion-safe:duration-300 ${cellClass}`}
+                      className={`relative flex size-8 items-center justify-center rounded border-2 text-sm font-semibold tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${cellClass}`}
                     >
                       {corner && <span className="absolute top-0 start-0.5 text-[9px] leading-none font-medium">{corner}</span>}
                       {mark ?? ''}
@@ -202,7 +205,7 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
                 : t('grid.queueLabel', { list: current.pending.length === 0 ? t('grid.empty') : current.pending.map(cellText).join(', ') })
             }
             dir="ltr"
-            className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-surface p-1.5"
+            className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded-lg border border-line bg-surface p-1.5"
           >
             {current.pending.length === 0 && <span className="px-1 text-sm text-muted">{t('grid.empty')}</span>}
             {current.pending.map((cell) => (
@@ -221,39 +224,39 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
         {mode === 'islands' ? (
           <>
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-sm border border-muted bg-line" aria-hidden="true" />
+              <span className="inline-block h-3.5 w-5 rounded border-2 border-muted bg-line" aria-hidden="true" />
               <TextWithCode text={t('grid.legendUnmarked')} />
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-sm border border-line bg-surface" aria-hidden="true" />
+              <span className="inline-block h-3.5 w-5 rounded border-2 border-line bg-surface" aria-hidden="true" />
               <TextWithCode text={t('grid.legendZero')} />
             </li>
             <li>{t('grid.legendColoured')}</li>
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-sm border-2 border-warn bg-surface" aria-hidden="true" />
+              <span className="inline-block h-3.5 w-5 rounded border-2 border-warn bg-surface" aria-hidden="true" />
               <TextWithCode text={t('grid.legendFound')} />
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-sm border-2 border-dashed border-muted bg-surface" aria-hidden="true" />
+              <span className="inline-block h-3.5 w-5 rounded border-2 border-dashed border-muted bg-surface" aria-hidden="true" />
               <TextWithCode text={t('grid.legendOnStack')} />
             </li>
           </>
         ) : (
           <>
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-sm border border-ink bg-ink" aria-hidden="true" />
+              <span className="inline-block h-3.5 w-5 rounded border-2 border-ink bg-ink" aria-hidden="true" />
               {t('grid.legendWall')}
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-sm border border-warn bg-warn" aria-hidden="true" />
+              <span className="inline-block h-3.5 w-5 rounded border-2 border-warn bg-warn" aria-hidden="true" />
               {t('grid.legendTaken')}
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-sm border border-warn bg-amber-100 dark:bg-amber-950" aria-hidden="true" />
+              <span className="inline-block h-3.5 w-5 rounded border-2 border-warn bg-amber-100 dark:bg-amber-950" aria-hidden="true" />
               <TextWithCode text={t('grid.legendInQueue')} />
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-sm border border-pass bg-pass" aria-hidden="true" />
+              <span className="inline-block h-3.5 w-5 rounded border-2 border-pass bg-pass" aria-hidden="true" />
               {t('grid.legendEnd')}
             </li>
             <li>
@@ -265,12 +268,12 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
       </ul>
 
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold">
           {t('common.output')} <span className="font-mono">{current.output}</span>
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 

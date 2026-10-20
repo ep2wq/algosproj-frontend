@@ -6,6 +6,7 @@ import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { deleteFrames, heightFrames, lcaFrames, type Mark, type TreeFrame, type TreeMode } from './treeFrames'
 import { diagramSize, NODE_R, treeLayout } from './treeLayout'
 import { usePlayback } from './usePlayback'
+import { useScrollCue } from './useScrollCue'
 
 // The problems allow up to 1000 distinct values from -1000000 to 1000000; the visual draws at
 // most 10, small enough to fit in a node.
@@ -144,7 +145,7 @@ function Diagram({ frame, rows }: { frame: TreeFrame; rows: number }) {
         const thick = mark === 'current' || mark === 'focus'
         return (
           <g key={node.id}>
-            <circle cx={x} cy={y} r={NODE_R} strokeWidth={thick ? 4 : 2} className={`${NODE_CLASS[mark ?? 'plain']} motion-safe:transition-colors motion-safe:duration-300`} />
+            <circle cx={x} cy={y} r={NODE_R} strokeWidth={thick ? 4 : 2} className={`${NODE_CLASS[mark ?? 'plain']} motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm`} />
             <text x={x} y={y + 4} textAnchor="middle" className={`font-mono text-xs font-semibold ${mark === 'answer' ? 'fill-inverse' : 'fill-ink'}`}>
               {node.value}
             </text>
@@ -159,6 +160,7 @@ function Diagram({ frame, rows }: { frame: TreeFrame; rows: number }) {
 // ancestor of p and q, or delete x.
 export default function TreeVisual({ mode }: { mode: TreeMode }) {
   const { t } = useTranslation('visuals')
+  const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
   const id = useId()
   const config = MODES[mode]
   const [source, setSource] = useState(config.random)
@@ -228,7 +230,8 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
         role="region"
         aria-label={t('tree.region')}
         dir="ltr"
-        className="relative mt-3 overflow-x-auto rounded border border-line bg-surface p-2"
+        ref={scrollRef}
+        className={`relative mt-3 overflow-x-auto rounded-lg border border-line bg-surface p-2${scrollMore ? ' scroll-fade' : ''}`}
       >
         <div role="img" aria-label={treeLabel(current, mode, t)} className="w-max">
           <Diagram frame={current} rows={rows} />
@@ -248,7 +251,7 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
           <div
             aria-label={t('tree.stackLabel', { list: current.stack.length === 0 ? t('tree.empty') : current.stack.join(', ') })}
             dir="ltr"
-            className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-surface p-1.5">
+            className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded-lg border border-line bg-surface p-1.5">
             {current.stack.length === 0 && <span className="px-1 text-sm text-muted">{t('tree.empty')}</span>}
             {current.stack.map((pair, index) => (
               <span key={index} className="rounded border border-muted bg-surface px-1.5 py-0.5 font-mono text-sm tabular-nums">
@@ -295,13 +298,13 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
       )}
 
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold">
           {t('common.output')}{' '}
           {current.output === '' ? <span className="font-normal text-muted">{t('linkedList.emptyLine')}</span> : <span className="font-mono">{current.output}</span>}
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
       {step === 0 && lastStep > 0 && <p className="mt-2 text-sm text-muted">{t('tree.pressStep')}</p>}

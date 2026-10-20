@@ -5,6 +5,7 @@ import type { T } from './i18n'
 import { cycleFrames, middleFrames, reverseFrames, type ListFrame, type ListMode } from './linkedListFrames'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
+import { useScrollCue } from './useScrollCue'
 
 function randomInt(min: number, max: number) {
   return min + Math.floor(Math.random() * (max - min + 1))
@@ -181,7 +182,7 @@ function Diagram({ frame }: { frame: ListFrame }) {
               : 'fill-surface stroke-muted'
         return (
           <g key={i}>
-            <rect x={x + 1} y={BOX_TOP + 1} width={nodeW - 2} height={BOX_H - 2} rx={4} strokeWidth={2} className={`${box} motion-safe:transition-colors motion-safe:duration-300`} />
+            <rect x={x + 1} y={BOX_TOP + 1} width={nodeW - 2} height={BOX_H - 2} rx={4} strokeWidth={2} className={`${box} motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm`} />
             <text x={center} y={BOX_MID + 5} textAnchor="middle" className={`font-mono text-sm font-medium ${frame.highlight === i ? 'fill-inverse' : 'fill-ink'}`}>
               {value}
             </text>
@@ -237,6 +238,7 @@ function Diagram({ frame }: { frame: ListFrame }) {
 // One diagram, three algorithms: reverse a list, find its middle, detect a cycle.
 export default function LinkedListVisual({ mode }: { mode: ListMode }) {
   const { t } = useTranslation('visuals')
+  const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
   const id = useId()
   const config = MODES[mode]
   const [source, setSource] = useState(config.random)
@@ -288,7 +290,8 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
         role="region"
         aria-label={t('linkedList.region')}
         dir="ltr"
-        className="mt-4 overflow-x-auto rounded border border-line bg-surface p-3"
+        ref={scrollRef}
+        className={`mt-4 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
       >
         <div role="img" aria-label={listLabel(current, t)} className="w-max">
           <Diagram frame={current} />
@@ -321,13 +324,13 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
       </ul>
 
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold">
           {t('common.output')}{' '}
           {current.output === '' ? <span className="font-normal text-muted">{t('linkedList.emptyLine')}</span> : <span className="font-mono">{current.output}</span>}
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 

@@ -102,7 +102,7 @@ export default function SortingVisual() {
         role="img"
         aria-label={t('sorting.label', { values: current.array.join(', ') || t('sorting.emptyWord') })}
         dir="ltr"
-        className="mt-4 flex h-56 items-end gap-1 rounded border border-line bg-surface p-2 sm:gap-2 sm:p-3"
+        className="mt-4 flex h-56 items-end gap-1 rounded-lg border border-line bg-surface p-2 sm:gap-2 sm:p-3"
       >
         {current.array.length === 0 && (
           <p className="self-center text-sm text-muted">
@@ -113,7 +113,7 @@ export default function SortingVisual() {
           <div key={index} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end">
             <span className="text-xs font-medium tabular-nums">{value}</span>
             <div
-              className={`mt-0.5 w-full rounded-t motion-safe:transition-all motion-safe:duration-300 ${barColor(current, index)}`}
+              className={`mt-0.5 w-full rounded-t motion-safe:transition-all motion-safe:duration-300 motion-safe:ease-calm ${barColor(current, index)}`}
               style={{ height: `${(value / maxValue) * 85}%` }}
             />
           </div>
@@ -129,7 +129,7 @@ export default function SortingVisual() {
         ))}
       </ul>
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 

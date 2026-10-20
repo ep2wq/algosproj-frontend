@@ -5,7 +5,7 @@ import type { Speed, usePlayback } from './usePlayback'
 
 type Playback = ReturnType<typeof usePlayback>
 
-export const buttonClass = 'rounded border border-field bg-surface px-3 py-1.5 text-sm hover:border-muted aria-disabled:cursor-not-allowed aria-disabled:opacity-50'
+export const buttonClass = 'rounded border border-field bg-surface px-3 py-1.5 text-sm hover:border-muted aria-disabled:cursor-not-allowed aria-disabled:opacity-60'
 
 export function SpeedSelect({ playback }: { playback: Playback }) {
   const { t } = useTranslation('visuals')
@@ -53,6 +53,13 @@ export default function PlaybackControls({ playback }: { playback: Playback }) {
         {t('common.reset')}
       </button>
       <span className="text-sm text-muted tabular-nums">{t('common.stepOf', { step: Math.min(step, lastStep) + 1, count: lastStep + 1 })}</span>
+      {/* How far through the steps, in reading direction. "Step 3 of 9" says the same in words. */}
+      <div aria-hidden="true" className="h-1 basis-full overflow-hidden rounded-full bg-line">
+        <div
+          className="h-full origin-left rounded-full bg-accent motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-calm rtl:origin-right"
+          style={{ transform: `scaleX(${lastStep > 0 ? Math.min(step, lastStep) / lastStep : 1})` }}
+        />
+      </div>
     </div>
   )
 }

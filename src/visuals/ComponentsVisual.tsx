@@ -6,6 +6,7 @@ import { componentsFrames, type ComponentsFrame } from './componentsFrames'
 import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
+import { useScrollCue } from './useScrollCue'
 
 // The problem allows up to 1000 nodes and 5000 edges; these fit in the circle.
 const MAX_NODES = 10
@@ -111,7 +112,7 @@ function Diagram({ frame }: { frame: ComponentsFrame }) {
               cy={y}
               r={NODE_R}
               strokeWidth={frame.current === node ? 4 : 2}
-              className={`${nodeClass(frame, node)} motion-safe:transition-colors motion-safe:duration-300`}
+              className={`${nodeClass(frame, node)} motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm`}
             />
             <text x={x} y={y + 5} textAnchor="middle" className="fill-ink text-sm font-semibold">
               {node}
@@ -126,6 +127,7 @@ function Diagram({ frame }: { frame: ComponentsFrame }) {
 // Counting connected components: loop over the nodes, and walk from each unvisited one with a stack.
 export default function ComponentsVisual() {
   const { t } = useTranslation('visuals')
+  const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
   const id = useId()
   const [graph, setGraph] = useState(randomGraph)
   const [nText, setNText] = useState('')
@@ -195,7 +197,8 @@ export default function ComponentsVisual() {
           role="region"
           aria-label={t('components.region')}
           dir="ltr"
-          className="overflow-x-auto rounded border border-line bg-surface p-2"
+          ref={scrollRef}
+          className={`overflow-x-auto rounded-lg border border-line bg-surface p-2${scrollMore ? ' scroll-fade' : ''}`}
         >
           <div role="img" aria-label={graphLabel(current, t)} className="w-max">
             <Diagram frame={current} />
@@ -209,7 +212,7 @@ export default function ComponentsVisual() {
           <div
             aria-label={t('components.stackLabel', { list: current.stack.length === 0 ? t('components.empty') : current.stack.join(', ') })}
             dir="ltr"
-            className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded border border-line bg-surface p-1.5">
+            className="mt-1 flex min-h-10 flex-wrap items-center gap-1 rounded-lg border border-line bg-surface p-1.5">
             {current.stack.length === 0 && <span className="px-1 text-sm text-muted">{t('components.empty')}</span>}
             {current.stack.map((node) => (
               <span
@@ -255,12 +258,12 @@ export default function ComponentsVisual() {
       </ul>
 
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold">
           {t('common.output')} <span className="font-mono">{current.output}</span>
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 

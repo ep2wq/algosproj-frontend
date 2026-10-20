@@ -5,6 +5,7 @@ import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { subarraySumFrames, type SumFrame } from './subarraySumFrames'
 import { usePlayback } from './usePlayback'
+import { useScrollCue } from './useScrollCue'
 
 // The problem's limits: up to 1000 values from -1000 to 1000 and k from -1000000 to
 // 1000000; the visual shows at most 12 values.
@@ -74,6 +75,8 @@ function mapLabel(frame: SumFrame, t: T) {
 // Subarray sum equals k: running totals and a map of how often each total has appeared.
 export default function SubarraySumVisual() {
   const { t } = useTranslation('visuals')
+  const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
+  const [scrollRef2, scrollMore2] = useScrollCue<HTMLDivElement>()
   const id = useId()
   const [example, setExample] = useState(randomExample)
   const [valuesText, setValuesText] = useState('')
@@ -133,7 +136,8 @@ export default function SubarraySumVisual() {
         role="region"
         aria-label={t('subarraySum.diagramRegion')}
         dir="ltr"
-        className="mt-3 overflow-x-auto rounded border border-line bg-surface p-3"
+        ref={scrollRef}
+        className={`mt-3 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
       >
         <div role="img" aria-label={diagramLabel(current, t)} className="flex w-max gap-1">
           <div className="flex flex-col pe-1 text-xs text-muted">
@@ -144,7 +148,7 @@ export default function SubarraySumVisual() {
             <span className="h-4 text-xs text-muted">{t('subarraySum.columnStart')}</span>
             <span className="flex h-10 min-w-14 items-center justify-center text-sm text-muted">-</span>
             <span
-              className={`mt-1 flex h-10 min-w-14 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 ${prefixStyle(current, 0)}`}
+              className={`mt-1 flex h-10 min-w-14 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${prefixStyle(current, 0)}`}
             >
               {current.prefixes[0]}
             </span>
@@ -153,12 +157,12 @@ export default function SubarraySumVisual() {
             <div key={index} className="flex flex-col items-center">
               <span className="h-4 text-xs text-muted tabular-nums">{index}</span>
               <span
-                className={`flex h-10 min-w-14 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 ${numberStyle(current, index)}`}
+                className={`flex h-10 min-w-14 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${numberStyle(current, index)}`}
               >
                 {value}
               </span>
               <span
-                className={`mt-1 flex h-10 min-w-14 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 ${prefixStyle(current, index + 1)}`}
+                className={`mt-1 flex h-10 min-w-14 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${prefixStyle(current, index + 1)}`}
               >
                 {current.prefixes[index + 1] ?? ''}
               </span>
@@ -175,7 +179,8 @@ export default function SubarraySumVisual() {
         role="region"
         aria-label={t('subarraySum.mapRegion')}
         dir="ltr"
-        className="mt-1 overflow-x-auto rounded border border-line bg-surface"
+        ref={scrollRef2}
+        className={`mt-1 overflow-x-auto rounded-lg border border-line bg-surface${scrollMore2 ? ' scroll-fade' : ''}`}
       >
         <table aria-label={mapLabel(current, t)} className="border-collapse text-sm tabular-nums">
           <tbody>
@@ -184,7 +189,7 @@ export default function SubarraySumVisual() {
                 {t('subarraySum.total')}
               </th>
               {current.map.map((entry) => (
-                <th key={entry.sum} scope="col" className={`min-w-12 px-2 py-1 text-center font-semibold motion-safe:transition-colors motion-safe:duration-300 ${mapStyle(current, entry.sum)}`}>
+                <th key={entry.sum} scope="col" className={`min-w-12 px-2 py-1 text-center font-semibold motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${mapStyle(current, entry.sum)}`}>
                   {entry.sum}
                 </th>
               ))}
@@ -194,7 +199,7 @@ export default function SubarraySumVisual() {
                 {t('subarraySum.timesHeader')}
               </th>
               {current.map.map((entry) => (
-                <td key={entry.sum} className={`min-w-12 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-300 ${mapStyle(current, entry.sum)}`}>
+                <td key={entry.sum} className={`min-w-12 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${mapStyle(current, entry.sum)}`}>
                   {entry.times}
                 </td>
               ))}
@@ -224,12 +229,12 @@ export default function SubarraySumVisual() {
       </ul>
 
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold">
           {t('common.output')} <span className="font-mono">{current.output}</span>
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 

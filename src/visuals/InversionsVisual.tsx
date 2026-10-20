@@ -24,7 +24,7 @@ function parseNumbers(text: string, t: T): number[] | string {
   return parts.map(Number)
 }
 
-const cellClass = 'flex h-10 min-w-10 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300'
+const cellClass = 'flex h-10 min-w-10 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm'
 
 function arrayCellStyle(frame: InversionFrame, index: number) {
   if (frame.done && frame.array.length > 0) return 'border-pass bg-surface text-ink'
@@ -46,7 +46,7 @@ function Run({ label, values, pointer, mark }: { label: string; values: number[]
             ? t('inversions.runAllTaken', { label, values: values.join(' ') })
             : t('inversions.runWaiting', { label, values: values.join(' '), rest: rest.join(' ') })
         }
-        className="mt-1 flex flex-wrap gap-x-1.5 gap-y-2 rounded border border-line bg-surface p-2"
+        className="mt-1 flex flex-wrap gap-x-1.5 gap-y-2 rounded-lg border border-line bg-surface p-2"
       >
         {values.map((value, index) => (
           <div key={index} className="flex min-w-10 flex-col items-center">
@@ -109,7 +109,7 @@ export default function InversionsVisual() {
             : t('inversions.arrayLabel', { values: current.array.join(' ') || t('inversions.emptyWord') })
         }
         dir="ltr"
-        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
+        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded-lg border border-line bg-surface p-3"
       >
         {current.array.length === 0 && <p className="text-sm text-muted">{t('inversions.noNumbers')}</p>}
         {current.array.map((value, index) => (
@@ -132,7 +132,7 @@ export default function InversionsVisual() {
             role="img"
             aria-label={t('inversions.mergedLabel', { list: current.merged.join(' ') || t('inversions.nothingYetWord') })}
             dir="ltr"
-            className="mt-1 flex min-h-14 flex-wrap gap-x-1.5 gap-y-2 rounded border border-line bg-surface p-2"
+            className="mt-1 flex min-h-14 flex-wrap gap-x-1.5 gap-y-2 rounded-lg border border-line bg-surface p-2"
           >
             {current.merged.length === 0 && <p className="self-center text-sm text-muted">{t('inversions.nothingYet')}</p>}
             {current.merged.map((value, index) => (
@@ -151,21 +151,21 @@ export default function InversionsVisual() {
 
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border border-accent bg-accent-soft" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-accent bg-accent-soft" aria-hidden="true" />
           {t('inversions.legendRange')}
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border-2 border-warn bg-surface" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-warn bg-surface" aria-hidden="true" />
           <TextWithCode text={t('inversions.legendNext')} />
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border border-accent bg-accent" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-accent bg-accent" aria-hidden="true" />
           {t('inversions.legendTaken')}
         </li>
         <li>{t('common.smallPositions')}</li>
       </ul>
 
-      <p className="mt-3 inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-2">
+      <p className="mt-3 inline-flex items-baseline gap-2 rounded-lg border border-line bg-surface px-3 py-2">
         <span className="text-sm text-muted">
           <TextWithCode text={t('inversions.soFar')} />
         </span>
@@ -174,7 +174,7 @@ export default function InversionsVisual() {
 
       {current.done && (
         <div className="mt-3">
-          <p className="inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
+          <p className="inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold">
             <TextWithCode text={t('inversions.total', { total: current.total })} />
           </p>
           <p className="mt-1 text-sm text-muted">
@@ -183,7 +183,7 @@ export default function InversionsVisual() {
         </div>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 

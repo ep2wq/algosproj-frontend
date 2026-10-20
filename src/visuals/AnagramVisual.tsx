@@ -5,6 +5,7 @@ import { anagramFrames, type AnagramFrame } from './anagramFrames'
 import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
+import { useScrollCue } from './useScrollCue'
 
 // The problem allows up to 1000 letters per word; 12 is what fits on screen.
 const MAX_LETTERS = 12
@@ -88,7 +89,7 @@ function WordRow({ frame, word }: { frame: AnagramFrame; word: Field }) {
           {[...text].map((letter, index) => (
             <div key={index} className="flex flex-col items-center">
               <span
-                className={`flex size-8 items-center justify-center rounded border-2 font-mono text-sm font-medium motion-safe:transition-colors motion-safe:duration-300 ${letterStyle(frame, word, index)}`}
+                className={`flex size-8 items-center justify-center rounded border-2 font-mono text-sm font-medium motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${letterStyle(frame, word, index)}`}
               >
                 {letter}
               </span>
@@ -104,6 +105,8 @@ function WordRow({ frame, word }: { frame: AnagramFrame; word: Field }) {
 // Valid anagram: compare the lengths, count the letters of s, then take away the letters of t.
 export default function AnagramVisual() {
   const { t: tr } = useTranslation('visuals')
+  const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
+  const [scrollRef2, scrollMore2] = useScrollCue<HTMLDivElement>()
   const id = useId()
   const [example, setExample] = useState(randomExample)
   const [sText, setSText] = useState('')
@@ -153,7 +156,8 @@ export default function AnagramVisual() {
         role="region"
         aria-label={tr('anagram.wordsRegion')}
         dir="ltr"
-        className="mt-4 overflow-x-auto rounded border border-line bg-surface p-3"
+        ref={scrollRef}
+        className={`mt-4 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
       >
         <div role="img" aria-label={wordsLabel(current, tr)} className="flex w-max flex-col gap-2">
           <WordRow frame={current} word="s" />
@@ -167,7 +171,8 @@ export default function AnagramVisual() {
         role="region"
         aria-label={tr('anagram.countsRegion')}
         dir="ltr"
-        className="mt-1 overflow-x-auto rounded border border-line bg-surface"
+        ref={scrollRef2}
+        className={`mt-1 overflow-x-auto rounded-lg border border-line bg-surface${scrollMore2 ? ' scroll-fade' : ''}`}
       >
         <table aria-label={countsLabel(current, tr)} className="border-collapse text-sm tabular-nums">
           <tbody>
@@ -177,7 +182,7 @@ export default function AnagramVisual() {
               </th>
               {current.counts.length === 0 && <td className="px-2 py-1 text-muted">{tr('anagram.tableEmpty')}</td>}
               {current.counts.map((entry) => (
-                <th key={entry.letter} scope="col" className={`min-w-9 px-2 py-1 text-center font-mono font-semibold motion-safe:transition-colors motion-safe:duration-300 ${countStyle(current, entry.letter)}`}>
+                <th key={entry.letter} scope="col" className={`min-w-9 px-2 py-1 text-center font-mono font-semibold motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${countStyle(current, entry.letter)}`}>
                   {entry.letter}
                 </th>
               ))}
@@ -188,7 +193,7 @@ export default function AnagramVisual() {
               </th>
               {current.counts.length === 0 && <td className="px-2 py-1 text-muted">-</td>}
               {current.counts.map((entry) => (
-                <td key={entry.letter} className={`min-w-9 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-300 ${countStyle(current, entry.letter)}`}>
+                <td key={entry.letter} className={`min-w-9 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${countStyle(current, entry.letter)}`}>
                   {entry.count}
                 </td>
               ))}
@@ -199,27 +204,27 @@ export default function AnagramVisual() {
 
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border border-warn bg-warn" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-warn bg-warn" aria-hidden="true" />
           {tr('anagram.legendRead')}
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border border-fail bg-fail" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-fail bg-fail" aria-hidden="true" />
           <TextWithCode text={tr('anagram.legendBelow')} />
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border border-pass bg-pass" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-pass bg-pass" aria-hidden="true" />
           <TextWithCode text={tr('anagram.legendZero')} />
         </li>
         <li>{tr('common.smallPositions')}</li>
       </ul>
 
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold">
           {tr('common.output')} <span className="font-mono">{current.output}</span>
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 

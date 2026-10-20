@@ -5,6 +5,7 @@ import type { T } from './i18n'
 import { longestSubstringFrames, type WindowFrame } from './longestSubstringFrames'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
+import { useScrollCue } from './useScrollCue'
 
 // The problem allows up to 1000 letters; 16 is what fits in the diagram.
 const MAX_LETTERS = 16
@@ -73,6 +74,8 @@ function mapLabel(frame: WindowFrame, t: T) {
 // Longest substring without a repeated letter: a sliding window and a last-seen map.
 export default function LongestSubstringVisual() {
   const { t } = useTranslation('visuals')
+  const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
+  const [scrollRef2, scrollMore2] = useScrollCue<HTMLDivElement>()
   const id = useId()
   const [text, setText] = useState(() => randomExample())
   const [customText, setCustomText] = useState('')
@@ -126,7 +129,8 @@ export default function LongestSubstringVisual() {
         role="region"
         aria-label={t('longestSubstring.lettersRegion')}
         dir="ltr"
-        className="mt-3 overflow-x-auto rounded border border-line bg-surface p-3"
+        ref={scrollRef}
+        className={`mt-3 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
       >
         <div role="img" aria-label={stringLabel(current, t)} className="w-max">
           {current.s === '' ? (
@@ -140,7 +144,7 @@ export default function LongestSubstringVisual() {
                     <span className="h-4 text-xs leading-4 font-semibold text-ink">{names[0] ?? ''}</span>
                     <span className="h-4 text-xs leading-4 font-semibold text-ink">{names[1] ?? ''}</span>
                     <span
-                      className={`mt-0.5 flex size-9 items-center justify-center rounded border-2 font-mono text-sm font-medium motion-safe:transition-colors motion-safe:duration-300 ${cellStyle(current, index)}`}
+                      className={`mt-0.5 flex size-9 items-center justify-center rounded border-2 font-mono text-sm font-medium motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${cellStyle(current, index)}`}
                     >
                       {letter}
                     </span>
@@ -159,7 +163,8 @@ export default function LongestSubstringVisual() {
         role="region"
         aria-label={t('longestSubstring.mapRegion')}
         dir="ltr"
-        className="mt-1 overflow-x-auto rounded border border-line bg-surface"
+        ref={scrollRef2}
+        className={`mt-1 overflow-x-auto rounded-lg border border-line bg-surface${scrollMore2 ? ' scroll-fade' : ''}`}
       >
         <table aria-label={mapLabel(current, t)} className="border-collapse text-sm tabular-nums">
           <tbody>
@@ -172,7 +177,7 @@ export default function LongestSubstringVisual() {
                 <th
                   key={entry.letter}
                   scope="col"
-                  className={`min-w-9 px-2 py-1 text-center font-mono font-semibold motion-safe:transition-colors motion-safe:duration-300 ${updated === entry.letter ? 'bg-warn text-inverse' : ''}`}
+                  className={`min-w-9 px-2 py-1 text-center font-mono font-semibold motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${updated === entry.letter ? 'bg-warn text-inverse' : ''}`}
                 >
                   {entry.letter}
                 </th>
@@ -186,7 +191,7 @@ export default function LongestSubstringVisual() {
               {current.last.map((entry) => (
                 <td
                   key={entry.letter}
-                  className={`min-w-9 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-300 ${updated === entry.letter ? 'bg-warn text-inverse' : ''}`}
+                  className={`min-w-9 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${updated === entry.letter ? 'bg-warn text-inverse' : ''}`}
                 >
                   {entry.index}
                 </td>
@@ -198,31 +203,31 @@ export default function LongestSubstringVisual() {
 
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border border-warn bg-warn" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-warn bg-warn" aria-hidden="true" />
           <TextWithCode text={t('longestSubstring.legendRight')} />
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border border-dashed border-warn bg-surface" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-dashed border-warn bg-surface" aria-hidden="true" />
           {t('longestSubstring.legendEarlier')}
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border border-accent bg-accent-soft" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-accent bg-accent-soft" aria-hidden="true" />
           <TextWithCode text={t('longestSubstring.legendWindow')} />
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border border-pass bg-pass" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-pass bg-pass" aria-hidden="true" />
           <TextWithCode text={t('longestSubstring.legendBest')} />
         </li>
         <li>{t('common.smallPositions')}</li>
       </ul>
 
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold">
           {t('common.output')} <span className="font-mono">{current.output}</span>
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 

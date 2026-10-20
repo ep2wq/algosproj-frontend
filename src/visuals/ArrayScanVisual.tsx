@@ -66,13 +66,13 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
         role="img"
         aria-label={mode === 'sum' ? t('arrayScan.labelSum', { values: current.array.join(', '), value: current.value }) : t('arrayScan.labelMax', { values: current.array.join(', '), value: current.value })}
         dir="ltr"
-        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
+        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded-lg border border-line bg-surface p-3"
       >
         {current.array.map((value, index) => (
           <div key={index} className="flex w-10 flex-col items-center">
             <span className="h-4 text-xs font-semibold text-ink">{current.current === index ? 'i' : ''}</span>
             <span
-              className={`mt-0.5 flex size-10 items-center justify-center rounded border-2 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 ${
+              className={`mt-0.5 flex size-10 items-center justify-center rounded border-2 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
                 current.current === index ? 'border-warn bg-warn text-inverse' : 'border-muted bg-surface text-ink'
               }`}
             >
@@ -85,7 +85,7 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
 
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border border-warn bg-warn" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-warn bg-warn" aria-hidden="true" />
           {t('arrayScan.legendCurrent')}
         </li>
         <li>
@@ -93,14 +93,14 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
         </li>
       </ul>
 
-      <p className="mt-3 inline-flex items-baseline gap-2 rounded border border-line bg-surface px-3 py-2">
+      <p className="mt-3 inline-flex items-baseline gap-2 rounded-lg border border-line bg-surface px-3 py-2">
         <span className="text-sm text-muted">
           <TextWithCode text={valueLabel} />
         </span>
         <span dir="ltr" className={`text-xl font-semibold tabular-nums ${current.done ? 'text-pass' : 'text-ink'}`}>{current.value}</span>
       </p>
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 

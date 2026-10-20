@@ -16,7 +16,7 @@ function parseNumber(text: string, t: T): number | string {
   return Number(trimmed) || 0 // turns -0 into 0
 }
 
-const boxClass = 'flex min-w-0 flex-col rounded border border-line bg-surface p-3'
+const boxClass = 'flex min-w-0 flex-col rounded-lg border border-line bg-surface p-3'
 
 function Variables({ frame }: { frame: WarmupFrame }) {
   const rows: [string, string | null][] = [
@@ -95,7 +95,7 @@ export default function WarmupVisual() {
           </p>
           <p
             dir="ltr"
-            className={`mt-2 rounded border-2 px-2 py-1 font-mono text-sm break-all motion-safe:transition-colors motion-safe:duration-300 ${
+            className={`mt-2 rounded border-2 px-2 py-1 font-mono text-sm break-all motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
               inputRead ? 'border-line bg-paper text-muted' : 'border-warn bg-surface text-ink'
             }`}
           >
@@ -112,7 +112,7 @@ export default function WarmupVisual() {
             {lines.map(([key, text], index) => (
               <code
                 key={index}
-                className={`block px-2 whitespace-pre motion-safe:transition-colors motion-safe:duration-300 ${
+                className={`block px-2 whitespace-pre motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
                   key !== '' && key === current.line ? 'bg-warn text-inverse' : ''
                 }`}
               >
@@ -149,12 +149,12 @@ export default function WarmupVisual() {
       </ul>
 
       {current.verdict && (
-        <p className={`mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold ${current.passed ? 'text-pass' : 'text-fail'}`}>
+        <p className={`mt-3 inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold ${current.passed ? 'text-pass' : 'text-fail'}`}>
           <TextWithCode text={current.verdict} />
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 

@@ -90,13 +90,13 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
         role="img"
         aria-label={t('twoPointer.label', { text: current.chars.join('') })}
         dir="ltr"
-        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded border border-line bg-surface p-3"
+        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded-lg border border-line bg-surface p-3"
       >
         {current.chars.map((char, index) => (
           <div key={index} className="flex w-10 flex-col items-center">
             <span className="h-4 text-xs font-semibold text-ink">{pointerLabels(current, index)}</span>
             <span
-              className={`mt-0.5 flex size-10 items-center justify-center rounded border-2 font-mono font-medium motion-safe:transition-colors motion-safe:duration-300 ${cellStyle(mode, current, index)}`}
+              className={`mt-0.5 flex size-10 items-center justify-center rounded border-2 font-mono font-medium motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${cellStyle(mode, current, index)}`}
             >
               {char === ' ' ? '␣' : char}
             </span>
@@ -118,12 +118,12 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
       </ul>
 
       {current.result && (
-        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold">
           <TextWithCode text={current.result} />
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 

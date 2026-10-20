@@ -163,3 +163,8 @@ body {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
+
+/* The end edge of a sideways-scrolling drawing fades while more of it is hidden (useScrollCue). */
+@utility scroll-fade {
+  mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), rgb(0 0 0 / 0.15));
+}

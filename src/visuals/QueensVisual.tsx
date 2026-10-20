@@ -135,7 +135,7 @@ export default function QueensVisual() {
       </div>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-[auto_1fr]">
-        <div className="justify-self-start rounded border border-line bg-surface p-2">
+        <div className="justify-self-start rounded-lg border border-line bg-surface p-2">
           <div role="img" aria-label={boardLabel(current, t)} dir="ltr">
             <div aria-hidden="true" className="flex">
               <span className="w-5" />
@@ -154,7 +154,7 @@ export default function QueensVisual() {
                   return (
                     <span
                       key={col}
-                      className={`flex size-10 items-center justify-center text-xl leading-none motion-safe:transition-colors motion-safe:duration-300 ${
+                      className={`flex size-10 items-center justify-center text-xl leading-none motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
                         square === 'solution' || square === 'conflict' ? '' : dark ? 'bg-paper' : 'bg-surface'
                       } ${SQUARE_CLASS[square]}`}
                     >
@@ -168,7 +168,7 @@ export default function QueensVisual() {
           <p className="mt-1 text-xs text-muted">{t('queens.rowsCols')}</p>
         </div>
 
-        <div className="min-w-0 rounded border border-line bg-surface p-3">
+        <div className="min-w-0 rounded-lg border border-line bg-surface p-3">
           <p className="text-sm font-medium">{t('queens.trailTitle')}</p>
           <ol dir="ltr" className="mt-2 space-y-1.5">
             {current.trail.map((tries, row) => {
@@ -264,12 +264,12 @@ export default function QueensVisual() {
         <p className="mt-3 inline-block rounded border border-pass bg-surface px-3 py-2 font-semibold text-pass">{t('queens.solutionBadge', { number: current.solutions })}</p>
       )}
       {current.output !== null && (
-        <p className="mt-3 inline-block rounded border border-line bg-surface px-3 py-2 font-semibold">
+        <p className="mt-3 inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold">
           {t('common.output')} <span className="font-mono whitespace-pre-line">{current.output}</span>
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
         <TextWithCode text={current.description} />
       </p>
 
