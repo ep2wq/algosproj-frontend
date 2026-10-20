@@ -1,5 +1,5 @@
 import Editor from '@monaco-editor/react'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ApiError, LANGUAGES, submitSolution, type Language, type Problem, type SubmitResult } from '../api'
@@ -9,6 +9,10 @@ import { LANGUAGE_LABELS, STARTER_CODE } from '../starters'
 import Content from './Content'
 import { TextWithCode } from './LessonBody'
 import SubmitResultPanel from './SubmitResultPanel'
+
+// A description line that is only one of these labels is shown as a small heading (display only;
+// Arabic descriptions mark them as English terms).
+const STATEMENT_LABEL = /^(~(Input|Output|Constraints)~|Input|Output|Constraints)$/
 
 // The statement, examples, editor and Submit for one problem. Shared by the lesson page
 // (inside ProblemCard) and the challenge page; each page renders its own title above it.
@@ -59,26 +63,38 @@ export default function ProblemSolver({
 
   return (
     <>
-      <Content lang={problem.description_lang} as="p" className="mt-3 max-w-prose whitespace-pre-wrap">
-        <TextWithCode text={problem.description} />
+      <Content lang={problem.description_lang} as="div" className="mt-3 max-w-prose whitespace-pre-wrap">
+        {/* Line by line, so a label line can be a heading. Inline code and ~term~ never span lines. */}
+        {problem.description.split('\n').map((line, index, lines) =>
+          STATEMENT_LABEL.test(line.trim()) ? (
+            <ExamplesHeading key={index} className="text-sm font-semibold text-ink">
+              <TextWithCode text={line.trim()} />
+            </ExamplesHeading>
+          ) : (
+            <Fragment key={index}>
+              <TextWithCode text={line} />
+              {index < lines.length - 1 && '\n'}
+            </Fragment>
+          ),
+        )}
       </Content>
 
       {problem.test_cases.length > 0 && (
         <div className="mt-5">
-          <ExamplesHeading className="text-sm font-medium">{t('solver.examples')}</ExamplesHeading>
+          <ExamplesHeading className="text-sm font-semibold">{t('solver.examples')}</ExamplesHeading>
           <div className="mt-2 grid gap-3 sm:grid-cols-2">
             {problem.test_cases.map((testCase) => (
-              <dl key={testCase.id} className="grid grid-cols-2 gap-2 rounded-lg border border-line bg-surface p-3">
+              <dl key={testCase.id} className="grid grid-cols-2 gap-3 rounded-lg border border-line bg-surface p-3">
                 <div className="min-w-0">
                   <dt className="text-xs text-muted">{t('solver.input')}</dt>
                   <dd>
-                    <pre dir="ltr" lang="en" className="mt-0.5 w-fit max-w-full overflow-x-auto whitespace-pre-wrap font-mono text-sm">{testCase.input}</pre>
+                    <pre dir="ltr" lang="en" className="mt-1 w-fit max-w-full overflow-x-auto whitespace-pre-wrap rounded bg-paper px-2 py-1 font-mono text-sm">{testCase.input}</pre>
                   </dd>
                 </div>
                 <div className="min-w-0">
                   <dt className="text-xs text-muted">{t('solver.expectedOutput')}</dt>
                   <dd>
-                    <pre dir="ltr" lang="en" className="mt-0.5 w-fit max-w-full overflow-x-auto whitespace-pre-wrap font-mono text-sm">{testCase.expected_output}</pre>
+                    <pre dir="ltr" lang="en" className="mt-1 w-fit max-w-full overflow-x-auto whitespace-pre-wrap rounded bg-paper px-2 py-1 font-mono text-sm">{testCase.expected_output}</pre>
                   </dd>
                 </div>
               </dl>
@@ -87,49 +103,53 @@ export default function ProblemSolver({
         </div>
       )}
 
-      <div className="mt-6">
-        <label htmlFor={languageId} className="text-sm font-medium">
-          {t('solver.language')}
-        </label>
-        <select
-          id={languageId}
-          value={language}
-          onChange={(event) => setLanguage(event.target.value as Language)}
-          className="ms-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
-        >
-          {LANGUAGES.map((option) => (
-            <option key={option} value={option}>
-              {LANGUAGE_LABELS[option]}
-            </option>
-          ))}
-        </select>
+      {/* One framed block: the language picker and the Tab hint in a strip above the editor. */}
+      <div className="mt-6 overflow-hidden rounded-lg border border-line bg-surface">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-line px-3 py-2">
+          <div>
+            <label htmlFor={languageId} className="text-sm font-medium">
+              {t('solver.language')}
+            </label>
+            <select
+              id={languageId}
+              value={language}
+              onChange={(event) => setLanguage(event.target.value as Language)}
+              className="ms-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
+            >
+              {LANGUAGES.map((option) => (
+                <option key={option} value={option}>
+                  {LANGUAGE_LABELS[option]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <p id={hintId} className="text-xs text-muted">
+            <TextWithCode text={t('solver.tabHint')} />
+          </p>
+        </div>
+        {/* Code is always left to right, in both interface languages. */}
+        <div dir="ltr">
+          <Editor
+            height="280px"
+            language={language}
+            // Changing the theme restyles the open editor; it is not remounted, so the code stays.
+            theme={dark ? 'vs-dark' : 'vs'}
+            value={code[language]}
+            onChange={(value) => setCode((current) => ({ ...current, [language]: value ?? '' }))}
+            // Screen readers read the Tab hint with the editor.
+            onMount={(editor) => editor.getDomNode()?.querySelector('textarea, .native-edit-context')?.setAttribute('aria-describedby', hintId)}
+            loading={<p className="p-4 text-sm text-muted">{t('solver.loadingEditor')}</p>}
+            options={{
+              ariaLabel: t('solver.editorLabel', { language: LANGUAGE_LABELS[language], title: problem.title }),
+              minimap: { enabled: false },
+              fontSize: 14,
+              scrollBeyondLastLine: false,
+              automaticLayout: true,
+              tabSize: 4,
+            }}
+          />
+        </div>
       </div>
-
-      {/* Code is always left to right, in both interface languages. */}
-      <div dir="ltr" className="mt-3 overflow-hidden rounded-lg border border-line bg-surface">
-        <Editor
-          height="280px"
-          language={language}
-          // Changing the theme restyles the open editor; it is not remounted, so the code stays.
-          theme={dark ? 'vs-dark' : 'vs'}
-          value={code[language]}
-          onChange={(value) => setCode((current) => ({ ...current, [language]: value ?? '' }))}
-          // Screen readers read the Tab hint with the editor.
-          onMount={(editor) => editor.getDomNode()?.querySelector('textarea, .native-edit-context')?.setAttribute('aria-describedby', hintId)}
-          loading={<p className="p-4 text-sm text-muted">{t('solver.loadingEditor')}</p>}
-          options={{
-            ariaLabel: t('solver.editorLabel', { language: LANGUAGE_LABELS[language], title: problem.title }),
-            minimap: { enabled: false },
-            fontSize: 14,
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-            tabSize: 4,
-          }}
-        />
-      </div>
-      <p id={hintId} className="mt-1 text-sm text-muted">
-        <TextWithCode text={t('solver.tabHint')} />
-      </p>
       {language === 'java' && (
         <p className="mt-1 text-sm text-muted">
           <TextWithCode text={t('solver.javaMain')} />

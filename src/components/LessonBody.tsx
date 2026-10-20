@@ -93,13 +93,13 @@ export default function LessonBody({ text, lang }: { text: string; lang: string 
         switch (block.type) {
           case 'heading':
             return (
-              <h2 key={index} className="mt-8 text-xl font-semibold">
+              <h2 key={index} className="mt-10 text-xl font-semibold tracking-tight">
                 <TextWithCode text={block.text} />
               </h2>
             )
           case 'list':
             return (
-              <ul key={index} className="mt-3 list-disc space-y-1 ps-5">
+              <ul key={index} className="mt-4 list-disc space-y-1.5 ps-5 marker:text-muted">
                 {block.items.map((item, itemIndex) => (
                   <li key={itemIndex}>
                     <TextWithCode text={item} />
@@ -115,14 +115,14 @@ export default function LessonBody({ text, lang }: { text: string; lang: string 
                 tabIndex={0}
                 dir="ltr"
                 lang="en"
-                className="mt-3 overflow-x-auto rounded-lg border border-line bg-surface p-3 font-mono text-sm leading-normal"
+                className="mt-4 overflow-x-auto rounded-lg border border-line bg-surface px-4 py-3 font-mono text-sm leading-normal"
               >
                 <code>{block.text}</code>
               </pre>
             )
           case 'paragraph':
             return (
-              <p key={index} className="mt-3 whitespace-pre-wrap first:mt-0">
+              <p key={index} className="mt-4 whitespace-pre-wrap first:mt-0">
                 <TextWithCode text={block.text} />
               </p>
             )
