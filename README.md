@@ -82,6 +82,15 @@ is ignored and the OS is followed.
   in both themes.
 - The Monaco editor uses `vs` or `vs-dark` from `useTheme()`; switching restyles the open
   editor without remounting it, so typed code stays.
+- Shape, depth and motion (full scales in `docs/ui-restyle.md`, next to this repo's folder):
+  `rounded` (4 px) for controls, chips, badges and code values, `rounded-lg` (8 px) for cards,
+  panels and drawings. In dark mode `surface` is one step above `paper`. A shadow is only for
+  floating things (account menu, skip link) and uses `shadow-(--float-shadow)`, a plain `:root`
+  variable redefined in `.dark`, not a `@theme` value, because Tailwind would bake the light
+  value into the utility. Every animation or transition in a component is behind `motion-safe:`:
+  nothing moves under `prefers-reduced-motion`, nothing loops, nothing autoplays. A base rule in
+  `src/index.css` gives links, buttons, selects and inputs a short colour transition, only when
+  motion is allowed and never inside Monaco.
 
 ## Languages (English and Arabic)
 
@@ -213,6 +222,12 @@ Visualizations are translated too; their drawings stay left to right.
   and (when logged in) solved status, all applied in the browser; "Showing X of Y" is
   announced with `aria-live`. Below `md` the rows become cards. `/challenges/:slug` solves one
   problem, with links back to the list and to its lesson.
+
+On the home page each lesson row shows difficulty bars (the hardest problem of the lesson) and,
+when logged in, a solved check. Both come from the existing `GET /api/challenges` response
+(`lesson_slug`, `difficulty`, `solved`); there is no backend change. In a problem statement, a
+line that is only Input, Output or Constraints (`~Input~` etc. in Arabic) renders as a small
+heading at the examples' level (h2 on the challenge page, h3 in a lesson). Display only.
 
 `src/components/ProblemSolver.tsx` holds the statement, examples, language picker, editor,
 Submit and result for one problem. The lesson page uses it through `ProblemCard` (which adds
@@ -346,7 +361,9 @@ Each visualization's steps come from a pure function that takes the translate fu
 its last argument (README "Languages"). The player components share
 `usePlayback.ts` (state and timer) and `PlaybackControls.tsx` (Play/Pause, step buttons,
 Reset, step counter, `SpeedSelect`, `buttonClass`). No charting or animation library is
-used.
+used. The progress track in `PlaybackControls` is hidden from screen readers ("Step n of m"
+says the same). Legend swatches must use the same classes as the real cells. A drawing wider
+than its box uses `useScrollCue` (`src/visuals/useScrollCue.ts`) with the `scroll-fade` utility.
 
 Frame design decisions:
 

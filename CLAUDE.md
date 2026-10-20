@@ -23,6 +23,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Only the token, `theme`, `lang` in `localStorage` (try/catch). No `dangerouslySetInnerHTML`.
 - Themes (README "Themes"): toggle, `src/theme.ts` + inline script in `index.html`. Tokens in
   `src/index.css`, other colors need `dark:`. Text 4.5:1, borders/shapes 3:1, both themes.
+- Restyle (docs/ui-restyle.md outside the repo): radius 4/8 px, shadow only on floating things
+  (--float-shadow), motion only behind motion-safe:, Icons.tsx and EmptyState.tsx shared.
 - English/Arabic (README "Languages"): no literal UI text; `t()` with keys in `en.json`/`ar.json`,
   visuals in lazy `visuals.en.json`/`.ar.json`, `admin.*` in `en.json` only. Whole sentences, six
   Arabic plural forms. Frame functions take `t` last. Arabic marks terms `~term~`, values
