@@ -47,10 +47,11 @@ Put these in `.env` (copy `.env.example`; `.env` is not committed):
 - `VITE_API_URL` — base URL of the backend, default `http://localhost:8000`. The app
   calls `${VITE_API_URL}/api/...`.
 
-Only the auth token, the theme choice (`theme`) and the language choice (`lang`) are stored
-in `localStorage`, every read and write in `try`/`catch`. With storage blocked the app still
-loads (logged out) and follows the OS theme and the browser language; both toggles still
-switch the current page view. Neither choice is sent to the server.
+Only the auth token, the theme choice (`theme`), the language choice (`lang`) and the sound
+choice (`sound`) are stored in `localStorage`, every read and write in `try`/`catch`. With
+storage blocked the app still loads (logged out) and follows the OS theme and the browser
+language, with sound off; the toggles still switch the current page view. No choice is sent to
+the server.
 
 ## Themes
 
@@ -91,6 +92,38 @@ is ignored and the OS is followed.
   nothing moves under `prefers-reduced-motion`, nothing loops, nothing autoplays. A base rule in
   `src/index.css` gives links, buttons, selects and inputs a short colour transition, only when
   motion is allowed and never inside Monaco.
+
+## Sound
+
+Sound effects are off by default. `src/sound.ts` makes them with the Web Audio API (an
+oscillator and a short gain envelope): no audio files, no dependency. All pitches, lengths and
+volumes are in one commented constants block at the top: `MASTER` (0.08, so no peak gain is
+above 0.08), `ATTACK`, `STEP_MIN_GAP_MS` (120 ms throttle for the step tick) and a `NOTES`
+table per sound. It exports `play(sound)`, `setSoundOn(on)` and `useSoundOn()`.
+
+- The choice is stored under `sound` (`on` or `off`), every read and write in `try`/`catch`.
+  With storage blocked it works for the page and reads as off after a reload.
+- One `AudioContext`, created lazily and only in a user gesture: a capture-phase
+  `pointerdown`/`keydown` listener creates or resumes it only when sound is on, and turning
+  sound on (a click) creates it. Never at page load; nothing autoplays. `play()` does nothing
+  unless sound is on, the context is running and the document is visible. It never creates a
+  context, and failures are silent.
+- Sounds: `pass` (rising two notes), `passPoints` (the same plus a bright top note, when points
+  were earned), `fail` (soft low falling two notes), `error` (one low soft blip, also for
+  compile errors and timeouts), `step` (very quiet tick for each visualization step between the
+  first and the last; silent on reset and at the first step), `finish` (small chime on reaching
+  the last step going forward) and `toggle` (a tick only when the user turns sound on).
+- A sound is never the only signal: each goes with something already visible and announced (the
+  result panel's live summary, the step text and "Step n of m"). No sound for typing, page
+  loads, hover or navigation.
+- Hook-ins: `ProblemSolver.handleSubmit` plays pass, passPoints, fail or error when a result
+  arrives; `usePlayback` plays step and finish when the step changes.
+- The toggle (`SoundToggle` in `src/components/Layout.tsx`) is a 44 px button with
+  `aria-pressed` and the name "Sound effects" (`sound.label`). From `lg` (1024 px) it sits next
+  to the theme and language buttons; below `lg` it is a labelled button in a small footer, and
+  on phones, when logged in, it is in the account menu instead. In the header it made the
+  logged-out Arabic header 3 rows at 360 and 375 px and the logged-in header 2 rows at 768 px;
+  placed like this, header heights are unchanged at every width measured (360 to 1024).
 
 ## Languages (English and Arabic)
 

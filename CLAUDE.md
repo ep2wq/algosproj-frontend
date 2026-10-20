@@ -20,7 +20,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Visualizations: `src/visuals/index.ts` maps a lesson slug to a lazy component. Steps are
   pure "frames" functions; `usePlayback` + `PlaybackControls` are shared. No chart library.
 - `VITE_API_URL` in `.env` (default `http://localhost:8000`); a build arg in the Dockerfile.
-- Only the token, `theme`, `lang` in `localStorage` (try/catch). No `dangerouslySetInnerHTML`.
+- Only the token, `theme`, `lang`, `sound` in `localStorage` (try/catch). No `dangerouslySetInnerHTML`.
+- Sound (README "Sound"): `src/sound.ts`, off by default, one AudioContext made only in a user gesture, tune the constants block at the top; never the only signal.
 - Themes (README "Themes"): toggle, `src/theme.ts` + inline script in `index.html`. Tokens in
   `src/index.css`, other colors need `dark:`. Text 4.5:1, borders/shapes 3:1, both themes.
 - Restyle (docs/ui-restyle.md outside the repo): radius 4/8 px, shadow only on floating things
