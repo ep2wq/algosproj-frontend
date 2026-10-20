@@ -3,6 +3,7 @@ import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth'
 import { setLanguage } from '../i18n'
+import { setSoundOn, useSoundOn } from '../sound'
 import { toggleTheme, useTheme } from '../theme'
 
 // Taller on a phone, where they are tapped, and narrower so the logo and links share a row at 360 px.
@@ -29,6 +30,32 @@ function ThemeToggle() {
           <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
         </svg>
       )}
+    </button>
+  )
+}
+
+// Sound effects, off until switched on. A toggle button: the name stays the same and aria-pressed
+// says whether sound is on; the icon shows the current state. Next to the theme and language buttons
+// from lg up. Below that the header has no room for it (logged-out Arabic would take 3 rows on a phone,
+// a logged-in header 2 rows at 768 px), so it is in the footer with its name shown, or in the account
+// menu on a phone when logged in.
+function SoundToggle({ className = toggleClass, showLabel = false }: { className?: string; showLabel?: boolean }) {
+  const { t } = useTranslation()
+  const on = useSoundOn()
+
+  return (
+    <button
+      type="button"
+      onClick={() => setSoundOn(!on)}
+      aria-pressed={on}
+      aria-label={showLabel ? undefined : t('sound.label')}
+      className={`${className} aria-pressed:text-accent`}
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M11 5 6 9H3v6h3l5 4z" />
+        {on ? <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /> : <path d="m16 9 5 6M21 9l-5 6" />}
+      </svg>
+      {showLabel && <span className="ms-2">{t('sound.label')}</span>}
     </button>
   )
 }
@@ -108,6 +135,7 @@ function AccountMenu({ name, staff, onLogOut }: { name: string; staff: boolean; 
         <p dir="auto" className="break-words px-3 py-2 font-medium text-ink">
           {name}
         </p>
+        <SoundToggle className={item} showLabel />
         {staff && (
           <Link to="/admin" onClick={() => setOpen(false)} className={item}>
             {t('nav.admin')}
@@ -185,6 +213,7 @@ export default function Layout() {
           <div className="ms-auto flex flex-wrap items-center gap-2 text-sm sm:gap-3">
             <div className="flex items-center">
               <ThemeToggle />
+              <SoundToggle className={toggleClass.replace('inline-flex', 'hidden lg:inline-flex')} />
               <LanguageToggle />
             </div>
             {loading ? null : user ? (
@@ -237,6 +266,14 @@ export default function Layout() {
       <main id="main" tabIndex={-1} className="mx-auto max-w-5xl px-4 py-8 focus:outline-none">
         <Outlet />
       </main>
+      {/* Below lg the sound switch has no room in the header; a logged-in phone has it in the account menu. */}
+      {!loading && (
+        <footer className={`border-t border-line px-4 py-2 lg:hidden ${user ? 'hidden sm:block' : ''}`}>
+          <div className="mx-auto max-w-5xl">
+            <SoundToggle className="inline-flex min-h-11 items-center rounded px-2 text-sm text-muted hover:text-accent" showLabel />
+          </div>
+        </footer>
+      )}
     </div>
   )
 }

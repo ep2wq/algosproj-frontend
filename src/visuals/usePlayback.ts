@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { play } from '../sound'
 
 // Milliseconds per step.
 export const SPEEDS = { slow: 1200, normal: 600, fast: 250 }
@@ -20,6 +21,16 @@ export function usePlayback(frameCount: number) {
     }, SPEEDS[speed])
     return () => clearTimeout(timer)
   }, [playing, step, lastStep, speed])
+
+  // A quiet tick for each step between the first and the last, and a chime on reaching the last one
+  // going forward. Silent on reset and at the first step. The step text and counter already say it.
+  const shownStep = useRef(step)
+  useEffect(() => {
+    if (step === shownStep.current) return
+    if (step === lastStep && step > shownStep.current) play('finish')
+    else if (step > 0 && step < lastStep) play('step')
+    shownStep.current = step
+  }, [step, lastStep])
 
   function togglePlay() {
     if (playing) {

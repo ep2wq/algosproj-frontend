@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ApiError, LANGUAGES, submitSolution, type Language, type Problem, type SubmitResult } from '../api'
 import { useAuth } from '../auth'
+import { play } from '../sound'
 import { useTheme } from '../theme'
 import { LANGUAGE_LABELS, STARTER_CODE } from '../starters'
 import Content from './Content'
@@ -48,6 +49,8 @@ export default function ProblemSolver({
       const submitted = await submitSolution(problem.id, language, code[language])
       setResult(submitted)
       setAttempt((count) => count + 1)
+      // The result panel shows and announces the same outcome; the sound only accompanies it.
+      play(submitted.status === 'passed' ? (submitted.points_awarded > 0 ? 'passPoints' : 'pass') : submitted.status === 'failed' ? 'fail' : 'error')
       if (submitted.status === 'passed') {
         // Update the points in the header.
         refreshUser().catch(() => {})
