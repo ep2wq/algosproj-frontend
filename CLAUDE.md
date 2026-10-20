@@ -33,9 +33,10 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 ## Working rules
 
-- Keep code simple. Don't add abstractions, patterns or dependencies I didn't ask for. Don't do
-  extra work beyond the request. If you spot something worth fixing, mention it instead of
-  changing it. Ask before adding a new dependency.
+- Keep code simple. Don't add abstractions, patterns or dependencies I didn't ask for.
+- Don't do extra work beyond the request. If you spot something worth fixing, mention it
+  instead of changing it.
+- Ask before adding a new dependency.
 - Never add Co-Authored-By or Claude-Session lines, or any other attribution, to commit
   messages or PR descriptions. ep2wq is the only author.
 
@@ -43,7 +44,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 - At the start of a session, read this file and "Current status" before anything else.
 - Before ending a session, or when I say we're done, rewrite "Current status" to match
-  reality (don't append). Remove finished or untrue items; keep the file under 60 lines.
+  reality (don't append). Remove finished or untrue items; keep the file concise.
 - Only record facts you verified in the repo or that I told you. Don't guess.
 - Update the other sections of this file too if something in them became wrong.
 - Don't commit the CLAUDE.md update unless I ask. Tell me it changed.
