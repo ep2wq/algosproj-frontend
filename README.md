@@ -205,6 +205,10 @@ Visualizations are translated too; their drawings stay left to right.
   Unknown paths show "Page not found".
   `Layout` starts with a "Skip to content" link (`nav.skipToContent`), visible only on keyboard
   focus, that jumps to `<main id="main">`.
+  Below `sm`, a logged-in user gets an account button (`nav.account`) in the header. It opens a
+  panel with the full name (`dir="auto"`), the Admin link (staff only) and Log out. It is a
+  disclosure (`aria-expanded`, `aria-controls`), not a `role="menu"`. Escape, a click outside
+  or focus leaving closes it, and a route change closes it. From `sm` up the header is unchanged.
 - `/challenges` every problem in one list: search by title, filters for difficulty, topic
   and (when logged in) solved status, all applied in the browser; "Showing X of Y" is
   announced with `aria-live`. Below `md` the rows become cards. `/challenges/:slug` solves one

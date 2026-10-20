@@ -33,10 +33,9 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 ## Working rules
 
-- Keep code simple. Don't add abstractions, patterns or dependencies I didn't ask for.
-- Don't do extra work beyond the request. If you spot something worth fixing, mention it
-  instead of changing it.
-- Ask before adding a new dependency.
+- Keep code simple. Don't add abstractions, patterns or dependencies I didn't ask for. Don't do
+  extra work beyond the request. If you spot something worth fixing, mention it instead of
+  changing it. Ask before adding a new dependency.
 - Never add Co-Authored-By or Claude-Session lines, or any other attribution, to commit
   messages or PR descriptions. ep2wq is the only author.
 
@@ -56,5 +55,6 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Decisions: oxlint. Lint/build pass. A 401 with a token (not login/register/logout), or a
   403 with `reason`, clears it; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.
+  Phones: `AccountMenu` (`Layout.tsx`) holds name, Admin, Log out; a disclosure, not role="menu".
 - Gotchas: Monaco loads from jsDelivr at runtime. Vite must run on port 5173 (CORS). One-line
   lint disables: `react/only-export-components` (auth.tsx), `react/static-components`.
