@@ -33,6 +33,7 @@ export default function ProblemSolver({
   const [result, setResult] = useState<SubmitResult | null>(null)
 
   const languageId = `language-${problem.id}`
+  const hintId = `editor-hint-${problem.id}`
 
   async function handleSubmit() {
     setBusy(true)
@@ -71,13 +72,13 @@ export default function ProblemSolver({
                 <div className="min-w-0">
                   <dt className="text-xs text-muted">{t('solver.input')}</dt>
                   <dd>
-                    <pre dir="ltr" lang="en" className="mt-0.5 overflow-x-auto whitespace-pre-wrap font-mono text-sm">{testCase.input}</pre>
+                    <pre dir="ltr" lang="en" className="mt-0.5 w-fit max-w-full overflow-x-auto whitespace-pre-wrap font-mono text-sm">{testCase.input}</pre>
                   </dd>
                 </div>
                 <div className="min-w-0">
                   <dt className="text-xs text-muted">{t('solver.expectedOutput')}</dt>
                   <dd>
-                    <pre dir="ltr" lang="en" className="mt-0.5 overflow-x-auto whitespace-pre-wrap font-mono text-sm">{testCase.expected_output}</pre>
+                    <pre dir="ltr" lang="en" className="mt-0.5 w-fit max-w-full overflow-x-auto whitespace-pre-wrap font-mono text-sm">{testCase.expected_output}</pre>
                   </dd>
                 </div>
               </dl>
@@ -113,6 +114,8 @@ export default function ProblemSolver({
           theme={dark ? 'vs-dark' : 'vs'}
           value={code[language]}
           onChange={(value) => setCode((current) => ({ ...current, [language]: value ?? '' }))}
+          // Screen readers read the Tab hint with the editor.
+          onMount={(editor) => editor.getDomNode()?.querySelector('textarea, .native-edit-context')?.setAttribute('aria-describedby', hintId)}
           loading={<p className="p-4 text-sm text-muted">{t('solver.loadingEditor')}</p>}
           options={{
             ariaLabel: t('solver.editorLabel', { language: LANGUAGE_LABELS[language], title: problem.title }),
@@ -124,6 +127,9 @@ export default function ProblemSolver({
           }}
         />
       </div>
+      <p id={hintId} className="mt-1 text-sm text-muted">
+        <TextWithCode text={t('solver.tabHint')} />
+      </p>
       {language === 'java' && (
         <p className="mt-1 text-sm text-muted">
           <TextWithCode text={t('solver.javaMain')} />

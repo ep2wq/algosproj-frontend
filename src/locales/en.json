@@ -91,6 +91,7 @@
     "loadingEditor": "Loading editor...",
     "editorLabel": "{{language}} code for {{title}}",
     "javaMain": "The Java class must be named Main.",
+    "tabHint": "Tab types a tab. Press Ctrl+M (Mac: Ctrl+Shift+M) to move focus with Tab.",
     "submit": "Submit",
     "running": "Running tests...",
     "logInToSubmit": "Log in to submit"
