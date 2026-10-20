@@ -41,7 +41,16 @@ function StatusIcon({ status }: { status: SubmitStatus }) {
   return <AlertIcon />
 }
 
-export default function SubmitResultPanel({ result, attempt }: { result: SubmitResult; attempt: number }) {
+// heading is one level below the page's Examples heading (h3 on the challenge page, h4 in a lesson).
+export default function SubmitResultPanel({
+  result,
+  attempt,
+  heading: Heading,
+}: {
+  result: SubmitResult
+  attempt: number
+  heading: 'h3' | 'h4'
+}) {
   const { t } = useTranslation()
   const outcome = (passed: boolean) => (
     <span className={passed ? 'text-pass' : 'text-fail'}>{passed ? t('result.passed') : t('result.failed')}</span>
@@ -79,13 +88,14 @@ export default function SubmitResultPanel({ result, attempt }: { result: SubmitR
 
       {result.compile_error && (
         <div className="mt-4">
-          <h4 className="flex items-center gap-1.5 text-sm font-medium text-warn">
+          <Heading className="flex items-center gap-1.5 text-sm font-medium text-warn">
             <AlertIcon />
             <span>
               <TextWithCode text={t('result.compileError')} />
             </span>
-          </h4>
-          <pre dir="ltr" lang="en" className="mt-1 overflow-x-auto whitespace-pre-wrap rounded bg-paper p-3 font-mono text-sm text-ink">
+          </Heading>
+          {/* Not wrapped, so the ^ markers stay under the code they point at; focusable to scroll. */}
+          <pre tabIndex={0} dir="ltr" lang="en" className="mt-1 overflow-x-auto whitespace-pre rounded bg-paper p-3 font-mono text-sm text-ink">
             {result.compile_error}
           </pre>
         </div>
@@ -94,7 +104,7 @@ export default function SubmitResultPanel({ result, attempt }: { result: SubmitR
       {result.results.length > 0 && (
         <ol className="mt-4 space-y-2">
           {result.results.map((test, index) => (
-            <li key={index} className="flex gap-2.5 rounded-lg border border-line px-3 py-2">
+            <li key={index} className={`flex gap-2.5 rounded-lg border px-3 py-2 ${test.passed ? 'border-line' : 'border-fail/30 bg-fail/5'}`}>
               <span className={`mt-0.5 shrink-0 ${test.passed ? 'text-pass' : 'text-fail'}`}>
                 {test.passed ? <CheckIcon /> : <CrossIcon />}
               </span>
@@ -110,7 +120,7 @@ export default function SubmitResultPanel({ result, attempt }: { result: SubmitR
                       <Output label={t('result.actual')} value={test.actual} />
                     </dl>
                     {test.error && (
-                      <pre dir="ltr" lang="en" className="mt-2 overflow-x-auto whitespace-pre-wrap rounded bg-fail/5 p-2 font-mono text-sm text-fail">
+                      <pre tabIndex={0} dir="ltr" lang="en" className="mt-2 overflow-x-auto whitespace-pre rounded bg-fail/5 p-2 font-mono text-sm text-fail">
                         {test.error}
                       </pre>
                     )}

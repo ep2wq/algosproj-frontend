@@ -186,7 +186,7 @@ export default function ProblemSolver({
         )}
       </div>
 
-      {result && <SubmitResultPanel result={result} attempt={attempt} />}
+      {result && <SubmitResultPanel result={result} attempt={attempt} heading={ExamplesHeading === 'h2' ? 'h3' : 'h4'} />}
     </>
   )
 }
