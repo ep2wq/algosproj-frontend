@@ -10,7 +10,8 @@ type TextAreaFieldProps = {
   lang?: string
 }
 
-// A labelled monospace textarea with the server's errors under it, like Field.
+// A labelled monospace textarea (the normal font for Arabic fields) with the server's errors
+// under it, like Field.
 export default function TextAreaField({ id, label, value, onChange, rows = 4, errors, dir, lang }: TextAreaFieldProps) {
   const errorId = `${id}-error`
   const hasError = Boolean(errors && errors.length > 0)
@@ -31,7 +32,7 @@ export default function TextAreaField({ id, label, value, onChange, rows = 4, er
         spellCheck={false}
         aria-invalid={hasError}
         aria-describedby={hasError ? errorId : undefined}
-        className={`mt-1 block w-full rounded border bg-surface px-3 py-2 font-mono text-sm text-ink ${
+        className={`mt-1 block w-full rounded border bg-surface px-3 py-2 text-sm text-ink ${lang === 'ar' ? '' : 'font-mono'} ${
           hasError ? 'border-fail' : 'border-field hover:border-muted'
         }`}
       />

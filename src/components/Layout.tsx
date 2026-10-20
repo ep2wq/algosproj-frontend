@@ -108,20 +108,24 @@ export default function Layout() {
               </>
             ) : (
               <>
-                <Link
+                <NavLink
                   to="/login"
                   state={{ from: location }}
-                  className="rounded px-2 py-1 text-muted hover:text-accent"
+                  className={({ isActive }) =>
+                    `rounded px-2 py-1 hover:text-accent ${isActive ? 'font-medium text-ink' : 'text-muted'}`
+                  }
                 >
                   {t('nav.logIn')}
-                </Link>
-                <Link
+                </NavLink>
+                <NavLink
                   to="/register"
                   state={{ from: location }}
-                  className="rounded border border-accent px-3 py-1 text-accent hover:bg-accent-soft"
+                  className={({ isActive }) =>
+                    `rounded border border-accent px-3 py-1 text-accent hover:bg-accent-soft ${isActive ? 'bg-accent-soft font-medium' : ''}`
+                  }
                 >
                   {t('nav.register')}
-                </Link>
+                </NavLink>
               </>
             )}
           </div>

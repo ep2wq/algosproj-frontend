@@ -1,10 +1,8 @@
-import { formatDateTime } from '../../i18n'
-
 // Shared by the admin user, audit log and activity pages.
 
-// The admin area is English; Gregorian dates with Western digits, as everywhere.
+// The admin area is English; local time as 2026-10-20 01:03:42 (the sv-SE format).
 export function formatTime(iso: string): string {
-  return formatDateTime(iso, 'en')
+  return new Date(iso).toLocaleString('sv-SE')
 }
 
 // The activity events; each one's label is the key admin.events.<event>.

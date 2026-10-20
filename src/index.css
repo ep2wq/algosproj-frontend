@@ -51,6 +51,12 @@ body {
     text-align: inherit;
   }
 
+  /* Placeholders use the muted token (4.5:1 in both themes); Tailwind's default is the text at 50%. */
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-muted);
+  }
+
   :root[lang='ar'] {
     line-height: 1.75;
     --text-xs--line-height: 1.7;

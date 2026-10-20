@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-// Previous / Next for a paginated list, with "Page X of Y".
+// Previous / Next for a paginated list, with "Page X of Y". Hidden for a single page.
 export default function Pagination({
   page,
   lastPage,
@@ -14,7 +14,9 @@ export default function Pagination({
 }) {
   const { t } = useTranslation()
   const buttonClass =
-    'rounded border border-line bg-surface px-3 py-1 text-sm hover:border-muted disabled:cursor-not-allowed disabled:opacity-60'
+    'rounded border border-field bg-surface px-3 py-1 text-sm hover:border-muted disabled:cursor-not-allowed disabled:opacity-60'
+
+  if (lastPage <= 1) return null
 
   return (
     <nav aria-label={t('admin.pagination.label')} className="mt-4 flex flex-wrap items-center gap-3">

@@ -188,7 +188,7 @@ export default function ChallengesPage() {
               type="button"
               onClick={clearFilters}
               disabled={!filtered}
-              className="rounded border border-line bg-surface px-3 py-1 text-sm hover:border-muted disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded border border-field bg-surface px-3 py-1 text-sm hover:border-muted disabled:cursor-not-allowed disabled:opacity-60"
             >
               {t('challenges.clearFilters')}
             </button>

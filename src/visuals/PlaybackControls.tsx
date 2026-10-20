@@ -5,7 +5,7 @@ import type { Speed, usePlayback } from './usePlayback'
 
 type Playback = ReturnType<typeof usePlayback>
 
-export const buttonClass = 'rounded border border-line bg-surface px-3 py-1.5 text-sm hover:border-muted aria-disabled:cursor-not-allowed aria-disabled:opacity-50'
+export const buttonClass = 'rounded border border-field bg-surface px-3 py-1.5 text-sm hover:border-muted aria-disabled:cursor-not-allowed aria-disabled:opacity-50'
 
 export function SpeedSelect({ playback }: { playback: Playback }) {
   const { t } = useTranslation('visuals')

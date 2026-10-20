@@ -108,7 +108,7 @@
     "loadingEditor": "جارٍ تحميل المحرر...",
     "editorLabel": "كود {{language}} لمسألة {{title}}",
     "javaMain": "يجب أن يكون اسم الـ~class~ في ~Java~ هو `Main`.",
-    "tabHint": "مفتاح `Tab` يكتب مسافة جدولة. اضغط `Ctrl+M` (على ~Mac~: `Ctrl+Shift+M`) لينقل `Tab` التركيز بين عناصر الصفحة.",
+    "tabHint": "مفتاح `Tab` يضيف مسافة بادئة. اضغط `Ctrl+M` (على ~Mac~: `Ctrl+Shift+M`) ليصبح `Tab` ينقل التركيز بين عناصر الصفحة.",
     "submit": "إرسال",
     "running": "جارٍ تشغيل الاختبارات...",
     "logInToSubmit": "سجّل الدخول للإرسال"
