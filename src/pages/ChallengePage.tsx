@@ -67,7 +67,7 @@ export default function ChallengePage() {
 
   return (
     <div>
-      <Link to="/challenges" className="rounded text-sm text-muted hover:text-accent">
+      <Link to="/challenges" className="inline-block rounded py-1 text-sm text-muted hover:text-accent">
         {t('challenge.back')}
       </Link>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">

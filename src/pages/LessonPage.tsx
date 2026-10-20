@@ -61,7 +61,7 @@ export default function LessonPage() {
 
   return (
     <div>
-      <Link to="/" className="rounded text-sm text-muted hover:text-accent">
+      <Link to="/" className="inline-block rounded py-1 text-sm text-muted hover:text-accent">
         {t('lesson.allLessons')}
       </Link>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">

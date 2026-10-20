@@ -4,8 +4,9 @@ import { useAuth } from '../auth'
 import { setLanguage } from '../i18n'
 import { toggleTheme, useTheme } from '../theme'
 
+// Taller on a phone, where they are tapped.
 const navLink = ({ isActive }: { isActive: boolean }) =>
-  `rounded px-2 py-1 hover:text-accent ${isActive ? 'text-ink font-medium' : 'text-muted'}`
+  `rounded px-2 py-2 sm:py-1 hover:text-accent ${isActive ? 'text-ink font-medium' : 'text-muted'}`
 
 // 44 px touch targets, like the rest of the header controls on a phone.
 const toggleClass = 'inline-flex min-h-11 min-w-11 items-center justify-center rounded px-2 text-muted hover:text-accent'
@@ -53,12 +54,12 @@ export default function Layout() {
   return (
     <div className="min-h-screen">
       <header className="border-b border-line bg-surface">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 sm:py-3">
           {/* The name is English (and Latin script) in both languages. */}
           <Link to="/" lang="en" className="rounded text-lg font-semibold tracking-tight text-ink">
             AlgosProj
           </Link>
-          <nav aria-label={t('nav.main')} className="flex items-center gap-1 text-sm">
+          <nav aria-label={t('nav.main')} className="flex flex-wrap items-center gap-1 text-sm">
             <NavLink to="/" end className={navLink}>
               {t('nav.lessons')}
             </NavLink>
@@ -74,8 +75,9 @@ export default function Layout() {
               </NavLink>
             )}
           </nav>
-          {/* Wraps on narrow screens, so the toggles never push the page sideways. */}
-          <div className="ms-auto flex flex-wrap items-center gap-3 text-sm">
+          {/* Wraps on narrow screens, so the toggles never push the page sideways. On a phone the
+              name is hidden, so the points and Log out fit on the toggles' row. */}
+          <div className="ms-auto flex flex-wrap items-center gap-2 text-sm sm:gap-3">
             <div className="flex items-center">
               <ThemeToggle />
               <LanguageToggle />
@@ -83,8 +85,10 @@ export default function Layout() {
             {loading ? null : user ? (
               <>
                 <span className="text-ink">
-                  <span dir="auto">{user.name}</span>{' '}
-                  <span className="ms-1 rounded bg-accent-soft px-1.5 py-0.5 text-accent tabular-nums">
+                  <span dir="auto" className="hidden sm:inline">
+                    {user.name}
+                  </span>{' '}
+                  <span className="rounded sm:ms-1 bg-accent-soft px-1.5 py-0.5 text-accent tabular-nums">
                     {t('header.points', { count: user.points })}
                   </span>
                 </span>
