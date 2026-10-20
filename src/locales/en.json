@@ -50,7 +50,10 @@
       "basics": "Basics",
       "data-structures": "Data structures",
       "algorithms": "Algorithms"
-    }
+    },
+    "welcome": "Learn data structures and algorithms one idea at a time.",
+    "lessonCount_one": "{{count}} lesson",
+    "lessonCount_other": "{{count}} lessons"
   },
   "lesson": {
     "loading": "Loading lesson...",

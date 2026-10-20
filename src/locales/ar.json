@@ -58,7 +58,14 @@
       "basics": "الأساسيات",
       "data-structures": "هياكل البيانات",
       "algorithms": "الخوارزميات"
-    }
+    },
+    "welcome": "تعلّم هياكل البيانات والخوارزميات فكرةً تلو الأخرى.",
+    "lessonCount_zero": "لا توجد دروس",
+    "lessonCount_one": "درس واحد",
+    "lessonCount_two": "درسان",
+    "lessonCount_few": "{{count}} دروس",
+    "lessonCount_many": "{{count}} درسًا",
+    "lessonCount_other": "{{count}} درس"
   },
   "lesson": {
     "loading": "جارٍ تحميل الدرس...",

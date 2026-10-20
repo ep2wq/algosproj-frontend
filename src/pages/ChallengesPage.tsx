@@ -5,6 +5,8 @@ import { ApiError, getChallenges, type ChallengeSummary } from '../api'
 import { useAuth } from '../auth'
 import Content from '../components/Content'
 import DifficultyBadge from '../components/DifficultyBadge'
+import EmptyState from '../components/EmptyState'
+import { CheckIcon } from '../components/Icons'
 import { textLang } from '../textLang'
 
 const DIFFICULTIES = ['easy', 'medium', 'hard']
@@ -16,8 +18,8 @@ const controlClass = 'mt-1 w-full rounded border border-field bg-surface px-2 py
 function SolvedMark({ solved }: { solved: boolean }) {
   const { t } = useTranslation()
   return solved ? (
-    <span className="text-pass">
-      <span aria-hidden="true">✓</span>
+    <span className="inline-flex text-pass">
+      <CheckIcon />
       <span className="sr-only">{t('common.solved')}</span>
     </span>
   ) : (
@@ -108,8 +110,8 @@ export default function ChallengesPage() {
           </button>
         </div>
       )}
-      {!error && challenges === null && <p className="mt-6 text-muted">{t('challenges.loading')}</p>}
-      {challenges !== null && challenges.length === 0 && <p className="mt-6 text-muted">{t('challenges.empty')}</p>}
+      {!error && challenges === null && <p className="mt-6 text-muted motion-safe:animate-appear motion-safe:[animation-delay:300ms]">{t('challenges.loading')}</p>}
+      {challenges !== null && challenges.length === 0 && <EmptyState>{t('challenges.empty')}</EmptyState>}
 
       {challenges !== null && challenges.length > 0 && (
         <>
@@ -197,16 +199,14 @@ export default function ChallengesPage() {
           </div>
 
           {shown.length === 0 ? (
-            <p className="mt-4 rounded-lg border border-line bg-surface px-4 py-6 text-center text-muted">
-              {t('challenges.noMatch')}
-            </p>
+            <EmptyState className="mt-4">{t('challenges.noMatch')}</EmptyState>
           ) : (
             <>
               {/* Cards on narrow screens, a table from md up. */}
               <ul className="mt-4 divide-y divide-line rounded-lg border border-line bg-surface md:hidden">
                 {shown.map((challenge) => (
                   <li key={challenge.slug} className="px-4 py-3">
-                    <div className="flex items-baseline gap-2">
+                    <div className="flex items-center gap-2">
                       {user && <SolvedMark solved={challenge.solved} />}
                       <Link to={`/challenges/${challenge.slug}`} className="rounded font-medium text-accent hover:underline">
                         <Content lang="auto">{challenge.title}</Content>
@@ -246,7 +246,7 @@ export default function ChallengesPage() {
                   </thead>
                   <tbody className="divide-y divide-line">
                     {shown.map((challenge) => (
-                      <tr key={challenge.slug}>
+                      <tr key={challenge.slug} className="hover:bg-paper">
                         {user && (
                           <td className="px-4 py-2">
                             <SolvedMark solved={challenge.solved} />
