@@ -23,12 +23,12 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Only the token, `theme`, `lang` in `localStorage` (try/catch). No `dangerouslySetInnerHTML`.
 - Themes (README "Themes"): toggle, `src/theme.ts` + inline script in `index.html`. Tokens in
   `src/index.css`, other colors need `dark:`. Text 4.5:1, borders/shapes 3:1, both themes.
-- English/Arabic (README "Languages"): no literal UI text anywhere; `t()` with keys in
-  `en.json`/`ar.json`, visuals in the lazy `visuals` namespace (`visuals.en.json`/`.ar.json`),
-  `admin.*` in `en.json` only. Whole sentences, six Arabic plural forms. Frame functions take
-  `t` last. Arabic marks terms `~term~` and values `` `code` `` (shown by `TextWithCode`).
-  Course text via `Content` (`*_lang`, titles `lang="auto"`). Code, drawings, data inputs,
-  emails, `/admin/*` stay LTR. Logical Tailwind classes; Western digits; `formatDateTime`.
+- English/Arabic (README "Languages"): no literal UI text; `t()` with keys in `en.json`/`ar.json`,
+  visuals in lazy `visuals.en.json`/`.ar.json`, `admin.*` in `en.json` only. Whole sentences, six
+  Arabic plural forms. Frame functions take `t` last. Arabic marks terms `~term~`, values
+  `` `code` `` (`TextWithCode`: code plus touching text in one `inline-block`). Course text via
+  `Content` (`*_lang`, titles `lang="auto"`). Code, drawings, data inputs, emails, `/admin/*`
+  stay LTR. Logical Tailwind; Western digits; `formatDateTime`. `<title>`: `titles.page`; skip link.
 - Commands: `npm install`, `npm run dev`, `npm run build`, `npm run lint` (oxlint + `check:i18n`).
 
 ## Working rules

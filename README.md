@@ -139,7 +139,11 @@ Visualizations are translated too; their drawings stay left to right.
   Arabic first, otherwise English. After the first click the choice is stored under `lang`
   (`en` or `ar`) and wins. `lang` and `dir` on `<html>` change live, and the inline script in
   `index.html` sets them before the first paint, so an Arabic page never flashes left to
-  right. The app does not set `document.title` (it stays "AlgosProj").
+  right. Every page renders a React `<title>` (hoisted into `<head>`) from `titles.page`
+  ("{{name}} · AlgosProj"), where the name is the page heading's key or the lesson's or
+  challenge's own title; `AuthForm` sets it for login and register. The admin area has one
+  fixed English title (`admin.pageTitle`, in `AdminRoute`). Titles follow the language
+  change. `index.html` keeps "AlgosProj" until the app loads.
 - **Layout:** Tailwind's logical classes only (`ms-`/`me-`, `ps-`/`pe-`, `start-`/`end-`,
   `text-start`/`text-end`, `border-s`/`border-e`, `rounded-s`/`rounded-e`), never `ml-`,
   `pr-`, `left-`, `text-right` and the like, so the layout flips with `dir`. Where a logical
@@ -164,7 +168,10 @@ Visualizations are translated too; their drawings stay left to right.
   Arabic letters mean `ar`). Lists, headings and paragraphs follow that direction; code blocks
   stay LTR. `` `inline code` `` in lesson text and problem descriptions is a left-to-right
   isolate (`TextWithCode` in `LessonBody.tsx`), so expressions keep their order inside Arabic;
-  it wraps as one unit, with a word joiner keeping touching punctuation on its line.
+  each inline code part and the non-space text touching it (such as "(", ")." , "،" or "و")
+  share one `inline-block max-w-full` span, so a line never breaks between them, and a group
+  longer than the line wraps inside its own box. Text that would split a `~term~` marker
+  stays outside.
 - **English terms in Arabic text:** Arabic lessons keep technical terms in English as
   `~term~` markers (`الـ~array~` for the definite form). `splitTerms` in `src/lessonText.ts`
   finds them in prose only, after code blocks and inline code are split off, and `TextWithCode`
@@ -196,6 +203,8 @@ Visualizations are translated too; their drawings stay left to right.
 - `/` lessons grouped by track, `/lessons/:slug` lesson with editor and submit,
   `/login`, `/register`, `/leaderboard`, `/admin/*` (admins and owners, see "Admin area").
   Unknown paths show "Page not found".
+  `Layout` starts with a "Skip to content" link (`nav.skipToContent`), visible only on keyboard
+  focus, that jumps to `<main id="main">`.
 - `/challenges` every problem in one list: search by title, filters for difficulty, topic
   and (when logged in) solved status, all applied in the browser; "Showing X of Y" is
   announced with `aria-live`. Below `md` the rows become cards. `/challenges/:slug` solves one
