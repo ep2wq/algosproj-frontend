@@ -5,9 +5,9 @@ import { useAuth } from '../auth'
 import { setLanguage } from '../i18n'
 import { toggleTheme, useTheme } from '../theme'
 
-// Taller on a phone, where they are tapped.
+// Taller on a phone, where they are tapped, and narrower so the logo and links share a row at 360 px.
 const navLink = ({ isActive }: { isActive: boolean }) =>
-  `rounded px-2 py-2 sm:py-1 hover:text-accent ${isActive ? 'text-ink font-medium' : 'text-muted'}`
+  `rounded px-1 py-2 sm:px-2 sm:py-1 hover:text-accent ${isActive ? 'text-ink font-medium' : 'text-muted'}`
 
 // 44 px touch targets, like the rest of the header controls on a phone.
 const toggleClass = 'inline-flex min-h-11 min-w-11 items-center justify-center rounded px-2 text-muted hover:text-accent'
@@ -148,7 +148,7 @@ export default function Layout() {
         {t('nav.skipToContent')}
       </a>
       <header className="border-b border-line bg-surface">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 sm:py-3">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2 sm:gap-x-4 sm:py-3">
           {/* The name is English (and Latin script) in both languages. */}
           <Link to="/" lang="en" className="rounded text-lg font-semibold tracking-tight text-ink">
             AlgosProj
