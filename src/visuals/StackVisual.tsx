@@ -5,6 +5,7 @@ import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { bracketFrames, nextGreaterFrames, postfixError, postfixFrames, type StackFrame, type StackMode } from './stackFrames'
 import { usePlayback } from './usePlayback'
+import { useCentreCells, useScrollCue } from './useScrollCue'
 
 function randomInt(min: number, max: number) {
   return min + Math.floor(Math.random() * (max - min + 1))
@@ -125,6 +126,10 @@ export default function StackVisual({ mode }: { mode: StackMode }) {
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
+  const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
+  // With no position being read: the start before the first step, the end once there is a result.
+  const focusIndex = current.current ?? (current.result !== null ? current.items.length - 1 : 0)
+  useCentreCells(scrollRef, focusIndex, focusIndex, source)
 
   function restart(nextSource: string) {
     setSource(nextSource)
@@ -152,36 +157,44 @@ export default function StackVisual({ mode }: { mode: StackMode }) {
 
       <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start">
         <div
-          role="img"
-          aria-label={t(`stack.${mode}.itemsLabel`, { items: current.items.join(' ') || t('stack.none') })}
+          tabIndex={0}
+          role="region"
+          aria-label={t(`stack.${mode}.region`)}
           dir="ltr"
-          className="flex min-w-0 flex-1 flex-wrap gap-x-1.5 gap-y-3 rounded-lg border border-line bg-surface p-3"
+          ref={scrollRef}
+          className={`min-w-0 flex-1 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
         >
-          {current.items.length === 0 && <p className="text-sm text-muted">{t('stack.noCharacters')}</p>}
-          {current.items.map((item, index) => (
-            <div key={index} className="flex min-w-10 flex-col items-center">
-              <span className="h-4 text-xs font-semibold text-ink">{current.current === index ? 'i' : ''}</span>
-              <span
-                className={`mt-0.5 flex h-10 min-w-10 items-center justify-center rounded border-2 px-1 font-mono font-medium motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${itemStyle(current, index)}`}
-              >
-                {item}
-              </span>
-              <span className="mt-0.5 text-xs text-muted tabular-nums">{index}</span>
-              {showAnswers && (
+          <div
+            role="img"
+            aria-label={t(`stack.${mode}.itemsLabel`, { items: current.items.join(' ') || t('stack.none') })}
+            className="flex w-max gap-x-1.5"
+          >
+            {current.items.length === 0 && <p className="text-sm text-muted">{t('stack.noCharacters')}</p>}
+            {current.items.map((item, index) => (
+              <div key={index} data-index={index} className="flex min-w-10 flex-col items-center">
+                <span className="h-4 text-xs font-semibold text-ink">{current.current === index ? 'i' : ''}</span>
                 <span
-                  className={`mt-1 flex h-8 w-10 items-center justify-center rounded border text-sm tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
-                    current.filled.includes(index)
-                      ? 'border-pass bg-pass text-inverse'
-                      : current.answers![index] === null
-                        ? 'border-dashed border-line text-muted'
-                        : 'border-line bg-surface text-ink'
-                  }`}
+                  className={`mt-0.5 flex h-10 min-w-10 items-center justify-center rounded border-2 px-1 font-mono font-medium motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${itemStyle(current, index)}`}
                 >
-                  {current.answers![index] ?? '?'}
+                  {item}
                 </span>
-              )}
-            </div>
-          ))}
+                <span className="mt-0.5 text-xs text-muted tabular-nums">{index}</span>
+                {showAnswers && (
+                  <span
+                    className={`mt-1 flex h-8 w-10 items-center justify-center rounded border text-sm tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
+                      current.filled.includes(index)
+                        ? 'border-pass bg-pass text-inverse'
+                        : current.answers![index] === null
+                          ? 'border-dashed border-line text-muted'
+                          : 'border-line bg-surface text-ink'
+                    }`}
+                  >
+                    {current.answers![index] ?? '?'}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="sm:w-32">

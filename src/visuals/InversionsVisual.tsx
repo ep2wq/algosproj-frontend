@@ -5,6 +5,7 @@ import type { T } from './i18n'
 import { inversionFrames, type InversionFrame } from './inversionFrames'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
+import { useCentreCells, useScrollCue } from './useScrollCue'
 
 const MAX_NUMBERS = 8
 const LIMIT = 1000000000 // the problem's value range: -1000000000 to 1000000000
@@ -65,6 +66,42 @@ function Run({ label, values, pointer, mark }: { label: string; values: number[]
   )
 }
 
+// The merged output so far, in a row that scrolls sideways on a narrow screen with the newest
+// number centred. Its own component so the scroll hooks start when the row appears.
+function MergedRow({ frame }: { frame: InversionFrame }) {
+  const { t } = useTranslation('visuals')
+  const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
+  const newest = frame.merged.length > 0 ? frame.merged.length - 1 : null
+  useCentreCells(scrollRef, newest, newest, frame.range?.[0])
+  return (
+    <div
+      tabIndex={0}
+      role="region"
+      aria-label={t('inversions.mergedRegion')}
+      dir="ltr"
+      ref={scrollRef}
+      className={`mt-1 overflow-x-auto rounded-lg border border-line bg-surface p-2${scrollMore ? ' scroll-fade' : ''}`}
+    >
+      <div
+        role="img"
+        aria-label={t('inversions.mergedLabel', { list: frame.merged.join(' ') || t('inversions.nothingYetWord') })}
+        className="flex min-h-10 w-max gap-x-1.5"
+      >
+        {frame.merged.length === 0 && <p className="self-center text-sm text-muted">{t('inversions.nothingYet')}</p>}
+        {frame.merged.map((value, index) => (
+          <span
+            key={index}
+            data-index={index}
+            className={`${cellClass} ${frame.took && index === frame.merged.length - 1 ? 'border-accent bg-accent text-inverse' : 'border-muted bg-surface text-ink'}`}
+          >
+            {value}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // Merge sort that counts inversions while it merges.
 export default function InversionsVisual() {
   const { t } = useTranslation('visuals')
@@ -78,6 +115,11 @@ export default function InversionsVisual() {
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
   const merging = current.range !== null
+  const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
+  // Centre the range being merged (its start when it is wider than the box); before the first merge
+  // the start, once done the end.
+  const edge = current.done ? current.array.length - 1 : 0
+  useCentreCells(scrollRef, current.range?.[0] ?? edge, current.range ? current.range[1] - 1 : edge, array)
 
   function restart(nextArray: number[]) {
     setArray(nextArray)
@@ -102,22 +144,30 @@ export default function InversionsVisual() {
       </div>
 
       <div
-        role="img"
-        aria-label={
-          merging
-            ? t('inversions.arrayMerging', { values: current.array.join(' ') || t('inversions.emptyWord'), from: current.range![0], to: current.range![1] - 1 })
-            : t('inversions.arrayLabel', { values: current.array.join(' ') || t('inversions.emptyWord') })
-        }
+        tabIndex={0}
+        role="region"
+        aria-label={t('arrayScan.region')}
         dir="ltr"
-        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded-lg border border-line bg-surface p-3"
+        ref={scrollRef}
+        className={`mt-4 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
       >
-        {current.array.length === 0 && <p className="text-sm text-muted">{t('inversions.noNumbers')}</p>}
-        {current.array.map((value, index) => (
-          <div key={index} className="flex min-w-10 flex-col items-center">
-            <span className={`${cellClass} ${arrayCellStyle(current, index)}`}>{value}</span>
-            <span className="mt-0.5 text-xs text-muted tabular-nums">{index}</span>
-          </div>
-        ))}
+        <div
+          role="img"
+          aria-label={
+            merging
+              ? t('inversions.arrayMerging', { values: current.array.join(' ') || t('inversions.emptyWord'), from: current.range![0], to: current.range![1] - 1 })
+              : t('inversions.arrayLabel', { values: current.array.join(' ') || t('inversions.emptyWord') })
+          }
+          className="flex w-max gap-x-1.5"
+        >
+          {current.array.length === 0 && <p className="text-sm text-muted">{t('inversions.noNumbers')}</p>}
+          {current.array.map((value, index) => (
+            <div key={index} data-index={index} className="flex min-w-10 flex-col items-center">
+              <span className={`${cellClass} ${arrayCellStyle(current, index)}`}>{value}</span>
+              <span className="mt-0.5 text-xs text-muted tabular-nums">{index}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {merging && (
@@ -128,24 +178,7 @@ export default function InversionsVisual() {
             <Run label={t('inversions.rightHalf')} values={current.right} pointer={current.rightPointer} mark="j" />
           </div>
           <p className="mt-3 text-sm font-medium">{t('inversions.mergedSoFar')}</p>
-          <div
-            role="img"
-            aria-label={t('inversions.mergedLabel', { list: current.merged.join(' ') || t('inversions.nothingYetWord') })}
-            dir="ltr"
-            className="mt-1 flex min-h-14 flex-wrap gap-x-1.5 gap-y-2 rounded-lg border border-line bg-surface p-2"
-          >
-            {current.merged.length === 0 && <p className="self-center text-sm text-muted">{t('inversions.nothingYet')}</p>}
-            {current.merged.map((value, index) => (
-              <span
-                key={index}
-                className={`${cellClass} ${
-                  current.took && index === current.merged.length - 1 ? 'border-accent bg-accent text-inverse' : 'border-muted bg-surface text-ink'
-                }`}
-              >
-                {value}
-              </span>
-            ))}
-          </div>
+          <MergedRow frame={current} />
         </>
       )}
 

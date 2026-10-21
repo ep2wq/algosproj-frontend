@@ -271,6 +271,7 @@
     "noNumbers": "No numbers.",
     "leftHalf": "Left half",
     "rightHalf": "Right half",
+    "mergedRegion": "Merged so far, scrolls sideways when wider than the screen",
     "mergedSoFar": "Merged so far",
     "mergedLabel": "Merged so far: {{list}}.",
     "nothingYetWord": "nothing yet",
@@ -539,18 +540,21 @@
     "tooManyTokens_other": "Use at most {{count}} tokens.",
     "invalidTokens": "Use whole numbers from 0 to 1000 and the operators + - * /, separated by spaces.",
     "brackets": {
+      "region": "Brackets, scrolls sideways when wider than the screen",
       "inputLabel": "Your own brackets",
       "placeholder": "e.g. ([]{})",
       "hint": "Up to 14 of the characters ( ) [ ] { }, as in the problem. Empty counts as balanced.",
       "itemsLabel": "Brackets: {{items}}."
     },
     "postfix": {
+      "region": "Tokens, scrolls sideways when wider than the screen",
       "inputLabel": "Your own expression",
       "placeholder": "e.g. 3 4 + 2 *",
       "hint": "Up to 9 tokens separated by spaces: whole numbers from 0 to 1000 and + - * /. As in the problem, / truncates toward zero: 1 8 - 2 / gives -7 / 2 = -3.",
       "itemsLabel": "Tokens: {{items}}."
     },
     "next-greater": {
+      "region": "Numbers, scrolls sideways when wider than the screen",
       "inputLabel": "Your own numbers",
       "placeholder": "e.g. 4 5 2 25",
       "hint": "1 to 12 whole numbers from -99 to 99. As in the problem, the next greater is the first strictly bigger number to the right, or -1 if there is none.",

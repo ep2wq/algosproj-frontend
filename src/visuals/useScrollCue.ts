@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react'
 
 // For a drawing that can scroll sideways: more is true while part of it is hidden past the end
 // edge, so the box can fade that edge (the scroll-fade utility) until it is scrolled to the end.
@@ -29,9 +29,9 @@ export function useScrollCue<T extends HTMLElement>() {
 // On a narrow screen a row of cells (marked data-index) scrolls inside its box: centre the cells
 // first..last (one cell, or the span between two pointers), so the pointers around them stay in
 // view as far as they fit. No smooth scroll, so nothing new moves. content is whatever redraws the
-// row (the input), so a new input re-centres.
+// row (the input), so a new input re-centres. A layout effect, so the old position never paints.
 export function useCentreCells(ref: RefObject<HTMLElement | null>, first: number | null, last: number | null, content: unknown) {
-  useEffect(() => {
+  useLayoutEffect(() => {
     const box = ref.current
     if (first === null || last === null) return
     const start = box?.querySelector<HTMLElement>(`[data-index="${first}"]`)

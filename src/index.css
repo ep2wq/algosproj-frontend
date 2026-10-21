@@ -174,3 +174,8 @@ body {
 @utility scroll-fade {
   mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), rgb(0 0 0 / 0.15));
 }
+
+/* The mask hides anything outside the box, so a faded box draws its focus outline inside. */
+.scroll-fade:focus-visible {
+  outline-offset: -2px;
+}
