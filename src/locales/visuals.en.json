@@ -120,6 +120,7 @@
     "target": "Target",
     "search": "Search",
     "label": "Sorted array: {{values}}. Target: {{target}}.",
+    "region": "Sorted array, scrolls sideways when wider than the screen",
     "pointers": "L, M, H: low, mid, high. Small numbers: indices.",
     "placeholder": "e.g. 4 15 8 23",
     "hint_one": "Up to {{count}} different numbers from 1 to 99, separated by spaces or commas. They are sorted for you.",

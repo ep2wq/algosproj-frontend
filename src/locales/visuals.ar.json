@@ -144,6 +144,7 @@
     "target": "الـ~target~",
     "search": "ابحث",
     "label": "الـ sorted array: {{values}}. الـ target: {{target}}.",
+    "region": "الـ sorted array، يُمرَّر أفقيًا عندما يكون أعرض من الشاشة",
     "pointers": "`L` و`M` و`H`: `low` و`mid` و`high`. الأعداد الصغيرة: الـ~indexes~.",
     "placeholder": "4 15 8 23",
     "hint_zero": "حتى `{{count}}` عدد مختلف من `1` إلى `99`، تفصل بينها مسافات أو فواصل. تُرتَّب لك تلقائيًا.",
