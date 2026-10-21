@@ -45,6 +45,7 @@
     "empty": "empty"
   },
   "arrayScan": {
+    "region": "Array, scrolls sideways when wider than the screen",
     "sumStart": "Start with a total of 0.",
     "add": "Add {{n}} to the total: {{total}} + {{term}} = {{next}}.",
     "sumDone": "Done: the sum is {{total}}.",
@@ -719,6 +720,7 @@
     "ownValues": "Your own values"
   },
   "twoPointer": {
+    "region": "String, scrolls sideways when wider than the screen",
     "space": "the space",
     "quoted": "\"{{c}}\"",
     "start": "Put L on the first character and R on the last.",

@@ -4,6 +4,7 @@ import { TextWithCode } from '../components/LessonBody'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { palindromeFrames, reverseFrames, type PointerFrame, type PointerMode } from './twoPointerFrames'
 import { usePlayback } from './usePlayback'
+import { useCentreCells, useScrollCue } from './useScrollCue'
 
 const MAX_LENGTH = 12
 
@@ -65,6 +66,9 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
+  const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
+  // Centre the span between the pointers when it fits, else the left one; with no pointers, the whole text.
+  useCentreCells(scrollRef, current.left ?? 0, current.right ?? current.chars.length - 1, text)
 
   function restart(nextText: string) {
     setText(nextText)
@@ -87,22 +91,30 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
       </div>
 
       <div
-        role="img"
-        aria-label={t('twoPointer.label', { text: current.chars.join('') })}
+        tabIndex={0}
+        role="region"
+        aria-label={t('twoPointer.region')}
         dir="ltr"
-        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded-lg border border-line bg-surface p-3"
+        ref={scrollRef}
+        className={`mt-4 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
       >
-        {current.chars.map((char, index) => (
-          <div key={index} className="flex w-10 flex-col items-center">
-            <span className="h-4 text-xs font-semibold text-ink">{pointerLabels(current, index)}</span>
-            <span
-              className={`mt-0.5 flex size-10 items-center justify-center rounded border-2 font-mono font-medium motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${cellStyle(mode, current, index)}`}
-            >
-              {char === ' ' ? '␣' : char}
-            </span>
-            <span className="mt-0.5 text-xs text-muted tabular-nums">{index}</span>
-          </div>
-        ))}
+        <div
+          role="img"
+          aria-label={t('twoPointer.label', { text: current.chars.join('') })}
+          className="flex w-max gap-x-1.5"
+        >
+          {current.chars.map((char, index) => (
+            <div key={index} data-index={index} className="flex w-10 flex-col items-center">
+              <span className="h-4 text-xs font-semibold text-ink">{pointerLabels(current, index)}</span>
+              <span
+                className={`mt-0.5 flex size-10 items-center justify-center rounded border-2 font-mono font-medium motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${cellStyle(mode, current, index)}`}
+              >
+                {char === ' ' ? '␣' : char}
+              </span>
+              <span className="mt-0.5 text-xs text-muted tabular-nums">{index}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">

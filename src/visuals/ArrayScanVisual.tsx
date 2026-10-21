@@ -5,6 +5,7 @@ import { maxFrames, sumFrames, type ScanMode } from './arrayScanFrames'
 import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
+import { useCentreCells, useScrollCue } from './useScrollCue'
 
 const MAX_NUMBERS = 12
 
@@ -39,6 +40,10 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
+  const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
+  // Before the first step the row starts at the beginning; after the last it stays at the end.
+  const focusIndex = current.current ?? (current.done ? current.array.length - 1 : 0)
+  useCentreCells(scrollRef, focusIndex, focusIndex, array)
 
   function restart(nextArray: number[]) {
     setArray(nextArray)
@@ -63,24 +68,32 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
       </div>
 
       <div
-        role="img"
-        aria-label={mode === 'sum' ? t('arrayScan.labelSum', { values: current.array.join(', '), value: current.value }) : t('arrayScan.labelMax', { values: current.array.join(', '), value: current.value })}
+        tabIndex={0}
+        role="region"
+        aria-label={t('arrayScan.region')}
         dir="ltr"
-        className="mt-4 flex flex-wrap gap-x-1.5 gap-y-3 rounded-lg border border-line bg-surface p-3"
+        ref={scrollRef}
+        className={`mt-4 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
       >
-        {current.array.map((value, index) => (
-          <div key={index} className="flex w-10 flex-col items-center">
-            <span className="h-4 text-xs font-semibold text-ink">{current.current === index ? 'i' : ''}</span>
-            <span
-              className={`mt-0.5 flex size-10 items-center justify-center rounded border-2 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
-                current.current === index ? 'border-warn bg-warn text-inverse' : 'border-muted bg-surface text-ink'
-              }`}
-            >
-              {value}
-            </span>
-            <span className="mt-0.5 text-xs text-muted tabular-nums">{index}</span>
-          </div>
-        ))}
+        <div
+          role="img"
+          aria-label={mode === 'sum' ? t('arrayScan.labelSum', { values: current.array.join(', '), value: current.value }) : t('arrayScan.labelMax', { values: current.array.join(', '), value: current.value })}
+          className="flex w-max gap-x-1.5"
+        >
+          {current.array.map((value, index) => (
+            <div key={index} data-index={index} className="flex w-10 flex-col items-center">
+              <span className="h-4 text-xs font-semibold text-ink">{current.current === index ? 'i' : ''}</span>
+              <span
+                className={`mt-0.5 flex size-10 items-center justify-center rounded border-2 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
+                  current.current === index ? 'border-warn bg-warn text-inverse' : 'border-muted bg-surface text-ink'
+                }`}
+              >
+                {value}
+              </span>
+              <span className="mt-0.5 text-xs text-muted tabular-nums">{index}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">

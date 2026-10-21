@@ -116,7 +116,7 @@
     "loadingEditor": "جارٍ تحميل المحرر...",
     "editorLabel": "كود {{language}} لمسألة {{title}}",
     "javaMain": "يجب أن يكون اسم الـ~class~ في ~Java~ هو `Main`.",
-    "tabHint": "مفتاح `Tab` يضيف مسافة بادئة. اضغط `Ctrl+M`، أو `Ctrl+Shift+M` على ~Mac~، ليصبح `Tab` ينقل التركيز.",
+    "tabHint": "مفتاح `Tab` يضيف مسافة بادئة. اضغط `Ctrl+M`، أو `Ctrl+Shift+M` على Mac، ليصبح `Tab` ينقل التركيز.",
     "submit": "إرسال",
     "running": "جارٍ تشغيل الاختبارات...",
     "logInToSubmit": "سجّل الدخول للإرسال"

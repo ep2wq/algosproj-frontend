@@ -1,11 +1,11 @@
-import { useEffect, useId, useMemo, useState, type FormEvent } from 'react'
+import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextWithCode } from '../components/LessonBody'
 import { binarySearchFrames, type SearchFrame } from './binarySearchFrames'
 import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
-import { useScrollCue } from './useScrollCue'
+import { useCentreCells, useScrollCue } from './useScrollCue'
 
 const MAX_NUMBERS = 15
 
@@ -95,16 +95,7 @@ export default function BinarySearchVisual() {
   const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
   const focusIndex = currentIndex(current)
 
-  // On a narrow screen the row scrolls inside its box: centre the current cell, so the pointers
-  // around it stay in view as far as they fit. No smooth scroll, so nothing new moves.
-  useEffect(() => {
-    const box = scrollRef.current
-    const cell = focusIndex === null ? null : box?.querySelector<HTMLElement>(`[data-index="${focusIndex}"]`)
-    if (!box || !cell) return
-    const boxRect = box.getBoundingClientRect()
-    const cellRect = cell.getBoundingClientRect()
-    box.scrollLeft += cellRect.left + cellRect.width / 2 - (boxRect.left + boxRect.width / 2)
-  }, [focusIndex, array, scrollRef])
+  useCentreCells(scrollRef, focusIndex, focusIndex, array)
 
   function handleRandom() {
     const next = randomCase()
