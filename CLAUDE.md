@@ -20,6 +20,15 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Visualizations: `src/visuals/index.ts` maps a lesson slug to a lazy component. Steps are
   pure "frames" functions; `usePlayback` + `PlaybackControls` are shared. No chart library.
 - `VITE_API_URL` in `.env` (default `http://localhost:8000`); a build arg in the Dockerfile.
+  `VITE_SITE_URL` (public address, build time) is needed for canonical links, `og:url` and
+  `sitemap.xml`; the Dockerfile has no arg for it.
+- Public pages (README "Public pages"): `/` is `LandingPage` (tabs via `?tab=`), the old lessons list
+  is `LessonsPage` at `/lessons`; also `/about`, `/faq`, `/contact`, `/terms`, `/privacy`, `/cookies`.
+  `src/site.ts` holds `PRODUCT_NAME`, `CONTACT_EMAIL` (a placeholder), `SITE_URL`, `LEGAL_UPDATED`;
+  strings use `{{product}}` and `{{email}}`. Each public page renders `PageMeta`.
+- `npm run build` also prerenders the public pages (`src/prerender.ts` `ROUTES`, `scripts/prerender.mjs`,
+  writes `dist-ssr/`, `dist/*.html`, `robots.txt`, `sitemap.xml`). No hydration. A new public page
+  needs its path in `ROUTES`.
 - Only `theme`, `lang`, `sound` in `localStorage` (try/catch); login is an HttpOnly session cookie
   (`credentials: 'include'`, `X-XSRF-TOKEN`). No `dangerouslySetInnerHTML`.
 - Sound (README "Sound"): `src/sound.ts`, off by default, one AudioContext made only in a user gesture, tune the constants block at the top; never the only signal.
@@ -32,7 +41,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   Arabic plural forms. Frame functions take `t` last. Arabic marks terms `~term~`, values
   `` `code` `` (`TextWithCode`: code plus touching text in one `inline-block`). Course text via
   `Content` (`*_lang`, titles `lang="auto"`). Code, drawings, data inputs, emails, `/admin/*`
-  stay LTR. Logical Tailwind; Western digits; `formatDateTime`. `<title>`: `titles.page`; skip link.
+  stay LTR. Logical Tailwind; Western digits; `formatDateTime`/`formatNumber`/`formatPercent`/`formatDate`. `<title>`: `titles.page`; skip link.
 - Commands: `npm install`, `npm run dev`, `npm run build`, `npm run lint` (oxlint + `check:i18n`).
 
 ## Working rules
@@ -55,11 +64,14 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 ## Current status
 
-- Done: lessons, Monaco + submit, auth, leaderboard, 404, Challenges, admin, dark mode, Arabic
+- Done: lessons, Monaco + submit, auth, leaderboard, landing page, About/FAQ/Contact/legal pages,
+  binary search 404, prerender, Challenges, admin, dark mode, Arabic
   interface + content (all 19 modules), visualizations translated. Next: AI hint UI.
 - Decisions: oxlint. Lint/build pass. A 401 while `signedIn` (not login/register/logout), or a
   403 with `reason`, clears it; a 419 refreshes the CSRF cookie and retries once, a second 419 = ended; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.
-  Phones: `AccountMenu` (`Layout.tsx`) holds name, Admin, Log out; a disclosure, not role="menu".
+  `SiteMenu` (`Layout.tsx`, replaced `AccountMenu`): a "More" disclosure at every width (About, FAQ,
+  Contact; below `lg` also name and Log out; below `sm` also Admin or Log in), not role="menu". Footer
+  on every page. Legal texts are drafts needing review; `CONTACT_EMAIL` is still a placeholder.
 - Gotchas: Monaco loads from jsDelivr at runtime. Vite must run on port 5173 (CORS and the backend's `SANCTUM_STATEFUL_DOMAINS`); `VITE_API_URL` uses the same host name as the page. One-line
   lint disables: `react/only-export-components` (auth.tsx), `react/static-components`.

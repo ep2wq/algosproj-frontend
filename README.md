@@ -40,7 +40,8 @@ default), so the lesson page needs internet access.
 
 Other commands:
 
-- `npm run build` — production build
+- `npm run build` — production build: `tsc -b`, the client build, a server build of the public pages
+  (`dist-ssr/`) and the prerender step (see "Public pages")
 - `npm run lint` — lint
 
 ## Environment variables
@@ -50,6 +51,9 @@ Put these in `.env` (copy `.env.example`; `.env` is not committed):
 - `VITE_API_URL` — base URL of the backend, default `http://localhost:8000`. The app
   calls `${VITE_API_URL}/api/...`. It must use the same host name as the page
   (`http://localhost:8000` with the app on `http://localhost:5173`, not `127.0.0.1`).
+- `VITE_SITE_URL` — public address of the site, for example `https://algosproj.example`, no
+  trailing slash. Only for production builds: canonical links, `og:url` and `sitemap.xml` need it
+  and are left out without it. Baked in at build time like `VITE_API_URL`.
 
 Only the theme choice (`theme`), the language choice (`lang`) and the sound choice (`sound`)
 are stored in `localStorage`, every read and write in `try`/`catch`. The login is an HttpOnly
@@ -91,7 +95,7 @@ is ignored and the OS is followed.
 - Shape, depth and motion (full scales in `docs/ui-restyle.md`, next to this repo's folder):
   `rounded` (4 px) for controls, chips, badges and code values, `rounded-lg` (8 px) for cards,
   panels and drawings. In dark mode `surface` is one step above `paper`. A shadow is only for
-  floating things (account menu, skip link) and uses `shadow-(--float-shadow)`, a plain `:root`
+  floating things (the site menu panel, skip link) and uses `shadow-(--float-shadow)`, a plain `:root`
   variable redefined in `.dark`, not a `@theme` value, because Tailwind would bake the light
   value into the utility. Every animation or transition in a component is behind `motion-safe:`:
   nothing moves under `prefers-reduced-motion`, nothing loops, nothing autoplays. A base rule in
@@ -125,8 +129,7 @@ table per sound. It exports `play(sound)`, `setSoundOn(on)` and `useSoundOn()`.
   arrives; `usePlayback` plays step and finish when the step changes.
 - The toggle (`SoundToggle` in `src/components/Layout.tsx`) is a 44 px button with
   `aria-pressed` and the name "Sound effects" (`sound.label`). From `lg` (1024 px) it sits next
-  to the theme and language buttons; below `lg` it is a labelled button in a small footer, and
-  on phones, when logged in, it is in the account menu instead. In the header it made the
+  to the theme and language buttons; below `lg` it is a labelled button in the footer. In the header it made the
   logged-out Arabic header 3 rows at 360 and 375 px and the logged-in header 2 rows at 768 px;
   placed like this, header heights are unchanged at every width measured (360 to 1024).
 
@@ -168,7 +171,7 @@ Visualizations are translated too; their drawings stay left to right.
   never contain `~`.
 - **Guards** (`npm run lint` runs both): oxlint's `react/jsx-no-literals` fails on literal
   text in JSX; the exceptions (`.oxlintrc.json`) are spacing, punctuation and symbols (`✓`,
-  `♛`, `·`, ...), the brand name and the code labels `null`, `top`, `sum`, `count`, `n`, `k`,
+  `♛`, `·`, ...), the code labels `null`, `top`, `sum`, `count`, `n`, `k`,
   `pos`. The rule doesn't see attributes: never write a literal `aria-label`, `title`,
   `placeholder` or `alt`. `npm run check:i18n` (`scripts/check-i18n.mjs`) fails when
   `en.json`/`ar.json` or the two `visuals.*` files have different keys (`admin.*` may be
@@ -187,10 +190,10 @@ Visualizations are translated too; their drawings stay left to right.
   (`en` or `ar`) and wins. `lang` and `dir` on `<html>` change live, and the inline script in
   `index.html` sets them before the first paint, so an Arabic page never flashes left to
   right. Every page renders a React `<title>` (hoisted into `<head>`) from `titles.page`
-  ("{{name}} · AlgosProj"), where the name is the page heading's key or the lesson's or
+  ("{{name}} · {{product}}"), where the name is the page heading's key or the lesson's or
   challenge's own title; `AuthForm` sets it for login and register. The admin area has one
   fixed English title (`admin.pageTitle`, in `AdminRoute`). Titles follow the language
-  change. `index.html` keeps "AlgosProj" until the app loads.
+  change. `index.html` keeps the product name until the app loads (filled in at build time by a small plugin in `vite.config.ts`).
 - **Layout:** Tailwind's logical classes only (`ms-`/`me-`, `ps-`/`pe-`, `start-`/`end-`,
   `text-start`/`text-end`, `border-s`/`border-e`, `rounded-s`/`rounded-e`), never `ml-`,
   `pr-`, `left-`, `text-right` and the like, so the layout flips with `dir`. Where a logical
@@ -230,7 +233,11 @@ Visualizations are translated too; their drawings stay left to right.
 - **Numbers and dates:** always Western digits (0-9) in both languages, so they match the code
   and test data. Dates and times go through `formatDateTime()` in `src/i18n.ts`: Intl with
   the Gregorian calendar and Latin digits (`ar-u-ca-gregory-nu-latn` for Arabic), never Hijri.
-  Only the admin area shows dates today, in English.
+  `formatNumber()`, `formatPercent()` and `formatDate()` in the same file do the same for
+  numbers, ratios and dates (the landing counts and progress, the footer year, the legal date).
+- **Product name and email:** every string can use `{{product}}` and `{{email}}`; `src/i18n.ts`
+  passes them from `src/site.ts` as `defaultVariables`. The consent line on `/register` has
+  links inside the sentence, so it uses react-i18next `<Trans>` with named tags (`<terms>`, `<privacy>`).
 - **Font:** Noto Sans Arabic (variable weights), self-hosted from
   `@fontsource-variable/noto-sans-arabic`. `src/i18n.ts` imports its CSS only when Arabic is
   active, so English pages load no extra font. Under `:root[lang="ar"]` it goes ahead of the
@@ -247,15 +254,21 @@ Visualizations are translated too; their drawings stay left to right.
 
 ## Pages
 
-- `/` lessons grouped by track, `/lessons/:slug` lesson with editor and submit,
+- `/` the landing page with Lessons, Challenges and Leaderboard tabs (see "Public pages"),
+  `/lessons` lessons grouped by track, `/lessons/:slug` lesson with editor and submit,
   `/login`, `/register`, `/leaderboard`, `/admin/*` (admins and owners, see "Admin area").
-  Unknown paths show "Page not found".
+  Public pages: `/about`, `/faq`, `/contact`, `/terms`, `/privacy`, `/cookies`.
+  Every other path, unknown `/admin` paths too, shows "Page not found" (a binary search over
+  HTTP status codes that does not find 404, then the plain message).
   `Layout` starts with a "Skip to content" link (`nav.skipToContent`), visible only on keyboard
   focus, that jumps to `<main id="main">`.
-  Below `sm`, a logged-in user gets an account button (`nav.account`) in the header. It opens a
-  panel with the full name (`dir="auto"`), the Admin link (staff only) and Log out. It is a
-  disclosure (`aria-expanded`, `aria-controls`), not a `role="menu"`. Escape, a click outside
-  or focus leaving closes it, and a route change closes it. From `sm` up the header is unchanged.
+  The header has a "More" button (`SiteMenu` in `Layout.tsx`) at every width. It opens a panel
+  with About, FAQ and Contact. Below `lg` the panel also holds the full name (`dir="auto"`) and
+  Log out; below `sm` also Admin (staff only), or Log in for a visitor. It is a disclosure
+  (`aria-expanded`, `aria-controls`), not a `role="menu"`. Escape, a click outside or focus
+  leaving closes it, and a route change closes it. Every page ends with a `Footer` (links, the
+  copyright year, the sound switch below `lg`). Measured header height at 360, 375 and 414 px
+  (guest, user, admin, English and Arabic): 2 rows; from 768 px: 1 row; at 320 px English: still 3 rows.
 - `/challenges` every problem in one list: search by title, filters for difficulty, topic
   and (when logged in) solved status, all applied in the browser; "Showing X of Y" is
   announced with `aria-live`. Below `md` the rows become cards. `/challenges/:slug` solves one
@@ -269,7 +282,7 @@ between password and text). Register shows the hint "At least 8 characters." und
 first field the server marked invalid, and a submit is ignored while one is running. There is no "forgot password" link: it
 needs email, which the app does not send.
 
-On the home page each lesson row shows difficulty bars (the hardest problem of the lesson) and,
+On the lessons page each lesson row shows difficulty bars (the hardest problem of the lesson) and,
 when logged in, a solved check. Both come from the existing `GET /api/challenges` response
 (`lesson_slug`, `difficulty`, `solved`); there is no backend change. In a problem statement, a
 line that is only Input, Output or Constraints (`~Input~` etc. in Arabic) renders as a small
@@ -283,6 +296,40 @@ the challenge page mark the problem solved without reloading.
 Lesson text is parsed by `src/lessonText.ts` (pure functions: headings `## `, `- ` lists,
 4-space-indented code blocks, paragraphs, then `` `inline code` `` and `~term~` markers) and rendered by `src/components/LessonBody.tsx`
 as plain React elements. The format is documented in the backend README.
+
+## Public pages
+
+The pages a visitor sees before logging in: `/` (landing), `/about`, `/faq`, `/contact`,
+`/terms`, `/privacy` and `/cookies`. Decisions, the privacy facts behind the legal texts and the
+header and footer measurements are in `../docs/ui-public-pages.md` (outside this repo).
+
+- **Landing** (`src/pages/LandingPage.tsx`): the hero (`HeroSearch`, the binary search lesson
+  playing once, silent), the counts, then the tabs. `src/components/Tabs.tsx` is the WAI-ARIA
+  tabs pattern; `?tab=challenges` or `?tab=leaderboard` is a deep link (Lessons is the default).
+  `LandingPage` loads `getModules()` (again when the language changes) and `getChallenges()` (again
+  on log in or out) and passes them to the panels in `src/components/LandingPanels.tsx`; the
+  Leaderboard panel loads `getLeaderboard(10)` and, when logged in, `getMyRank()` itself. Progress
+  (done lessons, next lesson) is computed from `getChallenges()` in `src/progress.ts`. Visitors see
+  no progress, solved marks or rank.
+- **Rename the product:** edit `PRODUCT_NAME` in `src/site.ts`. Strings use `{{product}}` and
+  `index.html` gets it at build time.
+- **Contact address:** `CONTACT_EMAIL` in `src/site.ts` is a placeholder (`contact@example.com`).
+  Replace it before launch; strings use `{{email}}`. `LEGAL_UPDATED` is the date of the legal texts.
+- **Page tags:** every public page renders `PageMeta` (`src/components/PageMeta.tsx`): title,
+  description, canonical, Open Graph and Twitter tags. Canonical and `og:url` need `VITE_SITE_URL`.
+- **Prerender:** `npm run build` = `tsc -b && vite build && vite build --ssr src/prerender.ts
+  --outDir dist-ssr && node scripts/prerender.mjs`. The last step renders each path in `ROUTES`
+  (`src/prerender.ts`) to English HTML and writes `dist/index.html` (the landing page) and
+  `dist/{about,faq,contact,terms,privacy,cookies}.html`, plus `robots.txt` and, only with
+  `VITE_SITE_URL`, `sitemap.xml`. `node scripts/prerender.mjs <folder>` works on another client
+  build folder. The browser does not hydrate: the app renders afresh and replaces the markup.
+  An inline script after `#root` in `index.html` empties it first when the address is not the one
+  prerendered or the language is Arabic; `src/main.tsx` removes the static head tags
+  (`data-prerender`). `theme.ts`, `sound.ts` and `i18n.ts` check for `window` and `document` so
+  they load in Node. A new public page needs its path in `ROUTES` and a `PageMeta`.
+- **Cloudflare Pages:** build command `npm run build`, output directory `dist`, environment
+  variables `VITE_API_URL` and `VITE_SITE_URL`. Do not add a `404.html`: it turns off the
+  single-page fallback.
 
 ## Admin area
 
@@ -444,8 +491,11 @@ docker build --build-arg VITE_API_URL=http://localhost:8000 -t algosproj-fronten
 docker run -p 8080:80 algosproj-frontend
 ```
 
-The app is then served by nginx at http://localhost:8080. Unknown paths fall back to
-`index.html`, and files in `/assets` are cached for a year.
+The app is then served by nginx at http://localhost:8080. A path with a prerendered page
+(`/about` -> `about.html`) gets that file, other unknown paths fall back to `index.html`, and
+files in `/assets` are cached for a year. The Dockerfile has no `VITE_SITE_URL` build arg, so an
+image built as above has no canonical links or `sitemap.xml`; add `ARG`/`ENV` lines for it if
+the image is used in production.
 
 - `VITE_API_URL` (build arg) — base URL of the backend API. Vite bakes it into the
   bundle at build time, so changing it means rebuilding the image; setting it with
