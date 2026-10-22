@@ -9,7 +9,7 @@
       {
         "noStrings": true,
         "ignoreProps": true,
-        "allowedStrings": [" ", ".", ":", "·", "-", "#", "✓", "▲", "♛", "•", "✗", "↩", "AlgosProj", "null", "top", "sum", "count", "n", "k", "pos"]
+        "allowedStrings": [" ", ".", ":", "·", "-", "#", "✓", "▲", "♛", "•", "✗", "↩", "null", "top", "sum", "count", "n", "k", "pos"]
       }
     ]
   }

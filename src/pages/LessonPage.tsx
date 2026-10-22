@@ -69,7 +69,7 @@ export default function LessonPage() {
             </button>
           )}
         </div>
-        <Link to="/" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
+        <Link to="/lessons" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
           {t('lesson.backToLessons')}
         </Link>
       </div>
@@ -80,7 +80,7 @@ export default function LessonPage() {
 
   return (
     <div>
-      <Link to="/" className="inline-block rounded py-1 text-sm text-muted hover:text-accent">
+      <Link to="/lessons" className="inline-block rounded py-1 text-sm text-muted hover:text-accent">
         {t('lesson.allLessons')}
       </Link>
       <title>{t('titles.page', { name: lesson.title })}</title>

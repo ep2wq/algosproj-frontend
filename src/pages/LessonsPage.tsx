@@ -30,7 +30,7 @@ function trackName(track: string): string {
   return words.charAt(0).toUpperCase() + words.slice(1)
 }
 
-export default function HomePage() {
+export default function LessonsPage() {
   const { t, i18n } = useTranslation()
   const { user, loading } = useAuth()
   const [modules, setModules] = useState<Module[] | null>(null)

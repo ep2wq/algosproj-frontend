@@ -9,10 +9,17 @@
     "account": "Account",
     "logIn": "Log in",
     "logOut": "Log out",
-    "register": "Register"
+    "register": "Register",
+    "more": "More",
+    "about": "About",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "cookies": "Cookies"
   },
   "titles": {
-    "page": "{{name}} · AlgosProj"
+    "page": "{{name}} · {{product}}"
   },
   "header": {
     "points_one": "{{count}} point",
@@ -181,7 +188,7 @@
     "status": "Request failed ({{status}})."
   },
   "admin": {
-    "pageTitle": "Admin · AlgosProj",
+    "pageTitle": "Admin · {{product}}",
     "nav": {
       "label": "Admin",
       "content": "Content",
@@ -449,5 +456,16 @@
   },
   "sound": {
     "label": "Sound effects"
+  },
+  "meta": {
+    "siteName": "{{product}}"
+  },
+  "footer": {
+    "label": "Site",
+    "tagline": "Algorithms and data structures, one step at a time, in English and Arabic.",
+    "learn": "Learn",
+    "site": "About the site",
+    "legal": "Legal",
+    "copyright": "© {{year}} {{product}}"
   }
 }

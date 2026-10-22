@@ -9,10 +9,17 @@
     "account": "حسابي",
     "logIn": "تسجيل الدخول",
     "logOut": "تسجيل الخروج",
-    "register": "إنشاء حساب"
+    "register": "إنشاء حساب",
+    "more": "المزيد",
+    "about": "عن الموقع",
+    "faq": "الأسئلة الشائعة",
+    "contact": "تواصل معنا",
+    "terms": "الشروط",
+    "privacy": "الخصوصية",
+    "cookies": "ملفات تعريف الارتباط"
   },
   "titles": {
-    "page": "{{name}} · AlgosProj"
+    "page": "{{name}} · {{product}}"
   },
   "header": {
     "points_zero": "{{count}} نقطة",
@@ -210,5 +217,16 @@
   },
   "sound": {
     "label": "المؤثرات الصوتية"
+  },
+  "meta": {
+    "siteName": "{{product}}"
+  },
+  "footer": {
+    "label": "الموقع",
+    "tagline": "الخوارزميات وهياكل البيانات، خطوة بعد خطوة، بالإنجليزية والعربية.",
+    "learn": "تعلّم",
+    "site": "عن الموقع",
+    "legal": "المعلومات القانونية",
+    "copyright": "© {{year}} {{product}}"
   }
 }
