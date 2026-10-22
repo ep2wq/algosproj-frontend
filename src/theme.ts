@@ -6,7 +6,8 @@ import { useSyncExternalStore } from 'react'
 // 'system', is ignored. index.html applies the same rules before the first paint, so keep the
 // two in step.
 const KEY = 'theme'
-const media = window.matchMedia('(prefers-color-scheme: dark)')
+// No window when the public pages are prerendered in Node (scripts/prerender.mjs): light there.
+const media = typeof window === 'undefined' ? null : window.matchMedia('(prefers-color-scheme: dark)')
 const listeners = new Set<() => void>()
 
 // Blocked or throwing storage behaves as "follow the OS".
@@ -23,7 +24,7 @@ function readStored(): 'light' | 'dark' | null {
 let stored = readStored()
 
 function isDark(): boolean {
-  return stored === null ? media.matches : stored === 'dark'
+  return stored === null ? (media?.matches ?? false) : stored === 'dark'
 }
 
 // The dark class drives Tailwind's dark: variant and the dark token values in index.css;
@@ -35,7 +36,7 @@ function apply() {
   listeners.forEach((listener) => listener())
 }
 
-media.addEventListener('change', apply)
+media?.addEventListener('change', apply)
 
 export function toggleTheme() {
   stored = isDark() ? 'light' : 'dark'
@@ -56,5 +57,5 @@ function subscribe(listener: () => void) {
 
 // Whether dark is in effect (for the toggle icon and the Monaco editor theme).
 export function useTheme() {
-  return { dark: useSyncExternalStore(subscribe, isDark) }
+  return { dark: useSyncExternalStore(subscribe, isDark, () => false) }
 }

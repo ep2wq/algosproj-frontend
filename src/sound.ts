@@ -82,8 +82,11 @@ function onGesture() {
   if (on) unlock()
 }
 
-window.addEventListener('pointerdown', onGesture, { capture: true, passive: true })
-window.addEventListener('keydown', onGesture, { capture: true, passive: true })
+// No window when the public pages are prerendered in Node (scripts/prerender.mjs).
+if (typeof window !== 'undefined') {
+  window.addEventListener('pointerdown', onGesture, { capture: true, passive: true })
+  window.addEventListener('keydown', onGesture, { capture: true, passive: true })
+}
 
 export function play(sound: Sound): void {
   try {
@@ -142,5 +145,5 @@ export function setSoundOn(next: boolean): void {
 
 // Whether sound is on (for the toggle button).
 export function useSoundOn(): boolean {
-  return useSyncExternalStore(subscribe, getOn)
+  return useSyncExternalStore(subscribe, getOn, () => false)
 }

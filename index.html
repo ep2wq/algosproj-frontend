@@ -4,7 +4,11 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AlgosProj</title>
+    <!-- The light and dark header colours (--color-surface in src/index.css). -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#19202a" />
+    <!-- The product name from src/site.ts, filled in by vite.config.ts. -->
+    <title>%PRODUCT_NAME%</title>
     <script>
       // Sets the theme, lang and dir before the first paint, so a dark page never flashes light
       // and an Arabic page never flashes left-to-right. Same rules as src/theme.ts and src/i18n.ts:
@@ -31,6 +35,16 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // A prerendered page's static HTML (scripts/prerender.mjs) is English and for one address.
+      // The same index.html is served for every unknown address, and Arabic visitors get Arabic:
+      // in those cases empty it now, so the wrong page or language never shows before the app.
+      try {
+        var page = document.getElementById('root')
+        var path = location.pathname.replace(/\/+$/, '') || '/'
+        if (page.getAttribute('data-prerendered') !== path || document.documentElement.lang !== 'en') page.textContent = ''
+      } catch (e) {}
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

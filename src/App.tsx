@@ -33,6 +33,7 @@ function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
+        {/* The public pages below are also prerendered to static HTML (src/prerender.ts). */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/faq" element={<FaqPage />} />

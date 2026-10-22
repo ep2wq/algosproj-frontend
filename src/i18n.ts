@@ -13,6 +13,8 @@ export type AppLanguage = 'en' | 'ar'
 const KEY = 'lang'
 
 function readLanguage(): AppLanguage {
+  // Prerendered pages (scripts/prerender.mjs) are English.
+  if (typeof document === 'undefined') return 'en'
   try {
     const value = localStorage.getItem(KEY)
     if (value === 'en' || value === 'ar') return value
@@ -26,6 +28,8 @@ function readLanguage(): AppLanguage {
 // lang and dir on <html> flip the whole layout (Tailwind's logical classes follow dir). The
 // Arabic font is fetched only once Arabic is used, so English pages load exactly as before.
 function applyLanguage(language: string) {
+  // No document when the public pages are prerendered in Node (scripts/prerender.mjs).
+  if (typeof document === 'undefined') return
   document.documentElement.lang = language
   document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr'
   if (language === 'ar') void import('@fontsource-variable/noto-sans-arabic/wght.css')

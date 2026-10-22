@@ -6,6 +6,10 @@ import './i18n'
 import App from './App.tsx'
 import { AuthProvider } from './auth.tsx'
 
+// A prerendered page (scripts/prerender.mjs) brings its own head tags; the app renders its own
+// and replaces the static markup in #root.
+document.querySelectorAll('[data-prerender]').forEach((element) => element.remove())
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
