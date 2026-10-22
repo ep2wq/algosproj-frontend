@@ -13,6 +13,7 @@ import AdminProblemPage from './pages/admin/AdminProblemPage'
 import AdminUserPage from './pages/admin/AdminUserPage'
 import AdminUsersPage from './pages/admin/AdminUsersPage'
 import ChallengesPage from './pages/ChallengesPage'
+import LandingPage from './pages/LandingPage'
 import LeaderboardPage from './pages/LeaderboardPage'
 import LessonsPage from './pages/LessonsPage'
 import LoginPage from './pages/LoginPage'
@@ -28,7 +29,7 @@ function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/" element={<LessonsPage />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/lessons" element={<LessonsPage />} />
         <Route
           path="/lessons/:slug"

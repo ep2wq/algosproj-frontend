@@ -5,10 +5,13 @@ import { play } from '../sound'
 export const SPEEDS = { slow: 1200, normal: 600, fast: 250 }
 export type Speed = keyof typeof SPEEDS
 
-// Play/pause and stepping through a list of frames. Never starts playing by itself.
-export function usePlayback(frameCount: number) {
-  const [step, setStep] = useState(0)
-  const [playing, setPlaying] = useState(false)
+// Play/pause and stepping through a list of frames. Never starts playing by itself, unless
+// autoplay: then it plays once from the first step, or with reduced motion opens on the last step.
+// silent: no step and finish sounds (pages that play on load; a page load makes no sound).
+export function usePlayback(frameCount: number, { silent = false, autoplay = false } = {}) {
+  const [reduced] = useState(() => autoplay && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const [step, setStep] = useState(reduced ? frameCount - 1 : 0)
+  const [playing, setPlaying] = useState(autoplay && !reduced && frameCount > 1)
   const [speed, setSpeed] = useState<Speed>('normal')
   const lastStep = frameCount - 1
 
@@ -27,10 +30,12 @@ export function usePlayback(frameCount: number) {
   const shownStep = useRef(step)
   useEffect(() => {
     if (step === shownStep.current) return
-    if (step === lastStep && step > shownStep.current) play('finish')
-    else if (step > 0 && step < lastStep) play('step')
+    if (!silent) {
+      if (step === lastStep && step > shownStep.current) play('finish')
+      else if (step > 0 && step < lastStep) play('step')
+    }
     shownStep.current = step
-  }, [step, lastStep])
+  }, [step, lastStep, silent])
 
   function togglePlay() {
     if (playing) {
@@ -48,5 +53,11 @@ export function usePlayback(frameCount: number) {
     setStep(Math.max(0, Math.min(lastStep, nextStep)))
   }
 
-  return { step, lastStep, playing, speed, setSpeed, togglePlay, goTo }
+  // Plays from the first step, whatever is happening now (a Replay button).
+  function restart() {
+    setStep(0)
+    setPlaying(lastStep > 0)
+  }
+
+  return { step, lastStep, playing, speed, setSpeed, togglePlay, goTo, restart }
 }

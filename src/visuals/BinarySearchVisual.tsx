@@ -1,11 +1,11 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextWithCode } from '../components/LessonBody'
-import { binarySearchFrames, type SearchFrame } from './binarySearchFrames'
+import { binarySearchFrames } from './binarySearchFrames'
 import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
-import { useCentreCells, useScrollCue } from './useScrollCue'
+import SearchCells from './SearchCells'
 
 const MAX_NUMBERS = 15
 
@@ -45,31 +45,6 @@ function parseTarget(text: string, t: T): number | string {
   return Number(trimmed)
 }
 
-function inRange(frame: SearchFrame, index: number) {
-  return frame.possible !== null && index >= frame.possible[0] && index <= frame.possible[1]
-}
-
-function cellStyle(frame: SearchFrame, index: number) {
-  if (frame.result === index) return 'border-pass bg-pass text-inverse'
-  if (frame.mid === index) return 'border-warn bg-warn text-inverse'
-  if (inRange(frame, index)) return 'border-muted bg-surface text-ink'
-  return 'border-line bg-paper text-muted'
-}
-
-// The cell the step is about: the found cell, else the middle, else the start of the range.
-function currentIndex(frame: SearchFrame) {
-  if (frame.result !== null && frame.result >= 0) return frame.result
-  return frame.mid ?? frame.possible?.[0] ?? null
-}
-
-function pointerLabels(frame: SearchFrame, index: number) {
-  const labels = []
-  if (frame.low === index) labels.push('L')
-  if (frame.mid === index) labels.push('M')
-  if (frame.high === index) labels.push('H')
-  return labels.join(' ')
-}
-
 const LEGEND = [
   { key: 'middle', style: 'border-warn bg-warn' },
   { key: 'found', style: 'border-pass bg-pass' },
@@ -92,10 +67,6 @@ export default function BinarySearchVisual() {
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
-  const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
-  const focusIndex = currentIndex(current)
-
-  useCentreCells(scrollRef, focusIndex, focusIndex, array)
 
   function handleRandom() {
     const next = randomCase()
@@ -162,32 +133,11 @@ export default function BinarySearchVisual() {
         <SpeedSelect playback={playback} />
       </div>
 
-      <div
-        tabIndex={0}
-        role="region"
-        aria-label={t('binarySearch.region')}
-        dir="ltr"
-        ref={scrollRef}
-        className={`mt-4 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
-      >
-        <div
-          role="img"
-          aria-label={t('binarySearch.label', { values: current.array.join(', '), target })}
-          className="flex w-max gap-x-1.5"
-        >
-          {current.array.map((value, index) => (
-            <div key={index} data-index={index} className="flex w-10 flex-col items-center">
-              <span className="h-4 text-xs font-semibold text-ink">{pointerLabels(current, index)}</span>
-              <span
-                className={`mt-0.5 flex size-10 items-center justify-center rounded border-2 font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${cellStyle(current, index)}`}
-              >
-                {value}
-              </span>
-              <span className="mt-0.5 text-xs text-muted tabular-nums">{index}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <SearchCells
+        frame={current}
+        regionLabel={t('binarySearch.region')}
+        imageLabel={t('binarySearch.label', { values: current.array.join(', '), target })}
+      />
 
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         {LEGEND.map(({ key, style }) => (

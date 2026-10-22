@@ -974,5 +974,9 @@
     "placeholder": "21",
     "hint": "عدد صحيح من `-{{limit}}` إلى `{{limit}}`، كما في المسألة. الإجابة، `2 * n`، ما زالت تتسع في `int` بحجم ~32-bit~.",
     "promptOption": "اطبع أيضًا عبارة مثل `\"{{prompt}}\"`"
+  },
+  "landingSearch": {
+    "from": "من درس الـ~binary search~.",
+    "open": "افتح الدرس"
   }
 }

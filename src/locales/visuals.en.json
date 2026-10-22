@@ -814,5 +814,9 @@
     "placeholder": "e.g. 21",
     "hint": "A whole number from -{{limit}} to {{limit}}, as in the problem. The answer, 2 * n, still fits in a 32-bit int.",
     "promptOption": "Also print a prompt like \"{{prompt}}\""
+  },
+  "landingSearch": {
+    "from": "From the binary search lesson.",
+    "open": "Open the lesson"
   }
 }

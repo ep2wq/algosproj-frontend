@@ -467,5 +467,82 @@
     "site": "About the site",
     "legal": "Legal",
     "copyright": "© {{year}} {{product}}"
+  },
+  "landing": {
+    "metaTitle": "Learn algorithms step by step",
+    "metaDescription": "Free lessons in data structures and algorithms, many with a visualization you can step through. Write the code in Python, Java, JavaScript or C++ and have it graded. In English and Arabic.",
+    "title": "Watch the algorithm run. Then write it.",
+    "intro": "Read a short lesson, step through a visualization of the algorithm, then write it in Python, Java, JavaScript or C++ and let the tests grade it. Every page works in English and Arabic.",
+    "continue": "Continue learning",
+    "allLessons": "All lessons",
+    "startFirst": "Start the first lesson",
+    "createAccount": "Create an account",
+    "counts": "So far: {{modules}}, {{lessons}} ({{visuals}}) and {{problems}}.",
+    "moduleCount_one": "{{value}} module",
+    "moduleCount_other": "{{value}} modules",
+    "lessonCount_one": "{{value}} lesson",
+    "lessonCount_other": "{{value}} lessons",
+    "visualCount_one": "{{value}} with a visualization",
+    "visualCount_other": "{{value}} with a visualization",
+    "problemCount_one": "{{value}} graded problem",
+    "problemCount_other": "{{value}} graded problems",
+    "insideTitle": "What's inside",
+    "insideIntro": "The whole course, the problems with their points, and who is on top right now.",
+    "lessons": {
+      "signIn": "Log in to see how far you've got in each module.",
+      "noneDone": "You haven't finished a lesson yet. The first one is ready when you are.",
+      "summary_one": "You've finished {{done}} of {{total}} lesson ({{percent}}).",
+      "summary_other": "You've finished {{done}} of {{total}} lessons ({{percent}}).",
+      "overall": "Progress through all lessons",
+      "nextUp": "Next lesson",
+      "allDone": "You've finished every lesson.",
+      "moduleDone_one": "{{done}} of {{total}} lesson done",
+      "moduleDone_other": "{{done}} of {{total}} lessons done",
+      "moduleProgress": "Progress in {{module}}"
+    },
+    "challenges": {
+      "signIn": "Log in to see which problems you've solved and the points you've earned.",
+      "earned_one": "You've earned {{earned}} of {{total}} point from problems.",
+      "earned_other": "You've earned {{earned}} of {{total}} points from problems.",
+      "overall": "Points earned from problems",
+      "problems_one": "{{value}} problem",
+      "problems_other": "{{value}} problems",
+      "pointsEach_one": "{{value}} point each",
+      "pointsEach_other": "{{value}} points each",
+      "solved_one": "{{solved}} of {{total}} solved",
+      "solved_other": "{{solved}} of {{total}} solved",
+      "show": "Show the problems",
+      "all": "Search and filter all challenges"
+    },
+    "board": {
+      "caption_one": "Top {{value}} on the leaderboard",
+      "caption_other": "Top {{value}} on the leaderboard",
+      "you_one": "You: rank {{rank}}, {{points}} point.",
+      "you_other": "You: rank {{rank}}, {{points}} points.",
+      "notRanked": "You're not on the board yet. Solve a problem to get on it.",
+      "signUp": "Want your name here? Solve problems to earn points.",
+      "full": "See the full leaderboard"
+    },
+    "howTitle": "How a lesson works",
+    "how": {
+      "watch": {
+        "title": "Watch it run",
+        "body": "Read a short explanation. Where the lesson has a visualization, play it, pause it, step back and forward, or give it your own input."
+      },
+      "code": {
+        "title": "Write the code",
+        "body": "Solve the lesson's problem in the editor, in Python, Java, JavaScript or C++. The examples show what your program reads and what it should print."
+      },
+      "graded": {
+        "title": "Get graded",
+        "body": "Your code runs against every test, the hidden ones too. Pass them all and the problem's points are yours, once."
+      }
+    },
+    "languagesTitle": "Four languages to code in, two to learn in",
+    "codeLanguages": "Pick the language you know, or the one you want to practise. The editor starts you off with a few lines that read the input.",
+    "bilingual": "Lessons, visualizations, problems and messages are all in English and Arabic. The Arabic keeps technical terms in English, the way they're used in class. Switch language from the header at any time; code you've typed stays in the editor.",
+    "bilingualCaption": "The same step of the binary search lesson, in both languages.",
+    "startTitle": "Start with lesson one",
+    "startBody": "You can read every lesson and play every visualization without an account. Create one when you want your code graded."
   }
 }
