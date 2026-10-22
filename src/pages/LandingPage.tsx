@@ -36,7 +36,8 @@ export default function LandingPage() {
   const { user, loading } = useAuth()
   const [params, setParams] = useSearchParams()
   const [modules, setModules] = useState<Module[] | null>(null)
-  const [challenges, setChallenges] = useState<ChallengeSummary[] | null>(null)
+  // Who the list was loaded for: solved belongs to that user only.
+  const [loaded, setLoaded] = useState<{ userId: number | null; list: ChallengeSummary[] } | null>(null)
   const [failure, setFailure] = useState<unknown>(null)
   const [reload, setReload] = useState(0)
 
@@ -66,7 +67,7 @@ export default function LandingPage() {
     let active = true
     getChallenges()
       .then((list) => {
-        if (active) setChallenges(list)
+        if (active) setLoaded({ userId: userId ?? null, list })
       })
       .catch((err) => {
         if (active) setFailure(err)
@@ -88,6 +89,8 @@ export default function LandingPage() {
     setParams(id === 'lessons' ? {} : { tab: id }, { replace: true, preventScrollReset: true })
   }
 
+  // Until the list for the current user arrives (just after logging in or out), show none of it.
+  const challenges = loaded && loaded.userId === (user?.id ?? null) ? loaded.list : null
   const done = user && challenges ? lessonsDone(challenges) : null
   const next = modules ? nextLesson(modules, done ?? new Set()) : null
   const lessonCount = modules?.reduce((sum, module) => sum + module.lessons.length, 0) ?? 0
