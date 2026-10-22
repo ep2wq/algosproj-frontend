@@ -30,7 +30,10 @@ The app needs the other services running. From the `AlgosProj` folder:
 4. Frontend: `npm run dev` in this repo.
 
 The backend only allows CORS requests from its `FRONTEND_URL` (default
-`http://localhost:5173`), so keep the dev server on that port.
+`http://localhost:5173`), so keep the dev server on that port. The backend's
+`SANCTUM_STATEFUL_DOMAINS` must match it too (default: the host and port of `FRONTEND_URL`),
+or login answers 419. Use the same host name for the page and the API (`localhost` for both,
+not `127.0.0.1`), because the session cookie belongs to a host name.
 
 The editor loads Monaco from the jsDelivr CDN at runtime (the `@monaco-editor/react`
 default), so the lesson page needs internet access.
@@ -45,11 +48,13 @@ Other commands:
 Put these in `.env` (copy `.env.example`; `.env` is not committed):
 
 - `VITE_API_URL` — base URL of the backend, default `http://localhost:8000`. The app
-  calls `${VITE_API_URL}/api/...`.
+  calls `${VITE_API_URL}/api/...`. It must use the same host name as the page
+  (`http://localhost:8000` with the app on `http://localhost:5173`, not `127.0.0.1`).
 
-Only the auth token, the theme choice (`theme`), the language choice (`lang`) and the sound
-choice (`sound`) are stored in `localStorage`, every read and write in `try`/`catch`. With
-storage blocked the app still loads (logged out) and follows the OS theme and the browser
+Only the theme choice (`theme`), the language choice (`lang`) and the sound choice (`sound`)
+are stored in `localStorage`, every read and write in `try`/`catch`. The login is an HttpOnly
+session cookie that JavaScript never sees; a leftover `token` key from the old token login is
+removed once at startup. With storage blocked the app still loads and follows the OS theme and the browser
 language, with sound off; the toggles still switch the current page view. No choice is sent to
 the server.
 
@@ -235,7 +240,7 @@ Visualizations are translated too; their drawings stay left to right.
 - **Server messages:** the backend answers in the `Accept-Language` language (its `lang/`
   files), so its message is shown as sent: login and register errors, field errors, the ban
   message, submit errors and 503s are Arabic in Arabic mode. The frontend's own messages
-  (`errors.*`) cover a network error, an ended session (401 with a token), 429 and any
+  (`errors.*`) cover a network error, an ended session (401 while signed in), 429 and any
   response without a message. Admin requests always send `en`, so admin messages are English.
   Still not translated: the ban reason (typed by staff, shown `lang="en" dir="auto"`) and
   compiler or runtime output from the sandbox (shown left to right).
@@ -255,6 +260,14 @@ Visualizations are translated too; their drawings stay left to right.
   and (when logged in) solved status, all applied in the browser; "Showing X of Y" is
   announced with `aria-live`. Below `md` the rows become cards. `/challenges/:slug` solves one
   problem, with links back to the list and to its lesson.
+
+`/login` and `/register` use `AuthForm` and `Field`. Login has a "Remember me" checkbox (off by
+default; the session then lasts 30 days instead of the idle timeout). Every password field has a
+"Show password" / "Hide password" text button after it (`aria-controls`; the input switches
+between password and text). Register shows the hint "At least 8 characters." under the password
+(`aria-describedby`, the backend rule is `min:8`). After a failed submit the focus moves to the
+first field the server marked invalid, and a submit is ignored while one is running. There is no "forgot password" link: it
+needs email, which the app does not send.
 
 On the home page each lesson row shows difficulty bars (the hardest problem of the lesson) and,
 when logged in, a solved check. Both come from the existing `GET /api/challenges` response
@@ -312,16 +325,18 @@ Activity for owners.
   50 per page; audit details are shown as lines such as `title: Old → New`.
 
 Banned accounts: login shows "This account is banned. Reason: ..." from the 403. A request
-with a token that gets that 403 is handled like a 401: the token is cleared and the user goes
-to `/login`, which shows the ban message. Banning deletes the user's tokens, so an open tab
-usually gets a 401 instead and lands on `/login` with the session notice below; the reason
-then shows when they try to log in.
+while signed in that gets that 403 is handled like a 401: the signed-in state is cleared and
+the user goes to `/login`, which shows the ban message. Banning deletes the user's sessions,
+so an open tab usually gets a 401 instead and lands on `/login` with the session notice
+below; the reason then shows when they try to log in.
 
-Session ended: when an authenticated request gets a 401 and a token was sent, the token is
+Session ended: when a request made while signed in gets a 401, the signed-in state is
 cleared and the user goes to `/login`, which shows "Your session has ended. Please log in
-again." It is not shown after clicking Log out (a 401 from `/logout` only clears the token),
-and the 401 of a wrong password on login or register keeps its own message. The notice
-lives in the navigation state, so it is gone after logging in.
+again." A 419 (CSRF token missing or stale) first refreshes the CSRF cookie and retries the
+request once; a second 419 counts as the session ended. The notice is not shown after clicking
+Log out (a 401 from `/logout` only clears the state), and the 401 of a wrong password on login
+or register keeps its own message. The notice lives in the navigation state, so it is gone
+after logging in.
 
 `src/components/AdminRoute.tsx` wraps these routes: guests and users who are neither admin
 nor owner get the same "Page not found" as an unknown path. That is only convenience; the backend answers every

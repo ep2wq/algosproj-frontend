@@ -20,7 +20,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Visualizations: `src/visuals/index.ts` maps a lesson slug to a lazy component. Steps are
   pure "frames" functions; `usePlayback` + `PlaybackControls` are shared. No chart library.
 - `VITE_API_URL` in `.env` (default `http://localhost:8000`); a build arg in the Dockerfile.
-- Only the token, `theme`, `lang`, `sound` in `localStorage` (try/catch). No `dangerouslySetInnerHTML`.
+- Only `theme`, `lang`, `sound` in `localStorage` (try/catch); login is an HttpOnly session cookie
+  (`credentials: 'include'`, `X-XSRF-TOKEN`). No `dangerouslySetInnerHTML`.
 - Sound (README "Sound"): `src/sound.ts`, off by default, one AudioContext made only in a user gesture, tune the constants block at the top; never the only signal.
 - Themes (README "Themes"): toggle, `src/theme.ts` + inline script in `index.html`. Tokens in
   `src/index.css`, other colors need `dark:`. Text 4.5:1, borders/shapes 3:1, both themes.
@@ -56,9 +57,9 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 - Done: lessons, Monaco + submit, auth, leaderboard, 404, Challenges, admin, dark mode, Arabic
   interface + content (all 19 modules), visualizations translated. Next: AI hint UI.
-- Decisions: oxlint. Lint/build pass. A 401 with a token (not login/register/logout), or a
-  403 with `reason`, clears it; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
+- Decisions: oxlint. Lint/build pass. A 401 while `signedIn` (not login/register/logout), or a
+  403 with `reason`, clears it; a 419 refreshes the CSRF cookie and retries once, a second 419 = ended; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.
   Phones: `AccountMenu` (`Layout.tsx`) holds name, Admin, Log out; a disclosure, not role="menu".
-- Gotchas: Monaco loads from jsDelivr at runtime. Vite must run on port 5173 (CORS). One-line
+- Gotchas: Monaco loads from jsDelivr at runtime. Vite must run on port 5173 (CORS and the backend's `SANCTUM_STATEFUL_DOMAINS`); `VITE_API_URL` uses the same host name as the page. One-line
   lint disables: `react/only-export-components` (auth.tsx), `react/static-components`.
