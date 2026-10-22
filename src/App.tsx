@@ -12,9 +12,13 @@ import AdminModulePage from './pages/admin/AdminModulePage'
 import AdminProblemPage from './pages/admin/AdminProblemPage'
 import AdminUserPage from './pages/admin/AdminUserPage'
 import AdminUsersPage from './pages/admin/AdminUsersPage'
+import AboutPage from './pages/AboutPage'
 import ChallengesPage from './pages/ChallengesPage'
+import ContactPage from './pages/ContactPage'
+import FaqPage from './pages/FaqPage'
 import LandingPage from './pages/LandingPage'
 import LeaderboardPage from './pages/LeaderboardPage'
+import { CookiesPage, PrivacyPage, TermsPage } from './pages/LegalPages'
 import LessonsPage from './pages/LessonsPage'
 import LoginPage from './pages/LoginPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -30,6 +34,12 @@ function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/faq" element={<FaqPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/cookies" element={<CookiesPage />} />
         <Route path="/lessons" element={<LessonsPage />} />
         <Route
           path="/lessons/:slug"
@@ -67,8 +77,8 @@ function App() {
             <Route path="audit-log" element={<AdminAuditLogPage />} />
             <Route path="activity" element={<AdminActivityPage />} />
           </Route>
-          <Route path="*" element={<NotFoundPage />} />
         </Route>
+        {/* Every other address, unknown /admin paths too: the 404 page in the interface language. */}
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

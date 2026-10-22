@@ -818,5 +818,11 @@
   "landingSearch": {
     "from": "From the binary search lesson.",
     "open": "Open the lesson"
+  },
+  "notFoundSearch": {
+    "region": "Sorted status codes, scrolls sideways when wider than the screen",
+    "label": "Sorted status codes: {{values}}. Target: {{target}}.",
+    "result": "The search returned -1. On the web, -1 is spelled 404.",
+    "replay": "Search again"
   }
 }

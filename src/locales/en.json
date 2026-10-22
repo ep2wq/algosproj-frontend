@@ -168,13 +168,17 @@
     "rememberMe": "Remember me",
     "passwordHint": "At least 8 characters.",
     "sessionEnded": "Your session has ended. Please log in again.",
-    "bannedPrefix": "This account is banned. Reason:"
+    "bannedPrefix": "This account is banned. Reason:",
+    "agree": "By creating an account you agree to the <terms>Terms of use</terms> and the <privacy>Privacy policy</privacy>."
   },
   "notFound": {
     "title": "Page not found",
     "body": "There is nothing at this address.",
-    "home": "Go to the lessons",
-    "hint": "The link may be out of date or have a typo."
+    "home": "Go to the home page",
+    "hint": "The link may be out of date or have a typo.",
+    "lead": "We searched for this page the way the binary search lesson would.",
+    "searchTitle": "Searching for 404",
+    "lessons": "Browse the lessons"
   },
   "errors": {
     "network": "Can't reach the server. Check your connection and try again.",
@@ -544,5 +548,146 @@
     "bilingualCaption": "The same step of the binary search lesson, in both languages.",
     "startTitle": "Start with lesson one",
     "startBody": "You can read every lesson and play every visualization without an account. Create one when you want your code graded."
+  },
+  "about": {
+    "title": "About",
+    "metaDescription": "Who this site is for, how its lessons and grading work, and who built it.",
+    "intro": "{{product}} is a place to learn data structures and algorithms by watching them work and then writing them yourself.",
+    "body": "## Who it is for\n\nStudents taking a first course in data structures and algorithms, and anyone preparing for one. The lessons start from loops and arrays and go up to graphs and dynamic programming. You need to know a little programming in one of the four languages.\n\n## Why it exists\n\nAlgorithms are easier to follow when you can see each step. A textbook shows the start and the end; a visualization shows what happens in between, and lets you go back one step when you lose the thread. Most material like this is only in English, so every page here also exists in Arabic.\n\n## How a lesson works\n\nEach lesson has a short explanation and a problem to solve. {{visuals}} of the lessons, the ones where watching helps most, also have a visualization you can play, pause and step through, and most of those take your own input too.\n\n## How grading works\n\n- When you submit, your code runs on a separate server in a locked-down container, against all of the problem's tests: the examples you can see and hidden ones. You need an account to submit.\n- A test passes when your program exits without an error and its output matches the expected output exactly, after spaces and line breaks at the start and end are trimmed. Line breaks in the middle count.\n- Each test has a time limit of a few seconds.\n- If every test passes, you get the problem's points. Points are given once per problem: solving it again later adds nothing.\n\n## Points and the leaderboard\n\nHarder problems are worth more points, and each problem shows its points next to it. The leaderboard lists everyone with at least one point, by points. People with the same points share a rank. It shows your name and points, and nothing else about you.\n\n## Who built it\n\n{{product}} is a student-built project. It is not a company or a school, and it has no paid plans.",
+    "more": "Questions? Read the FAQ or get in touch."
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "metaDescription": "Answers about cost, accounts, coding languages, grading, points, the leaderboard, Arabic, sessions and your data.",
+    "intro": "Short answers about how the site works. Each one matches what the site does today.",
+    "stillStuck": "Didn't find your answer? Email",
+    "items": {
+      "free": {
+        "q": "Is it free?",
+        "a": "Yes. There is nothing to pay for: no plans, no payments."
+      },
+      "account": {
+        "q": "Do I need an account?",
+        "a": "Not to read the lessons, play the visualizations or browse the problems. You need one to submit code, earn points and appear on the leaderboard. An account needs a name, an email address and a password of at least 8 characters."
+      },
+      "languages": {
+        "q": "Which languages can I code in?",
+        "a": "Python, Java, JavaScript and C++. Pick one in the editor for each problem."
+      },
+      "grading": {
+        "q": "How is my code graded?",
+        "a": "Your code runs against all of the problem's tests: the examples on the page and hidden ones. For each test it reads the input and prints an answer. The test passes when the program exits without an error and the printed output matches the expected output exactly, after spaces and line breaks at the very start and end are trimmed. Each test has a time limit of a few seconds. The result shows each visible test, and only pass or fail for hidden ones."
+      },
+      "noPoints": {
+        "q": "Why did I get no points?",
+        "a": "One of these is the usual reason:\n\n- At least one test failed. Every test has to pass, hidden ones included.\n- The output is not exactly the same. Trimming only removes spaces and line breaks at the start and end; an extra space in the middle, a missing line break between lines, or extra text such as \"Answer: \" makes the test fail.\n- The program ended with an error or ran past the time limit.\n- You had already solved this problem. Points are given once per problem, so solving it again adds nothing."
+      },
+      "safe": {
+        "q": "Is my code run safely?",
+        "a": "Yes. Each submission runs in its own throwaway container on a separate server, with no network access, limited memory and processor time, and a read-only file system. The container is deleted when the run ends. The code you submit is saved with your submission in the site's database."
+      },
+      "points": {
+        "q": "How do points and the leaderboard work?",
+        "a": "Each problem is worth points by its difficulty, and the number is shown next to it. You earn them the first time you pass every test. The leaderboard lists everyone with at least one point, highest first; people with the same points share a rank. It shows each person's name and points only."
+      },
+      "arabic": {
+        "q": "Can I use it in Arabic?",
+        "a": "Yes. Use the language button in the header. The interface, lessons, visualizations and problem statements are all in Arabic, with technical terms kept in English. Code, input and output stay in English, as they would in any editor."
+      },
+      "loggedOut": {
+        "q": "Why was I logged out?",
+        "a": "A login lasts while you're using the site and ends after a while without activity. If you tick \"Remember me\" when you log in, you stay logged in on that browser for up to 30 days. You are also logged out if you log out yourself, if an admin ends your sessions, or if your account is banned. Clearing your browser's cookies logs you out too."
+      },
+      "deleteAccount": {
+        "q": "How do I delete my account or my data?",
+        "a": "There is no delete button yet. Email {{email}} from the address on your account and ask for it to be deleted. Deleting an account removes it with its submissions and solved problems. The Privacy page explains what is kept in the logs."
+      },
+      "aiTutor": {
+        "q": "Is there an AI tutor?",
+        "a": "Not yet. AI hints are planned but not available today."
+      }
+    }
+  },
+  "contact": {
+    "title": "Contact",
+    "metaDescription": "How to report a problem or ask a question, and what to include.",
+    "faqFirst": "Many questions already have an answer.",
+    "faqLink": "Read the FAQ first.",
+    "emailTitle": "Email",
+    "reply": "This is a small student project. Every message is read, but a reply can take a while.",
+    "body": "## What to include\n\nIf something went wrong, these help us find it:\n\n- The page: its address, or the lesson or problem name.\n- What you did, and what you expected to happen.\n- What happened instead, with any error message.\n- Your browser and device.\n- A screenshot, if you can.\n\nPlease don't send your password. We never need it.\n\n## Your data\n\nTo see, correct or delete the data held about you, email from the address on your account.",
+    "privacyLink": "How your data is used"
+  },
+  "legal": {
+    "updated": "Last updated: {{date}}",
+    "contactTitle": "Questions and data requests",
+    "contactBody": "Email from the address on your account, so we can tell the request comes from you."
+  },
+  "terms": {
+    "title": "Terms of use",
+    "metaDescription": "The rules for using the site: accounts, fair play, your code, bans and changes.",
+    "body": "These terms apply when you use {{product}}. By creating an account you agree to them.\n\n## Who runs the site\n\n{{product}} is a student-built project. [Operator name and country: placeholder, to be filled in before launch.]\n\n## Your account\n\n- Give a name you're happy to see on the leaderboard, and an email address you can read.\n- One person per account. Don't share your account or use someone else's.\n- Keep your password to yourself. You are responsible for what is done with your account.\n\n## Fair play\n\n- Don't try to break, overload or get around the code runner, for example by trying to reach the network, read other files, or run code that is meant to cause harm.\n- Don't try to get points you didn't earn: no scripts that submit for you, no extra accounts to collect points, and no attempts to read the hidden tests.\n- Don't attack the site, its servers or other users, and don't send far more requests than normal use needs.\n- Use names that aren't offensive and don't pretend to be someone else.\n\n## Bans\n\nStaff can ban an account that breaks these rules. A banned account can't log in and is taken off the leaderboard; the reason is shown when its owner tries to log in. The site's owners can also reset an account's progress or delete the account.\n\n## Your code\n\nThe code you write is yours. You allow the site to store it and to run it to grade it.\n\n## No warranty\n\nThe site is offered as it is, free of charge, by a student project. We try to keep it working and correct, but lessons, tests and grading can have mistakes, the site can be unavailable, and data can be lost. Don't rely on it as your only copy of your work.\n\n## Changes\n\nWe may change these terms. The date at the top shows the last change; using the site after a change means you accept the new terms.\n\n## Governing law\n\n[Governing law and courts: placeholder, to be decided before launch.]"
+  },
+  "privacy": {
+    "title": "Privacy policy",
+    "metaDescription": "What the site stores about you, why, who can see it, how long it is kept, and how to ask for it to be deleted.",
+    "body": "This page describes what {{product}} stores and why. It covers the site as it works today.\n\n## Who is responsible\n\n{{product}} is a student-built project. [Operator name and country: placeholder, to be filled in before launch.] Contact: {{email}}.\n\n## What we store\n\n- Your account: your name, email address and password. The password is stored only as a hash, so nobody can read it. Also your role (user, admin or owner), your points, whether your account is banned and why, and when the account was created and last changed.\n- Your work: every submission, with the code, the language, the result, how many tests passed and how long it took. Also which problems you have solved, and when.\n- Sessions: while you are logged in, the server keeps a session with your IP address and your browser's description (its user agent).\n- The activity log: when someone registers, logs in, fails to log in, is refused because of a ban, or logs out, the site records the email address used, the IP address, the browser description and the time. When an account is banned or unbanned, that is recorded too.\n- The staff log: actions by staff, such as editing content or banning an account, with the staff member's email and IP address and the account or content affected.\n\nWe don't use analytics, advertising or tracking of any kind, and we don't sell or share your data.\n\n## Why\n\n- To run your account, grade your code and keep your points: that is the service you asked for.\n- To keep the site safe: the logs help us spot attacks on accounts, misuse and cheating.\n\n## Who can see it\n\n- Everyone: your name and points, on the leaderboard, once you have at least one point and unless your account is banned.\n- Admins and owners: account details, points, solved problems and a list of submissions with their results. The admin pages never show the code itself; it is only in the database, which only the people who run the site can reach. Owners also see the activity and staff logs.\n- The code runner: your code and the tests are sent to a separate server that runs them in a throwaway container and returns the output. It keeps nothing.\n\n## Other services your browser contacts\n\n- jsDelivr: on lesson and challenge pages the code editor (Monaco) loads from the jsDelivr network (cdn.jsdelivr.net). Your browser asks jsDelivr for it directly, so jsDelivr sees your IP address and browser details.\n- Fonts are served by this site itself, not by a font service.\n- Like any website, the servers that host the site see your IP address when you visit.\n\n## How long we keep it\n\n- Your account, submissions and solved problems are kept until the account is deleted.\n- A login session ends when you log out or after a while without activity; \"Remember me\" keeps you logged in for up to 30 days.\n- There is a command to delete activity log entries older than 90 days. It is not yet set to run automatically, so until it is, entries can be kept longer.\n- The staff log is kept.\n\n## Your rights\n\nYou can ask to see the data held about you, to have it corrected, or to have your account deleted. Email {{email}} from the address on your account. Deleting an account removes it with its submissions and solved problems and ends its sessions. Entries in the activity and staff logs stay, without the link to your account, but they still contain the email address and IP address they recorded.\n\n## Cookies\n\nThe site uses only the cookies it needs to keep you logged in and to protect forms. The Cookies page lists them.\n\n## Changes\n\nWhen this page changes, the date at the top changes."
+  },
+  "cookies": {
+    "title": "Cookies and storage",
+    "metaDescription": "Every cookie and browser storage key the site uses, what it is for and how long it lasts.",
+    "body": "The site uses three cookies, all needed to log in and to keep forms safe, and stores three of your settings in your browser. There are no analytics, advertising or tracking cookies, so there is nothing to agree to.\n\n## About the cookies\n\n- The session cookie can't be read by scripts on the page (HttpOnly), and is sent only on requests from this site (SameSite=Lax). On the live site it should also be sent only over HTTPS; that is a server setting.\n- `XSRF-TOKEN` has to be readable by the page, because the page sends its value back with every form. It proves that a request comes from this site, not from another one.\n\n## Settings in your browser\n\nYour language, theme and sound choices are kept in your browser's local storage, on your device only. They are never sent to the server. Clearing your browser's site data removes them.",
+    "table": {
+      "caption": "Cookies and storage keys",
+      "name": "Name",
+      "kind": "Type",
+      "purpose": "What it is for",
+      "duration": "How long it lasts",
+      "necessary": "Strictly necessary"
+    },
+    "rows": {
+      "session": {
+        "name": "`laravel-session` (the name follows the server's app name)",
+        "kind": "Cookie",
+        "purpose": "Keeps you logged in between pages.",
+        "duration": "Until 2 hours without activity (server setting)",
+        "necessary": "Yes"
+      },
+      "xsrf": {
+        "name": "`XSRF-TOKEN`",
+        "kind": "Cookie",
+        "purpose": "Protects every change you make, such as logging in or submitting code, against requests sent from other sites.",
+        "duration": "Same as the session",
+        "necessary": "Yes"
+      },
+      "remember": {
+        "name": "`remember_web_…`",
+        "kind": "Cookie",
+        "purpose": "Only if you tick \"Remember me\": keeps you logged in after the session ends.",
+        "duration": "Up to 30 days",
+        "necessary": "Yes, once you ask to be remembered"
+      },
+      "lang": {
+        "name": "`lang`",
+        "kind": "Local storage",
+        "purpose": "The language you picked.",
+        "duration": "Until you clear site data",
+        "necessary": "A setting you chose"
+      },
+      "theme": {
+        "name": "`theme`",
+        "kind": "Local storage",
+        "purpose": "Light or dark, if you picked one.",
+        "duration": "Until you clear site data",
+        "necessary": "A setting you chose"
+      },
+      "sound": {
+        "name": "`sound`",
+        "kind": "Local storage",
+        "purpose": "Whether sound effects are on.",
+        "duration": "Until you clear site data",
+        "necessary": "A setting you chose"
+      }
+    }
   }
 }
