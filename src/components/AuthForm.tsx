@@ -25,7 +25,7 @@ export default function AuthForm({ title, submitLabel, busyLabel, busy, error, o
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    onSubmit()
+    if (!busy) onSubmit()
   }
 
   return (

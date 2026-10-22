@@ -27,8 +27,9 @@ export default function LoginPage() {
   const location = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [remember, setRemember] = useState(false)
   const [busy, setBusy] = useState(false)
-  // Sent here by a request that found the token dead (sessionEnded) or the account banned
+  // Sent here by a request that found the session ended (sessionEnded) or the account banned
   // (banReason). Neither is set after a manual Log out.
   const state = location.state as { banReason?: string; sessionEnded?: boolean } | null
   const stateBanReason = state?.banReason
@@ -41,7 +42,7 @@ export default function LoginPage() {
     setError('')
     setFieldErrors({})
     try {
-      await login(email, password)
+      await login(email, password, remember)
       navigate(redirectTarget(location.state), { replace: true })
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) {
@@ -77,7 +78,7 @@ export default function LoginPage() {
           {t('auth.sessionEnded')}
         </p>
       )}
-      <Field id="email" label={t('auth.email')} type="email" value={email} onChange={setEmail} autoComplete="email" errors={fieldErrors.email} />
+      <Field id="email" label={t('auth.email')} type="email" value={email} onChange={setEmail} autoComplete="username" errors={fieldErrors.email} />
       <Field
         id="password"
         label={t('auth.password')}
@@ -87,6 +88,19 @@ export default function LoginPage() {
         autoComplete="current-password"
         errors={fieldErrors.password}
       />
+      <div className="flex items-center gap-2">
+        <input
+          id="remember"
+          name="remember"
+          type="checkbox"
+          checked={remember}
+          onChange={(event) => setRemember(event.target.checked)}
+          className="size-4 accent-accent"
+        />
+        <label htmlFor="remember" className="py-1 text-sm text-ink">
+          {t('auth.rememberMe')}
+        </label>
+      </div>
     </AuthForm>
   )
 }

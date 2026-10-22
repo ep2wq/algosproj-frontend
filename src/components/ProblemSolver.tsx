@@ -27,7 +27,7 @@ export default function ProblemSolver({
   onPassed?: (result: SubmitResult) => void
 }) {
   const { t } = useTranslation()
-  const { user, refreshUser } = useAuth()
+  const { user, loading, refreshUser } = useAuth()
   const { dark } = useTheme()
   const location = useLocation()
   const [language, setLanguage] = useState<Language>('python')
@@ -163,7 +163,8 @@ export default function ProblemSolver({
       )}
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        {user ? (
+        {/* Nothing while /me is still loading at startup, so a logged-in user never sees "Log in". */}
+        {loading ? null : user ? (
           <button
             type="button"
             onClick={handleSubmit}

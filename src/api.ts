@@ -1,7 +1,14 @@
 import i18n from './i18n'
 
 const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '')
-const TOKEN_KEY = 'token'
+
+// Logins used to keep a token here. It means nothing now (the session cookie does the work), so
+// a leftover one is removed once at startup.
+try {
+  localStorage.removeItem('token')
+} catch {
+  // Storage blocked.
+}
 
 export type User = {
   id: number
@@ -15,7 +22,6 @@ export type User = {
 export type Role = 'user' | 'admin' | 'owner'
 
 export type AuthResponse = {
-  token: string
   user: User
 }
 
@@ -72,7 +78,7 @@ export type Topic = {
 }
 
 // topic and lesson_slug are null for a standalone challenge (a problem without a lesson).
-// solved is only ever true for the user whose token was sent.
+// solved is only ever true for the logged-in user.
 export type ChallengeSummary = {
   slug: string
   title: string
@@ -124,7 +130,7 @@ export type LeaderboardEntry = {
   rank: number
   name: string
   points: number
-  is_you: boolean // true only on the row of the user whose token was sent
+  is_you: boolean // true only on the logged-in user's row
 }
 
 export type MyRank = {
@@ -256,7 +262,7 @@ export type TestCaseInput = { input: string; expected_output: string; is_hidden:
 export class ApiError extends Error {
   status: number
   fieldErrors: Record<string, string[]>
-  // Set on a 403 for a banned account (login or any request with a token).
+  // Set on a 403 for a banned account (login, or any request while logged in).
   banReason?: string
 
   constructor(status: number, message: string, fieldErrors: Record<string, string[]> = {}, banReason?: string) {
@@ -267,24 +273,23 @@ export class ApiError extends Error {
   }
 }
 
-// With storage blocked these do nothing, so the app still loads (logged out) instead of crashing.
-export function getToken(): string | null {
-  try {
-    return localStorage.getItem(TOKEN_KEY)
-  } catch {
-    return null
-  }
+// True while the app has a logged-in user (from /me, login or register). Only then does a 401 mean
+// the session ended; a guest's 401 (the /me at startup) means nothing.
+let signedIn = false
+
+// The session is an HttpOnly cookie that JavaScript never sees. Against CSRF, Laravel also sets the
+// readable XSRF-TOKEN cookie, which every state-changing request sends back in X-XSRF-TOKEN.
+function xsrfToken(): string | null {
+  const cookie = document.cookie.split('; ').find((part) => part.startsWith('XSRF-TOKEN='))
+  return cookie ? decodeURIComponent(cookie.slice('XSRF-TOKEN='.length)) : null
 }
 
-export function setToken(token: string | null) {
+// Gets a fresh XSRF-TOKEN cookie (and a session) before login and register, and after a 419.
+async function refreshCsrfCookie() {
   try {
-    if (token) {
-      localStorage.setItem(TOKEN_KEY, token)
-    } else {
-      localStorage.removeItem(TOKEN_KEY)
-    }
+    await fetch(`${BASE_URL}/sanctum/csrf-cookie`, { credentials: 'include', headers: { Accept: 'application/json' } })
   } catch {
-    // Storage blocked.
+    throw new ApiError(0, i18n.t('errors.network'))
   }
 }
 
@@ -306,15 +311,15 @@ function query(params: Record<string, string | undefined>): string {
   return text ? `?${text}` : ''
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const token = getToken()
+async function request<T>(method: string, path: string, body?: unknown, retried = false): Promise<T> {
   // The admin area is English only (its responses hold both languages anyway). Elsewhere the
   // app language picks the course text language. "ar" and "en" are CORS-safelisted values, so
   // the header adds no preflight request.
   const admin = path.startsWith('/admin')
   const headers: Record<string, string> = { Accept: 'application/json', 'Accept-Language': admin ? 'en' : i18n.language }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
-  if (token) headers.Authorization = `Bearer ${token}`
+  const xsrf = method === 'GET' ? null : xsrfToken()
+  if (xsrf) headers['X-XSRF-TOKEN'] = xsrf
 
   // The server answers in the Accept-Language language, so its message is shown when it sends
   // one; the frontend's own messages (by HTTP status) cover the rest. The admin area is English
@@ -327,6 +332,8 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
+      // Sends the session cookie to the API (another origin: same site, another port or subdomain).
+      credentials: 'include',
     })
   } catch {
     throw new ApiError(0, t('errors.network'))
@@ -338,18 +345,31 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   const serverMessage = typeof data?.message === 'string' ? data.message : ''
 
-  // A dead token. Not for login and register (a wrong password keeps its own message) or logout
-  // (the user is leaving anyway, and auth.tsx clears the token).
-  if (response.status === 401 && token && !['/login', '/register', '/logout'].includes(path)) {
-    setToken(null)
+  // 419: the CSRF token is missing or stale (the session expired or changed). Get a fresh one and
+  // try once more; if that fails too, the session is unusable and is treated as ended.
+  if (response.status === 419) {
+    if (!retried) {
+      await refreshCsrfCookie()
+      return request<T>(method, path, body, true)
+    }
+    if (signedIn) {
+      signedIn = false
+      onUnauthorized()
+    }
+    throw new ApiError(419, t('errors.sessionEnded'))
+  }
+  // An ended session. Not for login and register (a wrong password keeps its own message) or logout
+  // (the user is leaving anyway, and auth.tsx clears the user).
+  if (response.status === 401 && signedIn && !['/login', '/register', '/logout'].includes(path)) {
+    signedIn = false
     onUnauthorized()
     throw new ApiError(401, t('errors.sessionEnded'))
   }
-  // A banned account: {"message": "This account is banned.", "reason": ...}. With a token it is
+  // A banned account: {"message": "This account is banned.", "reason": ...}. When logged in it is
   // handled like a 401; on login it is shown on the form.
   if (response.status === 403 && typeof data?.reason === 'string') {
-    if (token) {
-      setToken(null)
+    if (signedIn) {
+      signedIn = false
       onUnauthorized(data.reason)
     }
     throw new ApiError(403, serverMessage, {}, data.reason)
@@ -371,20 +391,30 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   throw new ApiError(response.status, serverMessage || statusMessages[response.status] || t('errors.status', { status: response.status }))
 }
 
-export function register(name: string, email: string, password: string) {
-  return request<AuthResponse>('POST', '/register', { name, email, password })
+// Login and register start a session (the server sets the cookie); the response has only the user.
+export async function register(name: string, email: string, password: string) {
+  await refreshCsrfCookie()
+  const result = await request<AuthResponse>('POST', '/register', { name, email, password })
+  signedIn = true
+  return result
 }
 
-export function login(email: string, password: string) {
-  return request<AuthResponse>('POST', '/login', { email, password })
+export async function login(email: string, password: string, remember: boolean) {
+  await refreshCsrfCookie()
+  const result = await request<AuthResponse>('POST', '/login', { email, password, remember })
+  signedIn = true
+  return result
 }
 
-export function logout() {
+export async function logout() {
+  signedIn = false
   return request<{ message: string }>('POST', '/logout')
 }
 
-export function getMe() {
-  return request<User>('GET', '/me')
+export async function getMe() {
+  const user = await request<User>('GET', '/me')
+  signedIn = true
+  return user
 }
 
 export function getModules() {

@@ -5,9 +5,9 @@ import type { User } from './api'
 
 type AuthContextValue = {
   user: User | null
-  // True while the user is being loaded from a saved token on startup.
+  // True while /me tells who is logged in (by the session cookie) on startup.
   loading: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string, remember: boolean) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
@@ -17,12 +17,12 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(() => api.getToken() !== null)
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const location = useLocation()
 
-  // A 401 on an authenticated request, or a 403 because the account is banned, clears the token
-  // (in api.ts) and sends the user to login, which shows the ban reason if there is one.
+  // A 401 (or a second 419) on a request made while logged in, or a 403 because the account is
+  // banned, clears the user and sends them to login, which shows the ban reason if there is one.
   useEffect(() => {
     api.setUnauthorizedHandler((banReason) => {
       setUser(null)
@@ -33,26 +33,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   }, [navigate, location])
 
+  // The session cookie is HttpOnly, so only the server knows whether someone is logged in.
   useEffect(() => {
-    if (!api.getToken()) return
     api
       .getMe()
       .then(setUser)
       .catch(() => {
-        // A 401 is already handled; other errors leave the user logged out for now.
+        // A guest (401) or an error: logged out for now.
       })
       .finally(() => setLoading(false))
   }, [])
 
-  const login = useCallback(async (email: string, password: string) => {
-    const result = await api.login(email, password)
-    api.setToken(result.token)
+  const login = useCallback(async (email: string, password: string, remember: boolean) => {
+    const result = await api.login(email, password, remember)
     setUser(result.user)
   }, [])
 
   const register = useCallback(async (name: string, email: string, password: string) => {
     const result = await api.register(name, email, password)
-    api.setToken(result.token)
     setUser(result.user)
   }, [])
 
@@ -60,9 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await api.logout()
     } catch {
-      // The token is cleared locally either way.
+      // Logged out here either way (the session may already have ended).
     }
-    api.setToken(null)
     setUser(null)
   }, [])
 

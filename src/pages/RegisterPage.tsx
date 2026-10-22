@@ -57,7 +57,8 @@ export default function RegisterPage() {
       <Field id="email" label={t('auth.email')} type="email" value={email} onChange={setEmail} autoComplete="email" errors={fieldErrors.email} />
       <Field
         id="password"
-        label={t('auth.newPassword')}
+        label={t('auth.password')}
+        hint={t('auth.passwordHint')}
         type="password"
         value={password}
         onChange={setPassword}

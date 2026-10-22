@@ -156,7 +156,10 @@
     "name": "Name",
     "email": "Email",
     "password": "Password",
-    "newPassword": "Password (at least 8 characters)",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "rememberMe": "Remember me",
+    "passwordHint": "At least 8 characters.",
     "sessionEnded": "Your session has ended. Please log in again.",
     "bannedPrefix": "This account is banned. Reason:"
   },
