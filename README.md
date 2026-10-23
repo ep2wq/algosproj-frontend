@@ -106,9 +106,11 @@ is ignored and the OS is followed.
 ## UI components (shadcn/ui)
 
 `src/components/ui` has 8 shadcn/ui components on Base UI: tabs, progress, skeleton, accordion,
-button, input, label and checkbox. Only tabs is used so far, on the landing page
-(`src/components/ui/tabs.tsx`). The shadcn color roles in `src/index.css` point at our tokens;
-`muted` and `accent` keep our meaning (muted text, teal accent).
+button, input, label and checkbox. Tabs, progress and skeleton are used: tabs on the landing page
+(`src/components/ui/tabs.tsx`), progress for the landing progress bars (with `aria-label` and
+`getAriaValueText`, key `landing.progressValue`), skeleton for loading states. The shadcn color
+roles in `src/index.css` point at our tokens; `muted` and `accent` keep our meaning (muted text,
+teal accent).
 
 To add a component:
 
@@ -119,6 +121,28 @@ To add a component:
 5. Run `npm run lint` and `npm run build`; check Arabic (RTL) and both themes.
 
 Details: docs/ui-shadcn.md (outside this repo).
+
+## Loading states
+
+- `src/components/Loading.tsx`: `LoadingRegion` (`aria-busy="true"`; the skeleton inside is `aria-hidden`
+  and `inert`; one visually hidden `role="status"` line next to the busy element; focus is never moved),
+  `SkeletonLines` (one `Skeleton` bar per text line, `h-lh`) and `CellLoader` (three array cells, the
+  accent steps along twice, 300 ms a step, then rests on the middle cell; static under reduced motion;
+  keyframes `.cell-loader` in `src/index.css`).
+- Nothing shows for the first 200 ms, but the space is taken at once; the region is then replaced by the
+  content. Nothing loops. The status text is the existing loading key (`lesson.loading`, `home.loading`, ...).
+- Skeletons: landing panels, `/lessons`, `/challenges`, lesson, challenge and leaderboard pages. Labels
+  known before the data (table headers, Easy/Medium/Hard, filter labels) stay real text.
+- `CellLoader`: Suspense fallbacks of the lazy `LessonPage`/`ChallengePage`, lazy visualizations (in the
+  drawing's frame), Monaco's `loading`, `AdminRoute` while `/me` loads; silent (no status) in the landing
+  hero and the 404 drawing. Admin tables keep their text.
+- `src/components/ScrollProgress.tsx`: 3 px accent bar fixed at the top, `scaleX` from the start edge (right
+  in Arabic), set from a passive scroll listener with one `requestAnimationFrame` write per frame, no React
+  re-render, no easing, `aria-hidden`. On lesson pages, About, FAQ, Terms, Privacy and Cookies; not on the
+  challenge page, Contact or lists.
+- Skip links: `Layout.tsx` renders an empty slot after "Skip to content" and passes it with
+  `<Outlet context={skipSlot} />`. `LessonPage` portals "Skip to challenge" (`nav.skipToChallenge`) into it
+  when the lesson has a problem; it focuses the first `ProblemCard` (`#challenge`) without changing the URL.
 
 ## Sound
 

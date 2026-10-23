@@ -46,6 +46,9 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   `` `code` `` (`TextWithCode`: code plus touching text in one `inline-block`). Course text via
   `Content` (`*_lang`, titles `lang="auto"`). Code, drawings, data inputs, emails, `/admin/*`
   stay LTR. Logical Tailwind; Western digits; `formatDateTime`/`formatNumber`/`formatPercent`/`formatDate`. `<title>`: `titles.page`; skip link.
+- Loading (README "Loading states"): `LoadingRegion`/`SkeletonLines`/`CellLoader` in `src/components/Loading.tsx`
+  (200 ms delay, one status line, nothing loops); `ScrollProgress` on lesson and text pages; `Layout` passes
+  a skip-link slot via `Outlet context`, `LessonPage` portals "Skip to challenge" into it.
 - Commands: `npm install`, `npm run dev`, `npm run build`, `npm run lint` (oxlint + `check:i18n`).
 
 ## Working rules
@@ -70,7 +73,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 - Done: lessons, Monaco + submit, auth, leaderboard, landing page, About/FAQ/Contact/legal pages,
   binary search 404, prerender, Challenges, admin, dark mode, Arabic
-  interface + content (all 19 modules), visualizations translated, shadcn/ui setup + landing tabs on Base UI. Next: AI hint UI.
+  interface + content (all 19 modules), visualizations translated, shadcn/ui setup + landing tabs on Base UI,
+  loading skeletons, cell loader, scroll progress, skip to challenge. Next: AI hint UI.
 - Decisions: oxlint. Lint/build pass. A 401 while `signedIn` (not login/register/logout), or a
   403 with `reason`, clears it; a 419 refreshes the CSRF cookie and retries once, a second 419 = ended; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.
@@ -79,3 +83,5 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   on every page. Legal texts are drafts needing review; `CONTACT_EMAIL` is still a placeholder.
 - Gotchas: Monaco loads from jsDelivr at runtime. Vite must run on port 5173 (CORS and the backend's `SANCTUM_STATEFUL_DOMAINS`); `VITE_API_URL` uses the same host name as the page. One-line
   lint disables: `react/only-export-components` (auth.tsx), `react/static-components`.
+  The global `:focus-visible` rule at the end of `src/index.css` is outside any `@layer`, so it beats
+  utilities like `focus:outline-none`; use the `!` suffix to override.
