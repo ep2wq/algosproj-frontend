@@ -6,6 +6,7 @@ import { useAuth } from '../auth'
 import Content from '../components/Content'
 import EmptyState from '../components/EmptyState'
 import { CheckIcon } from '../components/Icons'
+import { LoadingRegion, SkeletonLines } from '../components/Loading'
 
 const DIFFICULTIES = ['easy', 'medium', 'hard']
 
@@ -116,7 +117,31 @@ export default function LessonsPage() {
           </button>
         </div>
       )}
-      {!error && modules === null && <p className="mt-6 text-muted motion-safe:animate-appear motion-safe:[animation-delay:300ms]">{t('home.loading')}</p>}
+      {/* The first track: its heading and four module cards in the real columns. */}
+      {!error && modules === null && (
+        <LoadingRegion label={t('home.loading')} className="mt-12">
+          <div className="flex flex-wrap items-baseline gap-x-3 border-b border-line pb-2">
+            <SkeletonLines lines={1} className="w-48 text-2xl" />
+            <SkeletonLines lines={1} className="w-16 text-sm" />
+          </div>
+          <div className="mt-5 gap-6 lg:columns-2">
+            {[3, 4, 4, 4].map((count, index) => (
+              <div key={index} className="mb-5 break-inside-avoid rounded-lg border border-line bg-surface">
+                <div className="border-b border-line px-4 py-2.5">
+                  <SkeletonLines lines={1} className="w-40" />
+                </div>
+                <div className="divide-y divide-line">
+                  {Array.from({ length: count }, (_, row) => (
+                    <div key={row} className="flex min-h-11 items-center px-4 py-2.5">
+                      <SkeletonLines lines={1} className={row % 2 ? 'w-36' : 'w-52'} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </LoadingRegion>
+      )}
       {modules !== null && modules.length === 0 && <EmptyState>{t('home.empty')}</EmptyState>}
 
       {[...tracks].map(([track, trackModules]) => (

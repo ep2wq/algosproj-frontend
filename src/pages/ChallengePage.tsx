@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError, getChallenge, type Challenge } from '../api'
@@ -6,6 +6,9 @@ import { useAuth } from '../auth'
 import Content from '../components/Content'
 import DifficultyBadge from '../components/DifficultyBadge'
 import { CheckIcon } from '../components/Icons'
+import { TextWithCode } from '../components/LessonBody'
+import { LoadingRegion, SkeletonLines } from '../components/Loading'
+import { Skeleton } from '../components/ui/skeleton'
 import ProblemSolver from '../components/ProblemSolver'
 
 // Loaded with React.lazy, like the lesson page, so Monaco stays out of the first bundle.
@@ -80,15 +83,72 @@ export default function ChallengePage() {
     )
   }
 
-  if (!challenge) return <p className="text-muted motion-safe:animate-appear motion-safe:[animation-delay:300ms]">{t('challenge.loading')}</p>
+  const backLink = (
+    <Link to="/challenges" className="inline-block rounded py-1 text-sm text-muted hover:text-accent">
+      {t('challenge.back')}
+    </Link>
+  )
+
+  // The layout of ProblemSolver: title and details, the statement, two examples, the framed editor at
+  // its real height and the button.
+  if (!challenge) {
+    return (
+      <div>
+        {backLink}
+        {/* The page keeps a main heading while the title loads. */}
+        <h1 className="sr-only">{t('challenge.loading')}</h1>
+        <LoadingRegion label={t('challenge.loading')}>
+          <SkeletonLines lines={1} className="mt-2 w-1/2 max-w-sm text-3xl" />
+          <SkeletonLines lines={1} className="mt-2 w-56 text-sm" />
+          {/* The statement: a description, then Input, Output and Constraints, each after a blank line. */}
+          <div className="mt-3 max-w-prose">
+            <SkeletonLines lines={3} />
+            {['w-12', 'w-16', 'w-24'].map((width) => (
+              <Fragment key={width}>
+                <div className="h-lh" />
+                <SkeletonLines lines={1} className={`${width} text-sm`} />
+                <SkeletonLines lines={1} className="w-1/2" />
+              </Fragment>
+            ))}
+          </div>
+          <div className="mt-5">
+            <p className="text-sm font-semibold">{t('solver.examples')}</p>
+            <div className="mt-2 grid gap-3 sm:grid-cols-2">
+              {[0, 1].map((index) => (
+                <div key={index} className="grid grid-cols-2 gap-3 rounded-lg border border-line bg-surface p-3">
+                  {[0, 1].map((cell) => (
+                    <div key={cell}>
+                      <SkeletonLines lines={1} className="w-16 text-xs" />
+                      <Skeleton className="mt-1 h-7 w-12" />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-6 overflow-hidden rounded-lg border border-line bg-surface">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-line px-3 py-2">
+              <div className="flex items-center">
+                <span className="text-sm font-medium">{t('solver.language')}</span>
+                <div className="ms-2 h-[1.875rem] w-24 rounded border border-line bg-surface" />
+              </div>
+              <p className="text-xs text-muted">
+                <TextWithCode text={t('solver.tabHint')} />
+              </p>
+            </div>
+            <div className="h-[280px]" />
+          </div>
+          <Skeleton className="mt-4 h-[2.625rem] w-36" />
+        </LoadingRegion>
+      </div>
+    )
+  }
 
   const solved = user !== null && (challenge.solved || solvedNow === challenge.slug)
 
   return (
     <div>
-      <Link to="/challenges" className="inline-block rounded py-1 text-sm text-muted hover:text-accent">
-        {t('challenge.back')}
-      </Link>
+      {backLink}
       <title>{t('titles.page', { name: challenge.title })}</title>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">
         <Content lang="auto">{challenge.title}</Content>

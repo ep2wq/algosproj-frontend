@@ -3,9 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError, getLesson, type Lesson } from '../api'
 import Content from '../components/Content'
+import { LoadingRegion, SkeletonLines } from '../components/Loading'
 import LessonBody from '../components/LessonBody'
 import ProblemCard from '../components/ProblemCard'
 import { VISUALS } from '../visuals'
+
+// The drawing's frame while a visualization loads: the height of the shortest visualization at that
+// width (500 px on a phone, 406 px from lg), so the frame never shrinks when the drawing arrives.
+const VISUAL_FRAME = 'h-[31rem] rounded-lg border border-line bg-surface lg:h-[25rem]'
 
 // Loaded with React.lazy, so Monaco stays out of the first bundle.
 export default function LessonPage() {
@@ -76,13 +81,44 @@ export default function LessonPage() {
     )
   }
 
-  if (!lesson) return <p className="text-muted motion-safe:animate-appear motion-safe:[animation-delay:300ms]">{t('lesson.loading')}</p>
+  const backLink = (
+    <Link to="/lessons" className="inline-block rounded py-1 text-sm text-muted hover:text-accent">
+      {t('lesson.allLessons')}
+    </Link>
+  )
+
+  // The title, the first paragraphs and headings of a lesson, and the drawing's frame when this lesson
+  // has a visualization (known from the address).
+  if (!lesson) {
+    return (
+      <div>
+        {backLink}
+        {/* The page keeps a main heading while the title loads. */}
+        <h1 className="sr-only">{t('lesson.loading')}</h1>
+        <LoadingRegion label={t('lesson.loading')}>
+          <SkeletonLines lines={1} className="mt-2 w-1/2 max-w-sm text-3xl" />
+          <div className="mt-4 max-w-prose leading-relaxed">
+            <SkeletonLines lines={3} />
+            <SkeletonLines lines={3} className="mt-4" />
+            <SkeletonLines lines={1} className="mt-10 w-40 text-xl" />
+            <SkeletonLines lines={4} className="mt-4" />
+            <SkeletonLines lines={1} className="mt-10 w-48 text-xl" />
+            <SkeletonLines lines={3} className="mt-4" />
+          </div>
+          {Visual && (
+            <div className="mt-10 border-t border-line pt-8">
+              <p className="text-xl font-semibold">{t('lesson.visualization')}</p>
+              <div className={`mt-4 ${VISUAL_FRAME}`} />
+            </div>
+          )}
+        </LoadingRegion>
+      </div>
+    )
+  }
 
   return (
     <div>
-      <Link to="/lessons" className="inline-block rounded py-1 text-sm text-muted hover:text-accent">
-        {t('lesson.allLessons')}
-      </Link>
+      {backLink}
       <title>{t('titles.page', { name: lesson.title })}</title>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">
         <Content lang="auto">{lesson.title}</Content>

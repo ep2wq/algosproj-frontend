@@ -7,6 +7,8 @@ import Content from '../components/Content'
 import DifficultyBadge from '../components/DifficultyBadge'
 import EmptyState from '../components/EmptyState'
 import { CheckIcon } from '../components/Icons'
+import { LoadingRegion, SkeletonLines } from '../components/Loading'
+import { Skeleton } from '../components/ui/skeleton'
 import { textLang } from '../textLang'
 
 const DIFFICULTIES = ['easy', 'medium', 'hard']
@@ -110,7 +112,44 @@ export default function ChallengesPage() {
           </button>
         </div>
       )}
-      {!error && challenges === null && <p className="mt-6 text-muted motion-safe:animate-appear motion-safe:[animation-delay:300ms]">{t('challenges.loading')}</p>}
+      {/* The filters with their real labels and empty control frames, the count line and the first rows
+          (cards on a phone, the table from md). The list is long: a screen is held, so the footer stays out of view. */}
+      {!error && challenges === null && (
+        <LoadingRegion label={t('challenges.loading')} className="min-h-screen">
+          <div className={`mt-6 grid gap-3 sm:grid-cols-2 ${user ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
+            {['challenges.search', 'challenges.difficulty', 'challenges.topic', ...(user ? ['challenges.status'] : [])].map((key) => (
+              <div key={key}>
+                <span className="text-sm font-medium">{t(key)}</span>
+                <div className="mt-1 h-[2.125rem] rounded border border-line bg-surface" />
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <SkeletonLines lines={1} className="w-28 text-sm" />
+            <div className="h-[1.875rem] w-24 rounded border border-line bg-surface" />
+          </div>
+          <div className="mt-4 divide-y divide-line rounded-lg border border-line bg-surface md:hidden">
+            {[0, 1, 2, 3, 4, 5].map((row) => (
+              <div key={row} className="px-4 py-3">
+                <SkeletonLines lines={1} className={row % 2 ? 'w-36' : 'w-48'} />
+                <Skeleton className="mt-1 h-[1.375rem] w-40" />
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 hidden divide-y divide-line rounded-lg border border-line bg-surface md:block">
+            <div className="flex gap-8 px-4 py-2 text-sm">
+              <SkeletonLines lines={1} className="w-32" />
+              <SkeletonLines lines={1} className="w-24" />
+            </div>
+            {[0, 1, 2, 3, 4, 5, 6, 7].map((row) => (
+              <div key={row} className="flex items-center gap-8 px-4 py-2">
+                <SkeletonLines lines={1} className={row % 2 ? 'w-40' : 'w-56'} />
+                <SkeletonLines lines={1} className="w-32 text-sm" />
+              </div>
+            ))}
+          </div>
+        </LoadingRegion>
+      )}
       {challenges !== null && challenges.length === 0 && <EmptyState>{t('challenges.empty')}</EmptyState>}
 
       {challenges !== null && challenges.length > 0 && (

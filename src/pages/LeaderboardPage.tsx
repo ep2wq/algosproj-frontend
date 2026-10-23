@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ApiError, getLeaderboard, getMyRank, type LeaderboardEntry, type MyRank } from '../api'
 import { useAuth } from '../auth'
 import EmptyState from '../components/EmptyState'
+import { LoadingRegion, SkeletonLines } from '../components/Loading'
 
 export default function LeaderboardPage() {
   const { t } = useTranslation()
@@ -70,7 +71,37 @@ export default function LeaderboardPage() {
           </button>
         </div>
       )}
-      {!error && entries === null && <p className="mt-6 text-muted motion-safe:animate-appear motion-safe:[animation-delay:300ms]">{t('leaderboard.loading')}</p>}
+      {/* The table with its real header and three rows. */}
+      {!error && entries === null && (
+        <LoadingRegion label={t('leaderboard.loading')} className="mt-6">
+          <div className="overflow-hidden rounded-lg border border-line bg-surface">
+            <table className="w-full text-start">
+              <thead className="border-b border-line text-sm text-muted">
+                <tr>
+                  <th className="w-20 px-4 py-2 font-medium">{t('leaderboard.rank')}</th>
+                  <th className="px-4 py-2 font-medium">{t('leaderboard.name')}</th>
+                  <th className="px-4 py-2 text-end font-medium">{t('leaderboard.points')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {[0, 1, 2].map((row) => (
+                  <tr key={row}>
+                    <td className="px-4 py-2">
+                      <SkeletonLines lines={1} className="w-5" />
+                    </td>
+                    <td className="px-4 py-2">
+                      <SkeletonLines lines={1} className={row % 2 ? 'w-28' : 'w-40'} />
+                    </td>
+                    <td className="px-4 py-2">
+                      <SkeletonLines lines={1} className="ms-auto w-12" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </LoadingRegion>
+      )}
       {entries !== null && entries.length === 0 && (
         <EmptyState>{t('leaderboard.empty')}</EmptyState>
       )}

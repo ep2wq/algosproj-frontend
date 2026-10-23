@@ -7,6 +7,8 @@ import { formatNumber, formatPercent } from '../i18n'
 import Content from './Content'
 import EmptyState from './EmptyState'
 import { CheckIcon } from './Icons'
+import { LoadingRegion, SkeletonLines } from './Loading'
+import { Skeleton } from './ui/skeleton'
 
 // The three tab panels of the landing page. Personal parts (progress, solved, your rank) appear
 // only once /me has answered and only for a logged-in user; a visitor never sees empty bars.
@@ -33,12 +35,6 @@ function LoadError({ failure, fallback, retry }: { failure: unknown; fallback: s
   )
 }
 
-// Holds most of a screen while the data loads, so the sections below stay out of view and nothing
-// visible jumps down when the list arrives.
-function Loading({ children }: { children: string }) {
-  return <p className="min-h-[70vh] text-muted motion-safe:animate-appear motion-safe:[animation-delay:300ms]">{children}</p>
-}
-
 // A labelled bar; the percentage is also written next to it, so it never depends on the bar alone.
 function ProgressBar({ ratio, label, valueText }: { ratio: number; label: string; valueText: string }) {
   const percent = Math.round(ratio * 100)
@@ -53,6 +49,20 @@ function ProgressBar({ ratio, label, valueText }: { ratio: number; label: string
       className="h-1.5 overflow-hidden rounded-full bg-line"
     >
       <div className="h-full rounded-full bg-accent" style={{ width: `${percent}%` }} />
+    </div>
+  )
+}
+
+// The summary card above the lessons and challenges lists for a logged-in user: a sentence and a bar,
+// and on the lessons tab the box of the next lesson.
+function SummarySkeleton({ next = false }: { next?: boolean }) {
+  return (
+    <div className="grid gap-4 rounded-lg border border-line bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <div>
+        <SkeletonLines lines={1} className="w-64 max-w-full" />
+        <Skeleton className="mt-2 h-1.5 max-w-md rounded-full" />
+      </div>
+      {next && <div className="h-[4.375rem] w-40 rounded-lg border border-line" />}
     </div>
   )
 }
@@ -86,7 +96,42 @@ export function LessonsPanel({
   const language = i18n.language
 
   if (failure !== null && modules === null) return <LoadError failure={failure} fallback={t('home.loadFailed')} retry={retry} />
-  if (modules === null) return <Loading>{t('home.loading')}</Loading>
+  // The first track with five module cards; most of a screen is held, so the sections below stay out
+  // of view and nothing visible moves when the list arrives.
+  if (modules === null) {
+    return (
+      <div>
+        <LoadingRegion label={t('home.loading')} className="min-h-[70vh]">
+          {/* The visitor's line. Before /me answers its space is kept but nothing shows, so a logged-in
+              user never reads "Log in" and a visitor's list does not move. */}
+          {!user && (
+            <div className={loading ? 'invisible' : undefined}>
+              <SignInHint text={t('landing.lessons.signIn')} />
+            </div>
+          )}
+          {user && <SummarySkeleton next />}
+          <div className="mt-8">
+            <p className="text-lg font-semibold">{t('home.tracks.basics')}</p>
+            <div className="mt-3 grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent lg:grid-cols-3">
+              {[0, 1, 2, 3, 4].map((index) => (
+                <div key={index} className="flex flex-col bg-surface px-4 py-3 sm:rounded-lg sm:border sm:border-line sm:py-4">
+                  <SkeletonLines lines={1} className={index % 2 ? 'w-32' : 'w-44'} />
+                  {user ? (
+                    <div className="mt-auto pt-2">
+                      <SkeletonLines lines={1} className="w-28 text-sm" />
+                      <Skeleton className="mt-1.5 h-1.5 rounded-full" />
+                    </div>
+                  ) : (
+                    <SkeletonLines lines={1} className="mt-1 w-20 text-sm" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </LoadingRegion>
+      </div>
+    )
+  }
   if (modules.length === 0) return <EmptyState className="">{t('home.empty')}</EmptyState>
 
   const total = modules.reduce((sum, module) => sum + module.lessons.length, 0)
@@ -198,7 +243,42 @@ export function ChallengesPanel({ challenges, failure, retry }: Data) {
   const language = i18n.language
 
   if (failure !== null && challenges === null) return <LoadError failure={failure} fallback={t('challenges.loadFailed')} retry={retry} />
-  if (challenges === null) return <Loading>{t('challenges.loading')}</Loading>
+  // The three difficulty groups with their real headings and "Show problems" lines.
+  if (challenges === null) {
+    return (
+      <div>
+        <LoadingRegion label={t('challenges.loading')}>
+          {/* The visitor's line. Before /me answers its space is kept but nothing shows, so a logged-in
+              user never reads "Log in" and a visitor's list does not move. */}
+          {!user && (
+            <div className={loading ? 'invisible' : undefined}>
+              <SignInHint text={t('landing.challenges.signIn')} />
+            </div>
+          )}
+          {user && <SummarySkeleton />}
+          <div className="mt-6 space-y-3">
+            {DIFFICULTIES.map((difficulty) => (
+              <div key={difficulty} className="rounded-lg border border-line bg-surface">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 pt-4">
+                  <span className="font-semibold">{t(`difficulty.${difficulty}`)}</span>
+                  <SkeletonLines lines={1} className="w-20 text-sm" />
+                  <SkeletonLines lines={1} className="w-24 text-sm" />
+                </div>
+                <div className="px-4 pt-2 pb-3">
+                  <span className="inline-flex min-h-11 items-center text-sm text-accent">{t('landing.challenges.show')}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </LoadingRegion>
+        <p className="mt-4">
+          <Link to="/challenges" className="rounded text-accent underline underline-offset-2">
+            {t('landing.challenges.all')}
+          </Link>
+        </p>
+      </div>
+    )
+  }
   if (challenges.length === 0) return <EmptyState className="">{t('challenges.empty')}</EmptyState>
 
   // Points come from each problem in the API, never from a table here.
@@ -335,7 +415,41 @@ export function LeaderboardPanel() {
   }
 
   if (failure !== null) return <LoadError failure={failure} fallback={t('leaderboard.loadFailed')} retry={retry} />
-  if (entries === null) return <Loading>{t('leaderboard.loading')}</Loading>
+  // The table with its real header and three rows.
+  if (entries === null) {
+    return (
+      <div className="max-w-2xl">
+        <LoadingRegion label={t('leaderboard.loading')}>
+          <div className="overflow-hidden rounded-lg border border-line bg-surface">
+            <table className="w-full text-start">
+              <thead className="border-b border-line text-sm text-muted">
+                <tr>
+                  <th className="w-16 px-4 py-2 font-medium">{t('leaderboard.rank')}</th>
+                  <th className="px-4 py-2 font-medium">{t('leaderboard.name')}</th>
+                  <th className="px-4 py-2 text-end font-medium">{t('leaderboard.points')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {[0, 1, 2].map((row) => (
+                  <tr key={row}>
+                    <td className="px-4 py-2">
+                      <SkeletonLines lines={1} className="w-5" />
+                    </td>
+                    <td className="px-4 py-2">
+                      <SkeletonLines lines={1} className={row % 2 ? 'w-28' : 'w-40'} />
+                    </td>
+                    <td className="px-4 py-2">
+                      <SkeletonLines lines={1} className="ms-auto w-12" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </LoadingRegion>
+      </div>
+    )
+  }
 
   const rank = user && myRank?.userId === user.id ? myRank.rank : null
   const listed = user !== null && entries.some((entry) => entry.is_you)
