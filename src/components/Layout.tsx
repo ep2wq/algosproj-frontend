@@ -312,7 +312,7 @@ export default function Layout() {
           </div>
         </div>
       </header>
-      <main id="main" tabIndex={-1} className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 focus:outline-none">
+      <main id="main" tabIndex={-1} className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
         {/* Base UI (src/components/ui) reads the direction from here, not from dir: arrow keys follow
             the reading order. */}
         <DirectionProvider direction={i18n.dir()}>

@@ -188,7 +188,7 @@ export default function LandingPage() {
             ))}
           </TabsList>
           {TAB_IDS.map((id) => (
-            <TabsContent key={id} value={id} keepMounted tabIndex={0} className="rounded pt-6 focus-visible:outline-offset-4">
+            <TabsContent key={id} value={id} keepMounted tabIndex={0} className="rounded pt-6">
               {opened.includes(id) &&
                 (id === 'lessons' ? (
                   <LessonsPanel {...data} done={done} next={next} />
