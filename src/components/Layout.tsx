@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth'
+import { skipLink } from './buttonStyles'
 import { setLanguage } from '../i18n'
 import { PRODUCT_NAME } from '../site'
 import { setSoundOn, useSoundOn } from '../sound'
@@ -199,6 +200,9 @@ export default function Layout() {
   const location = useLocation()
   const staff = user?.role === 'admin' || user?.role === 'owner'
 
+  // Where a page renders its own skip link (passed to pages as the outlet context).
+  const [skipSlot, setSkipSlot] = useState<HTMLDivElement | null>(null)
+
   // The points badge pulses once when the points go up (after a passing submit), not on page load.
   // bumps remounts the badge, which replays the motion-safe animation.
   const points = user?.points ?? null
@@ -218,10 +222,12 @@ export default function Layout() {
           event.preventDefault()
           document.getElementById('main')?.focus()
         }}
-        className="sr-only focus:not-sr-only focus:fixed focus:start-2 focus:top-2 focus:z-10 focus:rounded focus:border focus:border-accent focus:bg-surface focus:px-3 focus:py-2 focus:text-accent focus:shadow-(--float-shadow)"
+        className={skipLink}
       >
         {t('nav.skipToContent')}
       </a>
+      {/* A page can add its own skip link here, right after this one (LessonPage: Skip to challenge). */}
+      <div ref={setSkipSlot} />
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2 sm:gap-x-4 sm:py-3">
           {/* The name is English (and Latin script) in both languages. */}
@@ -310,7 +316,7 @@ export default function Layout() {
         {/* Base UI (src/components/ui) reads the direction from here, not from dir: arrow keys follow
             the reading order. */}
         <DirectionProvider direction={i18n.dir()}>
-          <Outlet />
+          <Outlet context={skipSlot} />
         </DirectionProvider>
       </main>
       <Footer language={i18n.language} />

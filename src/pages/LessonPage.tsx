@@ -1,7 +1,9 @@
 import { Suspense, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useOutletContext, useParams } from 'react-router-dom'
 import { ApiError, getLesson, type Lesson } from '../api'
+import { skipLink } from '../components/buttonStyles'
 import Content from '../components/Content'
 import { CellLoader, LoadingRegion, SkeletonLines } from '../components/Loading'
 import LessonBody from '../components/LessonBody'
@@ -17,6 +19,8 @@ const VISUAL_FRAME = 'h-[31rem] rounded-lg border border-line bg-surface lg:h-[2
 export default function LessonPage() {
   const { t, i18n } = useTranslation()
   const { slug = '' } = useParams()
+  // Layout's place for a second skip link, right after "Skip to content".
+  const skipSlot = useOutletContext<HTMLDivElement | null>()
   // The loaded result is stored with its slug, so a stale lesson never shows for a new URL.
   const [loaded, setLoaded] = useState<{ slug: string; lesson?: Lesson; failure?: unknown } | null>(null)
   const [reload, setReload] = useState(0)
@@ -121,6 +125,24 @@ export default function LessonPage() {
     <div>
       {backLink}
       <ScrollProgress />
+      {/* Moves focus to the first problem (like Skip to content, without changing the address). */}
+      {skipSlot &&
+        lesson.problems.length > 0 &&
+        createPortal(
+          <a
+            href="#challenge"
+            onClick={(event) => {
+              event.preventDefault()
+              const target = document.getElementById('challenge')
+              target?.focus({ preventScroll: true })
+              target?.scrollIntoView({ block: 'start' })
+            }}
+            className={skipLink}
+          >
+            {t('nav.skipToChallenge')}
+          </a>,
+          skipSlot,
+        )}
       <title>{t('titles.page', { name: lesson.title })}</title>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">
         <Content lang="auto">{lesson.title}</Content>
@@ -141,8 +163,8 @@ export default function LessonPage() {
         </section>
       )}
 
-      {lesson.problems.map((problem) => (
-        <ProblemCard key={problem.id} problem={problem} />
+      {lesson.problems.map((problem, index) => (
+        <ProblemCard key={problem.id} problem={problem} id={index === 0 ? 'challenge' : undefined} />
       ))}
     </div>
   )
