@@ -32,7 +32,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   strings use `{{product}}` and `{{email}}`. Each public page renders `PageMeta`.
 - `npm run build` also prerenders the public pages (`src/prerender.ts` `ROUTES`, `scripts/prerender.mjs`,
   writes `dist-ssr/`, `dist/*.html`, `robots.txt`, `sitemap.xml`). No hydration. A new public page
-  needs its path in `ROUTES`.
+  needs its path in `ROUTES`. The build fails on a React client-render marker or build path in the output.
 - Only `theme`, `lang`, `sound` in `localStorage` (try/catch); login is an HttpOnly session cookie
   (`credentials: 'include'`, `X-XSRF-TOKEN`). No `dangerouslySetInnerHTML`.
 - Sound (README "Sound"): `src/sound.ts`, off by default, one AudioContext made only in a user gesture, tune the constants block at the top; never the only signal.

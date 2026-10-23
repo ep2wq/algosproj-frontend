@@ -112,6 +112,8 @@ export default function LandingPage() {
   const firstLesson = modules?.find((module) => module.lessons.length > 0)?.lessons[0]
 
   const data = { modules, challenges, failure, retry }
+  const heroPlaceholder = <CellLoader className="h-[22.5rem] rounded-lg border border-line bg-surface" />
+  const captionPlaceholder = <div aria-hidden="true" className="h-24" />
 
   return (
     <div>
@@ -159,9 +161,15 @@ export default function LandingPage() {
               : ' '}
           </p>
         </div>
-        <Suspense fallback={<CellLoader className="h-[22.5rem] rounded-lg border border-line bg-surface" />}>
-          <HeroSearch />
-        </Suspense>
+        {/* The static HTML (src/prerender.ts) gets the placeholder itself: renderToString can't wait
+            for lazy code and would mark the boundary with an error. */}
+        {import.meta.env.SSR ? (
+          heroPlaceholder
+        ) : (
+          <Suspense fallback={heroPlaceholder}>
+            <HeroSearch />
+          </Suspense>
+        )}
       </section>
 
       <section aria-labelledby="landing-inside" className="mt-20">
@@ -229,9 +237,13 @@ export default function LandingPage() {
           <p className="mt-6 max-w-prose text-muted">{t('landing.bilingual')}</p>
         </div>
         <figure>
-          <Suspense fallback={<div aria-hidden="true" className="h-24" />}>
-            <BilingualCaption />
-          </Suspense>
+          {import.meta.env.SSR ? (
+            captionPlaceholder
+          ) : (
+            <Suspense fallback={captionPlaceholder}>
+              <BilingualCaption />
+            </Suspense>
+          )}
           <figcaption className="mt-2 text-sm text-muted">
             <TextWithCode text={t('landing.bilingualCaption')} />
           </figcaption>

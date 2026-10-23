@@ -6,7 +6,21 @@
 // sitemap.xml. The browser does not hydrate this HTML: the app renders afresh and replaces it.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+// The published HTML comes from React's production server build (react-dom is not bundled, so Node
+// picks the build from NODE_ENV when it is first imported below).
+process.env.NODE_ENV = 'production'
+
+// Fails the build when a page has a server-render error (React's client-render marker and its
+// message) or a path of the build machine.
+const project = fileURLToPath(new URL('..', import.meta.url))
+function check(name, text) {
+  const found =
+    text.match(/<!--\$!-->|data-(?:msg|stck|cstck|dgst)=|file:\/\/|[A-Za-z]:[\\/]Users\b|node_modules/)?.[0] ??
+    [project, project.replaceAll('\\', '/')].find((path) => text.includes(path))
+  if (found) throw new Error(`prerender: ${name} contains "${found}" (a server-render error or a build path)`)
+}
 
 // The client build folder: dist, or the folder given as the first argument (a build elsewhere).
 const dist = process.argv[2] ? pathToFileURL(`${resolve(process.argv[2])}/`) : new URL('../dist/', import.meta.url)
@@ -23,6 +37,7 @@ for (const route of ROUTES) {
     .replace(/<title>[^<]*<\/title>/, '')
     .replace('</head>', `${head.replace(/<(title|meta|link)\b/g, '<$1 data-prerender')}</head>`)
     .replace(ROOT, `<div id="root" data-prerendered="${route}">${html.slice(head.length)}</div>`)
+  check(route, page)
   writeFileSync(new URL(route === '/' ? 'index.html' : `${route.slice(1)}.html`, dist), page)
 }
 
@@ -32,12 +47,12 @@ const robots = ['User-agent: *', 'Disallow: /admin']
 if (SITE_URL) {
   robots.push(`Sitemap: ${SITE_URL}/sitemap.xml`)
   const urls = ROUTES.map((route) => `  <url><loc>${SITE_URL}${route === '/' ? '/' : route}</loc></url>`).join('\n')
-  writeFileSync(
-    new URL('sitemap.xml', dist),
-    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`,
-  )
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
+  check('sitemap.xml', sitemap)
+  writeFileSync(new URL('sitemap.xml', dist), sitemap)
 } else {
   console.warn('prerender: VITE_SITE_URL is not set, so sitemap.xml and canonical links are left out.')
 }
+check('robots.txt', robots.join('\n'))
 writeFileSync(new URL('robots.txt', dist), `${robots.join('\n')}\n`)
 console.log(`prerender: wrote ${ROUTES.length} pages`)

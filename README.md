@@ -368,7 +368,10 @@ header and footer measurements are in `../docs/ui-public-pages.md` (outside this
   An inline script after `#root` in `index.html` empties it first when the address is not the one
   prerendered or the language is Arabic; `src/main.tsx` removes the static head tags
   (`data-prerender`). `theme.ts`, `sound.ts` and `i18n.ts` check for `window` and `document` so
-  they load in Node. A new public page needs its path in `ROUTES` and a `PageMeta`.
+  they load in Node. A new public page needs its path in `ROUTES` and a `PageMeta`. The build fails
+  if a prerendered page, `sitemap.xml` or `robots.txt` contains a React client-render marker or a
+  build-machine path (`check()` in `scripts/prerender.mjs`). Lazy parts of a prerendered page render
+  their placeholder when `import.meta.env.SSR`, because `renderToString` can't wait for lazy code.
 - **Cloudflare Pages:** build command `npm run build`, output directory `dist`, environment
   variables `VITE_API_URL` and `VITE_SITE_URL`. Do not add a `404.html`: it turns off the
   single-page fallback.
