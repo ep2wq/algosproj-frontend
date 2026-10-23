@@ -23,6 +23,13 @@
   /* Elevation, radius and motion: docs/ui-restyle.md (outside this repo) and README "Themes". Only
      floating things (the account menu, the skip link) get a shadow (--float-shadow below); cards
      are a border on paper. */
+  /* Two radii only (4 px controls, 8 px cards), also for the shadcn/ui components, which use
+     rounded-md and rounded-xl too. */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.5rem;
+
   --ease-calm: cubic-bezier(0.16, 1, 0.3, 1);
   --animate-check: check-draw 450ms var(--ease-calm) both;
   --animate-bump: bump 400ms var(--ease-calm);
@@ -33,6 +40,108 @@
   /* Not a theme value: Tailwind would bake it into the utility, and .dark could not swap it. Used as
      shadow-(--float-shadow). */
   --float-shadow: 0 8px 24px -6px rgb(15 20 27 / 0.18), 0 2px 6px -2px rgb(15 20 27 / 0.1);
+
+  /* shadcn/ui roles (src/components/ui, docs/ui-shadcn.md outside this repo), pointed at our tokens,
+     so .dark swaps them too. Its muted and accent are left out: here muted is a text colour and
+     accent the teal, so a generated bg-muted or bg-accent is rewritten to one of our tokens. */
+  --background: var(--color-paper);
+  --foreground: var(--color-ink);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-accent);
+  --primary-foreground: var(--color-inverse);
+  --secondary: var(--color-surface);
+  --secondary-foreground: var(--color-ink);
+  --muted-foreground: var(--color-muted);
+  --accent-foreground: var(--color-ink);
+  --destructive: var(--color-fail);
+  --border: var(--color-line);
+  --input: var(--color-field);
+  --ring: var(--color-accent);
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+/* The state variants the shadcn/ui components use, from shadcn's tailwind.css (MIT), which is not
+   imported: it also brings a scroll-fade utility that would replace ours. */
+@custom-variant data-open {
+  &:where([data-state='open']),
+  &:where([data-open]:not([data-open='false'])) {
+    @slot;
+  }
+}
+
+@custom-variant data-closed {
+  &:where([data-state='closed']),
+  &:where([data-closed]:not([data-closed='false'])) {
+    @slot;
+  }
+}
+
+@custom-variant data-checked {
+  &:where([data-state='checked']),
+  &:where([data-checked]:not([data-checked='false'])) {
+    @slot;
+  }
+}
+
+@custom-variant data-unchecked {
+  &:where([data-state='unchecked']),
+  &:where([data-unchecked]:not([data-unchecked='false'])) {
+    @slot;
+  }
+}
+
+@custom-variant data-selected {
+  &:where([data-selected='true']) {
+    @slot;
+  }
+}
+
+@custom-variant data-disabled {
+  &:where([data-disabled='true']),
+  &:where([data-disabled]:not([data-disabled='false'])) {
+    @slot;
+  }
+}
+
+@custom-variant data-active {
+  &:where([data-state='active']),
+  &:where([data-active]:not([data-active='false'])) {
+    @slot;
+  }
+}
+
+@custom-variant data-horizontal {
+  &:where([data-orientation='horizontal']) {
+    @slot;
+  }
+}
+
+@custom-variant data-vertical {
+  &:where([data-orientation='vertical']) {
+    @slot;
+  }
 }
 
 @keyframes check-draw {
