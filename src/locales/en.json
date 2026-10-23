@@ -475,6 +475,7 @@
   "landing": {
     "metaTitle": "Learn algorithms step by step",
     "metaDescription": "Free lessons in data structures and algorithms, many with a visualization you can step through. Write the code in Python, Java, JavaScript or C++ and have it graded. In English and Arabic.",
+    "progressValue": "{{percent}} complete",
     "title": "Watch the algorithm run. Then write it.",
     "intro": "Read a short lesson, step through a visualization of the algorithm, then write it in Python, Java, JavaScript or C++ and let the tests grade it. Every page works in English and Arabic.",
     "continue": "Continue learning",

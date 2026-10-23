@@ -8,6 +8,7 @@ import Content from './Content'
 import EmptyState from './EmptyState'
 import { CheckIcon } from './Icons'
 import { LoadingRegion, SkeletonLines } from './Loading'
+import { Progress } from './ui/progress'
 import { Skeleton } from './ui/skeleton'
 
 // The three tab panels of the landing page. Personal parts (progress, solved, your rank) appear
@@ -35,21 +36,16 @@ function LoadError({ failure, fallback, retry }: { failure: unknown; fallback: s
   )
 }
 
-// A labelled bar; the percentage is also written next to it, so it never depends on the bar alone.
-function ProgressBar({ ratio, label, valueText }: { ratio: number; label: string; valueText: string }) {
-  const percent = Math.round(ratio * 100)
+// A labelled bar (Base UI, role="progressbar"); the percentage is also written next to it or in the
+// sentence above, so it never depends on the bar alone.
+function ProgressBar({ ratio, label }: { ratio: number; label: string }) {
+  const { t, i18n } = useTranslation()
   return (
-    <div
-      role="progressbar"
+    <Progress
+      value={Math.round(ratio * 100)}
       aria-label={label}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={percent}
-      aria-valuetext={valueText}
-      className="h-1.5 overflow-hidden rounded-full bg-line"
-    >
-      <div className="h-full rounded-full bg-accent" style={{ width: `${percent}%` }} />
-    </div>
+      getAriaValueText={() => t('landing.progressValue', { percent: formatPercent(ratio, i18n.language) })}
+    />
   )
 }
 
@@ -157,7 +153,6 @@ export function LessonsPanel({
               <ProgressBar
                 ratio={total ? doneCount / total : 0}
                 label={t('landing.lessons.overall')}
-                valueText={formatPercent(total ? doneCount / total : 0, language)}
               />
             </div>
           </div>
@@ -222,7 +217,6 @@ export function LessonsPanel({
                           <ProgressBar
                             ratio={ratio}
                             label={t('landing.lessons.moduleProgress', { module: module.title })}
-                            valueText={formatPercent(ratio, language)}
                           />
                         </div>
                       </div>
@@ -305,7 +299,6 @@ export function ChallengesPanel({ challenges, failure, retry }: Data) {
             <ProgressBar
               ratio={totalPoints ? earned / totalPoints : 0}
               label={t('landing.challenges.overall')}
-              valueText={formatPercent(totalPoints ? earned / totalPoints : 0, language)}
             />
           </div>
         </div>
