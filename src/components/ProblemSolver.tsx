@@ -8,6 +8,7 @@ import { play } from '../sound'
 import { useTheme } from '../theme'
 import { LANGUAGE_LABELS, STARTER_CODE } from '../starters'
 import Content from './Content'
+import { CellLoader } from './Loading'
 import { TextWithCode } from './LessonBody'
 import SubmitResultPanel from './SubmitResultPanel'
 
@@ -144,7 +145,7 @@ export default function ProblemSolver({
             onChange={(value) => setCode((current) => ({ ...current, [language]: value ?? '' }))}
             // Screen readers read the Tab hint with the editor.
             onMount={(editor) => editor.getDomNode()?.querySelector('textarea, .native-edit-context')?.setAttribute('aria-describedby', hintId)}
-            loading={<p className="p-4 text-sm text-muted">{t('solver.loadingEditor')}</p>}
+            loading={<CellLoader label={t('solver.loadingEditor')} className="h-[280px] w-full" />}
             options={{
               ariaLabel: t('solver.editorLabel', { language: LANGUAGE_LABELS[language], title: problem.title }),
               minimap: { enabled: false },

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError, getLesson, type Lesson } from '../api'
 import Content from '../components/Content'
-import { LoadingRegion, SkeletonLines } from '../components/Loading'
+import { CellLoader, LoadingRegion, SkeletonLines } from '../components/Loading'
 import LessonBody from '../components/LessonBody'
 import ProblemCard from '../components/ProblemCard'
 import { VISUALS } from '../visuals'
@@ -130,7 +130,7 @@ export default function LessonPage() {
           <h2 id="visual-heading" className="text-xl font-semibold">
             {t('lesson.visualization')}
           </h2>
-          <Suspense fallback={<p className="mt-4 text-sm text-muted motion-safe:animate-appear motion-safe:[animation-delay:300ms]">{t('lesson.loadingVisualization')}</p>}>
+          <Suspense fallback={<CellLoader label={t('lesson.loadingVisualization')} className={`mt-4 ${VISUAL_FRAME}`} />}>
             {/* Text and controls follow the interface language; the drawings stay left to right. */}
             {/* Looked up from a module-level map, so it is the same component on every render. */}
             {/* oxlint-disable-next-line react/static-components */}

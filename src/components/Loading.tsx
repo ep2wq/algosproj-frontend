@@ -56,3 +56,25 @@ export function SkeletonLines({ lines, className }: { lines: number; className?:
     </div>
   )
 }
+
+// While code (a page, a visualization, the editor) loads: three array cells, the motif of the
+// visualizations, with the highlight stepping along like a pointer. Nothing loops: two passes, then it
+// rests on the middle cell; under reduced motion it shows that resting state (index.css,
+// .cell-loader). Without a label it is silent (a placeholder whose page already says it is loading).
+export function CellLoader({ label, className }: { label?: string; className?: string }) {
+  const shown = useShown()
+  return (
+    <>
+      {label && <Status label={label} shown={shown} />}
+      <div aria-busy={label ? true : undefined} className={cn('flex items-center justify-center', className)}>
+        {shown && (
+          <span aria-hidden="true" dir="ltr" className="cell-loader flex gap-1.5">
+            <span className="size-5 rounded border-2 border-field bg-surface" />
+            <span className="size-5 rounded border-2 border-accent bg-accent-soft" />
+            <span className="size-5 rounded border-2 border-field bg-surface" />
+          </span>
+        )}
+      </div>
+    </>
+  )
+}

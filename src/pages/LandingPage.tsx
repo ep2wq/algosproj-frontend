@@ -6,6 +6,7 @@ import { useAuth } from '../auth'
 import { primaryButton, secondaryButton } from '../components/buttonStyles'
 import { ChallengesPanel, LeaderboardPanel, LessonsPanel } from '../components/LandingPanels'
 import { TextWithCode } from '../components/LessonBody'
+import { CellLoader } from '../components/Loading'
 import PageMeta from '../components/PageMeta'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { formatNumber } from '../i18n'
@@ -158,7 +159,7 @@ export default function LandingPage() {
               : ' '}
           </p>
         </div>
-        <Suspense fallback={<div aria-hidden="true" className="h-[22.5rem] rounded-lg border border-line bg-surface" />}>
+        <Suspense fallback={<CellLoader className="h-[22.5rem] rounded-lg border border-line bg-surface" />}>
           <HeroSearch />
         </Suspense>
       </section>

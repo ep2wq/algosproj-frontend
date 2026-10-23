@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../auth'
+import { CellLoader } from './Loading'
 import NotFoundPage from '../pages/NotFoundPage'
 
 const tabClass = ({ isActive }: { isActive: boolean }) =>
@@ -12,7 +13,7 @@ export default function AdminRoute() {
   const { t } = useTranslation()
   const { user, loading } = useAuth()
 
-  if (loading) return <p className="text-muted">{t('admin.common.loading')}</p>
+  if (loading) return <CellLoader label={t('admin.common.loading')} className="min-h-screen items-start pt-20" />
   if (user?.role !== 'admin' && user?.role !== 'owner') return <NotFoundPage />
   // Staff only: always English and left to right, whatever the interface language.
   return (

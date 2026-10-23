@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Route, Routes } from 'react-router-dom'
 import AdminRoute from './components/AdminRoute'
 import Layout from './components/Layout'
+import { CellLoader } from './components/Loading'
 import OwnerRoute from './components/OwnerRoute'
 import AdminActivityPage from './pages/admin/AdminActivityPage'
 import AdminAuditLogPage from './pages/admin/AdminAuditLogPage'
@@ -45,7 +46,7 @@ function App() {
         <Route
           path="/lessons/:slug"
           element={
-            <Suspense fallback={<p className="text-muted">{t('lesson.loading')}</p>}>
+            <Suspense fallback={<CellLoader label={t('lesson.loading')} className="min-h-screen items-start pt-20" />}>
               <LessonPage />
             </Suspense>
           }
@@ -54,7 +55,7 @@ function App() {
         <Route
           path="/challenges/:slug"
           element={
-            <Suspense fallback={<p className="text-muted">{t('challenge.loading')}</p>}>
+            <Suspense fallback={<CellLoader label={t('challenge.loading')} className="min-h-screen items-start pt-20" />}>
               <ChallengePage />
             </Suspense>
           }

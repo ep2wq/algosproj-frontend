@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { primaryButton, secondaryButton } from '../components/buttonStyles'
 import { TextWithCode } from '../components/LessonBody'
+import { CellLoader } from '../components/Loading'
 
 // A binary search over HTTP status codes that does not find 404, in the lesson's own cells. Lazy
 // like every visualization; the message and links below never depend on it.
@@ -24,7 +25,7 @@ export default function NotFoundPage() {
         <h2 id="not-found-search" className="sr-only">
           {t('notFound.searchTitle')}
         </h2>
-        <Suspense fallback={<div aria-hidden="true" className="h-[15.5rem]" />}>
+        <Suspense fallback={<CellLoader className="h-[15.5rem]" />}>
           <NotFoundSearch />
         </Suspense>
       </section>
