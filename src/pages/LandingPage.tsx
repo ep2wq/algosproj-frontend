@@ -42,7 +42,16 @@ export default function LandingPage() {
   const [reload, setReload] = useState(0)
 
   const requested = params.get('tab') ?? ''
-  const tab = TAB_IDS.includes(requested) ? requested : 'lessons'
+  const urlTab = TAB_IDS.includes(requested) ? requested : 'lessons'
+  // The tab row answers at once and the URL follows (the router applies it a moment later, and Base
+  // UI would read a stale value on a quick second arrow key). A ?tab= change from outside, such as a
+  // link to /, still wins.
+  const [tab, setTab] = useState(urlTab)
+  const [seenUrlTab, setSeenUrlTab] = useState(urlTab)
+  if (urlTab !== seenUrlTab) {
+    setSeenUrlTab(urlTab)
+    setTab(urlTab)
+  }
   const language = i18n.language
   // A panel is rendered the first time its tab opens and then stays mounted (hidden), so its data
   // loads once.
@@ -90,6 +99,7 @@ export default function LandingPage() {
 
   // A deep link (?tab=) without a history entry per tab.
   function selectTab(id: string) {
+    setTab(id)
     setParams(id === 'lessons' ? {} : { tab: id }, { replace: true, preventScrollReset: true })
   }
 
