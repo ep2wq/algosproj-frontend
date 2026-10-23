@@ -9,7 +9,8 @@ grading. It never calls the sandbox service directly.
 
 React 19, TypeScript, Vite, Tailwind v4 (via `@tailwindcss/vite`, so there is no
 `tailwind.config` file), React Router, and Monaco (`@monaco-editor/react`) for the code
-editor. API calls use `fetch`; auth state lives in a React context.
+editor. UI components come from shadcn/ui on Base UI (`@base-ui/react`, `class-variance-authority`,
+`clsx`, `tailwind-merge`, `lucide-react`). API calls use `fetch`; auth state lives in a React context.
 
 ## Setup
 
@@ -101,6 +102,23 @@ is ignored and the OS is followed.
   nothing moves under `prefers-reduced-motion`, nothing loops, nothing autoplays. A base rule in
   `src/index.css` gives links, buttons, selects and inputs a short colour transition, only when
   motion is allowed and never inside Monaco.
+
+## UI components (shadcn/ui)
+
+`src/components/ui` has 8 shadcn/ui components on Base UI: tabs, progress, skeleton, accordion,
+button, input, label and checkbox. Only tabs is used so far, on the landing page
+(`src/components/ui/tabs.tsx`). The shadcn color roles in `src/index.css` point at our tokens;
+`muted` and `accent` keep our meaning (muted text, teal accent).
+
+To add a component:
+
+1. `npx shadcn@latest add <name> --dry-run`, then without `--dry-run`, one component at a time.
+2. If the CLI added the `cn` package, run `npm uninstall cn` and import `cn` from `@/lib/utils`.
+3. Map the classes onto our tokens (no `bg-muted`, `bg-accent`, rings, shadows, `transition-all`, `dark:`).
+4. Move any built-in English text into `t()` keys in `en.json` and `ar.json`.
+5. Run `npm run lint` and `npm run build`; check Arabic (RTL) and both themes.
+
+Details: docs/ui-shadcn.md (outside this repo).
 
 ## Sound
 
@@ -304,7 +322,7 @@ The pages a visitor sees before logging in: `/` (landing), `/about`, `/faq`, `/c
 header and footer measurements are in `../docs/ui-public-pages.md` (outside this repo).
 
 - **Landing** (`src/pages/LandingPage.tsx`): the hero (`HeroSearch`, the binary search lesson
-  playing once, silent), the counts, then the tabs. `src/components/Tabs.tsx` is the WAI-ARIA
+  playing once, silent), the counts, then the tabs. `src/components/ui/tabs.tsx` (Base UI) is the WAI-ARIA
   tabs pattern; `?tab=challenges` or `?tab=leaderboard` is a deep link (Lessons is the default).
   `LandingPage` loads `getModules()` (again when the language changes) and `getChallenges()` (again
   on log in or out) and passes them to the panels in `src/components/LandingPanels.tsx`; the
