@@ -302,7 +302,7 @@ export default function Layout() {
                   to="/register"
                   state={{ from: location }}
                   className={({ isActive }) =>
-                    `rounded border border-accent px-3 py-1 text-accent hover:bg-accent-soft ${isActive ? 'bg-accent-soft font-medium' : ''}`
+                    `rounded border border-accent px-3 py-1 text-accent hover:bg-accent-soft motion-safe:active:translate-y-px ${isActive ? 'bg-accent-soft font-medium' : ''}`
                   }
                 >
                   {t('nav.register')}

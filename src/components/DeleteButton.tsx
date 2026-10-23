@@ -31,7 +31,7 @@ export default function DeleteButton({ what, onConfirm }: { what: string; onConf
             type="button"
             onClick={handleConfirm}
             disabled={busy}
-            className="rounded bg-fail px-3 py-1 text-sm font-medium text-inverse hover:bg-fail/90 disabled:opacity-60"
+            className="rounded bg-fail px-3 py-1 text-sm font-medium text-inverse hover:bg-fail/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {busy ? t('admin.common.deleting') : t('admin.common.yesDelete')}
           </button>

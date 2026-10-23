@@ -1,8 +1,9 @@
 // The large call-to-action links of the public pages (landing, 404, contact): one filled, one outlined.
+// Links, so they get the 1 px press that index.css gives buttons here.
 export const primaryButton =
-  'inline-flex min-h-11 items-center justify-center rounded bg-accent px-5 font-medium text-inverse hover:bg-accent/90'
+  'inline-flex min-h-11 items-center justify-center rounded bg-accent px-5 font-medium text-inverse hover:bg-accent/90 motion-safe:active:translate-y-px'
 export const secondaryButton =
-  'inline-flex min-h-11 items-center justify-center rounded border border-field bg-surface px-5 font-medium text-ink hover:border-muted'
+  'inline-flex min-h-11 items-center justify-center rounded border border-field bg-surface px-5 font-medium text-ink hover:border-muted motion-safe:active:translate-y-px'
 
 // Skip links: hidden until focused, then a floating box at the top start corner.
 export const skipLink =

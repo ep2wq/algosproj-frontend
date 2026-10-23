@@ -51,8 +51,8 @@ export default function ConfirmAction({
   }
 
   const confirmClass = danger
-    ? 'rounded bg-fail px-3 py-1 text-sm font-medium text-inverse hover:bg-fail/90 disabled:opacity-60'
-    : 'rounded bg-accent px-3 py-1 text-sm font-medium text-inverse hover:bg-accent/90 disabled:opacity-60'
+    ? 'rounded bg-fail px-3 py-1 text-sm font-medium text-inverse hover:bg-fail/90 disabled:cursor-not-allowed disabled:opacity-60'
+    : 'rounded bg-accent px-3 py-1 text-sm font-medium text-inverse hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60'
 
   return (
     <div className="rounded border border-line bg-surface p-3">

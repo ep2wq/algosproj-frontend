@@ -178,7 +178,7 @@ export default function ProblemSolver({
           <Link
             to="/login"
             state={{ from: location }}
-            className="rounded border border-accent px-4 py-2 font-medium text-accent hover:bg-accent-soft"
+            className="rounded border border-accent px-4 py-2 font-medium text-accent hover:bg-accent-soft motion-safe:active:translate-y-px"
           >
             {t('solver.logInToSubmit')}
           </Link>
