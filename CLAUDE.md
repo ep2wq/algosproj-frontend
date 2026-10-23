@@ -14,7 +14,11 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## This repo
 
 - React 19, TypeScript, Vite, Tailwind v4 (no `tailwind.config`), react-router-dom, Monaco,
-  i18next + react-i18next, Noto Sans Arabic (fontsource). No other runtime deps.
+  i18next + react-i18next, Noto Sans Arabic (fontsource). Base UI (`@base-ui/react`), class-variance-authority, clsx, tailwind-merge and lucide-react for shadcn/ui. No other runtime deps.
+- shadcn/ui (Base UI) is the standard for new UI: `src/components/ui/*`, `cn` in `src/lib/utils.ts`,
+  `components.json` (hand-written, rtl true), `@/` alias in `tsconfig.json`, `tsconfig.app.json`, `vite.config.ts`.
+  Add with `npx shadcn@latest add <name>`, then map to our tokens (docs/ui-shadcn.md outside the repo).
+  `DirectionProvider` in `Layout` gives Base UI the reading direction.
 - `src/api.ts` (fetch wrapper, one function per endpoint), `src/auth.tsx`, `src/pages/*`,
   `src/components/*`, `src/visuals/*`, `src/lessonText.ts` (lesson text parser; backend README).
 - Visualizations: `src/visuals/index.ts` maps a lesson slug to a lazy component. Steps are
@@ -66,7 +70,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 - Done: lessons, Monaco + submit, auth, leaderboard, landing page, About/FAQ/Contact/legal pages,
   binary search 404, prerender, Challenges, admin, dark mode, Arabic
-  interface + content (all 19 modules), visualizations translated. Next: AI hint UI.
+  interface + content (all 19 modules), visualizations translated, shadcn/ui setup + landing tabs on Base UI. Next: AI hint UI.
 - Decisions: oxlint. Lint/build pass. A 401 while `signedIn` (not login/register/logout), or a
   403 with `reason`, clears it; a 419 refreshes the CSRF cookie and retries once, a second 419 = ended; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.
