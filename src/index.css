@@ -34,6 +34,8 @@
   --animate-check: check-draw 450ms var(--ease-calm) both;
   --animate-bump: bump 400ms var(--ease-calm);
   --animate-appear: appear 200ms var(--ease-calm) both;
+  /* Tailwind's pulse, twice, then at rest at full opacity: nothing loops. */
+  --animate-pulse-twice: pulse-twice 2s cubic-bezier(0.4, 0, 0.6, 1) 2;
 }
 
 :root {
@@ -162,6 +164,12 @@
 @keyframes appear {
   from {
     opacity: 0;
+  }
+}
+
+@keyframes pulse-twice {
+  50% {
+    opacity: 0.5;
   }
 }
 

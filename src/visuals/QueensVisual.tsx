@@ -158,7 +158,7 @@ export default function QueensVisual() {
                         square === 'solution' || square === 'conflict' ? '' : dark ? 'bg-paper' : 'bg-surface'
                       } ${SQUARE_CLASS[square]}`}
                     >
-                      <span className={square === 'conflict' ? 'font-bold motion-safe:animate-pulse' : ''}>{SQUARE_TEXT[square]}</span>
+                      <span className={square === 'conflict' ? 'font-bold motion-safe:animate-pulse-twice' : ''}>{SQUARE_TEXT[square]}</span>
                     </span>
                   )
                 })}
