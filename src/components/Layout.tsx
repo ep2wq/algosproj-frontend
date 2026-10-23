@@ -1,3 +1,4 @@
+import { DirectionProvider } from '@base-ui/react/direction-provider'
 import { useEffect, useId, useRef, useState } from 'react'
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -306,7 +307,11 @@ export default function Layout() {
         </div>
       </header>
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 focus:outline-none">
-        <Outlet />
+        {/* Base UI (src/components/ui) reads the direction from here, not from dir: arrow keys follow
+            the reading order. */}
+        <DirectionProvider direction={i18n.dir()}>
+          <Outlet />
+        </DirectionProvider>
       </main>
       <Footer language={i18n.language} />
     </div>

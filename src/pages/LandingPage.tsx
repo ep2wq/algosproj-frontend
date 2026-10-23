@@ -7,7 +7,7 @@ import { primaryButton, secondaryButton } from '../components/buttonStyles'
 import { ChallengesPanel, LeaderboardPanel, LessonsPanel } from '../components/LandingPanels'
 import { TextWithCode } from '../components/LessonBody'
 import PageMeta from '../components/PageMeta'
-import Tabs from '../components/Tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { formatNumber } from '../i18n'
 import { lessonsDone, nextLesson } from '../progress'
 import { LANGUAGE_LABELS } from '../starters'
@@ -44,6 +44,10 @@ export default function LandingPage() {
   const requested = params.get('tab') ?? ''
   const tab = TAB_IDS.includes(requested) ? requested : 'lessons'
   const language = i18n.language
+  // A panel is rendered the first time its tab opens and then stays mounted (hidden), so its data
+  // loads once.
+  const [opened, setOpened] = useState([tab])
+  if (!opened.includes(tab)) setOpened([...opened, tab])
 
   // Titles come in the app language: load again when it changes.
   useEffect(() => {
@@ -154,23 +158,29 @@ export default function LandingPage() {
           {t('landing.insideTitle')}
         </h2>
         <p className="mt-2 max-w-prose text-muted">{t('landing.insideIntro')}</p>
-        <div className="mt-6">
-          <Tabs
-            label={t('landing.insideTitle')}
-            tabs={TAB_IDS.map((id) => ({ id, label: t(`nav.${id}`) }))}
-            selected={tab}
-            onSelect={selectTab}
-            renderPanel={(id) =>
-              id === 'lessons' ? (
-                <LessonsPanel {...data} done={done} next={next} />
-              ) : id === 'challenges' ? (
-                <ChallengesPanel {...data} />
-              ) : (
-                <LeaderboardPanel />
-              )
-            }
-          />
-        </div>
+        {/* WAI-ARIA tabs with automatic activation (activateOnFocus): arrows in reading order, Home
+            and End; Tab moves from the row into the open panel. */}
+        <Tabs value={tab} onValueChange={(value) => selectTab(String(value))} className="mt-6">
+          <TabsList aria-label={t('landing.insideTitle')} activateOnFocus>
+            {TAB_IDS.map((id) => (
+              <TabsTrigger key={id} value={id}>
+                {t(`nav.${id}`)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {TAB_IDS.map((id) => (
+            <TabsContent key={id} value={id} keepMounted tabIndex={0} className="rounded pt-6 focus-visible:outline-offset-4">
+              {opened.includes(id) &&
+                (id === 'lessons' ? (
+                  <LessonsPanel {...data} done={done} next={next} />
+                ) : id === 'challenges' ? (
+                  <ChallengesPanel {...data} />
+                ) : (
+                  <LeaderboardPanel />
+                ))}
+            </TabsContent>
+          ))}
+        </Tabs>
       </section>
 
       <section aria-labelledby="landing-how" className="mt-20">
