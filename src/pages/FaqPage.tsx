@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import LessonBody from '../components/LessonBody'
 import PageMeta from '../components/PageMeta'
+import ScrollProgress from '../components/ScrollProgress'
 import { CONTACT_EMAIL } from '../site'
 
 // Each answer is checked against the code (docs/ui-public-pages.md "Content facts"); change it
@@ -26,6 +27,7 @@ export default function FaqPage() {
   return (
     <div className="max-w-3xl">
       <PageMeta title={t('faq.title')} description={t('faq.metaDescription')} path="/faq" />
+      <ScrollProgress />
       <h1 className="text-3xl font-semibold tracking-tight">{t('faq.title')}</h1>
       <p className="mt-3 max-w-prose text-lg">{t('faq.intro')}</p>
       <div className="mt-8 divide-y divide-line rounded-lg border border-line bg-surface">

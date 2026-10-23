@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import LessonBody, { TextWithCode } from '../components/LessonBody'
 import PageMeta from '../components/PageMeta'
+import ScrollProgress from '../components/ScrollProgress'
 import { formatDate } from '../i18n'
 import { CONTACT_EMAIL, LEGAL_UPDATED } from '../site'
 
@@ -27,6 +28,7 @@ function LegalPage({ name }: { name: Name }) {
   return (
     <div>
       <PageMeta title={t(`${name}.title`)} description={t(`${name}.metaDescription`)} path={`/${name}`} />
+      <ScrollProgress />
       <h1 className="text-3xl font-semibold tracking-tight">{t(`${name}.title`)}</h1>
       <p className="mt-2 text-sm text-muted">{t('legal.updated', { date: formatDate(LEGAL_UPDATED, i18n.language) })}</p>
       <LessonBody text={t(`${name}.body`)} lang={i18n.language} />

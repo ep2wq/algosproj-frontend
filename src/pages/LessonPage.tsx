@@ -6,6 +6,7 @@ import Content from '../components/Content'
 import { CellLoader, LoadingRegion, SkeletonLines } from '../components/Loading'
 import LessonBody from '../components/LessonBody'
 import ProblemCard from '../components/ProblemCard'
+import ScrollProgress from '../components/ScrollProgress'
 import { VISUALS } from '../visuals'
 
 // The drawing's frame while a visualization loads: the height of the shortest visualization at that
@@ -119,6 +120,7 @@ export default function LessonPage() {
   return (
     <div>
       {backLink}
+      <ScrollProgress />
       <title>{t('titles.page', { name: lesson.title })}</title>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">
         <Content lang="auto">{lesson.title}</Content>

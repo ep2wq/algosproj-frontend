@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import LessonBody from '../components/LessonBody'
 import PageMeta from '../components/PageMeta'
+import ScrollProgress from '../components/ScrollProgress'
 import { formatNumber } from '../i18n'
 import { VISUALS } from '../visuals'
 
@@ -11,6 +12,7 @@ export default function AboutPage() {
   return (
     <div>
       <PageMeta title={t('about.title')} description={t('about.metaDescription')} path="/about" />
+      <ScrollProgress />
       <h1 className="text-3xl font-semibold tracking-tight">{t('about.title')}</h1>
       <p className="mt-3 max-w-prose text-lg">{t('about.intro')}</p>
       <LessonBody text={t('about.body', { visuals: formatNumber(VISUALS.size, i18n.language) })} lang={i18n.language} />
