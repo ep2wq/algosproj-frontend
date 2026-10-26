@@ -12,7 +12,7 @@ import { alertClass, primaryButton, selectClass } from './styles'
 export default function AdminLessonPage() {
   const { t } = useTranslation()
   const { id } = useParams()
-  const lessonId = id === undefined ? null : Number(id)
+  const lessonId = id ?? null
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [modules, setModules] = useState<Module[]>([])
@@ -40,7 +40,7 @@ export default function AdminLessonPage() {
           })
           return
         }
-        const module = moduleList.find((item) => String(item.id) === moduleParam) ?? null
+        const module = moduleList.find((item) => item.id === moduleParam) ?? null
         const next = Math.max(0, ...(module?.lessons ?? []).map((lessonItem) => lessonItem.sort_order)) + 1
         setForm({ module_id: module?.id ?? null, title: '', title_ar: '', slug: '', body: '', body_ar: '', sort_order: String(next) })
       })
@@ -107,7 +107,7 @@ export default function AdminLessonPage() {
             <select
               id="module_id"
               value={form.module_id ?? ''}
-              onChange={(event) => setForm({ ...form, module_id: event.target.value ? Number(event.target.value) : null })}
+              onChange={(event) => setForm({ ...form, module_id: event.target.value || null })}
               aria-invalid={Boolean(moduleErrors)}
               aria-describedby={moduleErrors ? 'module_id-error' : undefined}
               className={`${selectClass} ${moduleErrors ? 'border-fail' : 'border-field hover:border-muted'}`}

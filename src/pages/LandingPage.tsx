@@ -38,7 +38,7 @@ export default function LandingPage() {
   const [params, setParams] = useSearchParams()
   const [modules, setModules] = useState<Module[] | null>(null)
   // Who the list was loaded for: solved belongs to that user only.
-  const [loaded, setLoaded] = useState<{ userId: number | null; list: ChallengeSummary[] } | null>(null)
+  const [loaded, setLoaded] = useState<{ userId: string | null; list: ChallengeSummary[] } | null>(null)
   const [failure, setFailure] = useState<unknown>(null)
   const [reload, setReload] = useState(0)
 

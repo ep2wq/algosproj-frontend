@@ -115,11 +115,11 @@ function TestCaseForm({
   )
 }
 
-function TestCases({ problemId }: { problemId: number }) {
+function TestCases({ problemId }: { problemId: string }) {
   const { t } = useTranslation()
   const [testCases, setTestCases] = useState<AdminTestCase[] | null>(null)
   const [loadError, setLoadError] = useState('')
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   useEffect(() => {
     getTestCases(problemId)
@@ -248,7 +248,7 @@ function TestCases({ problemId }: { problemId: number }) {
 export default function AdminProblemPage() {
   const { t } = useTranslation()
   const { id } = useParams()
-  const problemId = id === undefined ? null : Number(id)
+  const problemId = id ?? null
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [modules, setModules] = useState<Module[]>([])
@@ -277,7 +277,7 @@ export default function AdminProblemPage() {
           return
         }
         setForm({
-          lesson_id: lessonParam ? Number(lessonParam) : null,
+          lesson_id: lessonParam || null,
           title: '',
           title_ar: '',
           slug: '',
@@ -370,7 +370,7 @@ export default function AdminProblemPage() {
             <select
               id="lesson_id"
               value={form.lesson_id ?? ''}
-              onChange={(event) => setForm({ ...form, lesson_id: event.target.value ? Number(event.target.value) : null })}
+              onChange={(event) => setForm({ ...form, lesson_id: event.target.value || null })}
               aria-invalid={Boolean(lessonErrors)}
               aria-describedby={lessonErrors ? 'lesson_id-error' : undefined}
               className={`${selectClass} ${lessonErrors ? 'border-fail' : 'border-field hover:border-muted'}`}

@@ -28,7 +28,7 @@ import { alertClass } from './styles'
 export default function AdminUserPage() {
   const { t } = useTranslation()
   const { id } = useParams()
-  const userId = Number(id)
+  const userId = id ?? ''
   const { user: me } = useAuth()
   const navigate = useNavigate()
   const [detail, setDetail] = useState<AdminUserDetail | null>(null)

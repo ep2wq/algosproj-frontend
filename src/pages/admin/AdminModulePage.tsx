@@ -10,7 +10,7 @@ import { alertClass, primaryButton } from './styles'
 export default function AdminModulePage() {
   const { t } = useTranslation()
   const { id } = useParams()
-  const moduleId = id === undefined ? null : Number(id)
+  const moduleId = id ?? null
   const navigate = useNavigate()
   const [form, setForm] = useState<ModuleInput | null>(null)
   const [loadError, setLoadError] = useState('')

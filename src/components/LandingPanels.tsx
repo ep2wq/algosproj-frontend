@@ -371,7 +371,7 @@ export function LeaderboardPanel() {
   const { user, loading } = useAuth()
   const language = i18n.language
   const [entries, setEntries] = useState<LeaderboardEntry[] | null>(null)
-  const [myRank, setMyRank] = useState<{ userId: number; rank: MyRank } | null>(null)
+  const [myRank, setMyRank] = useState<{ userId: string; rank: MyRank } | null>(null)
   const [failure, setFailure] = useState<unknown>(null)
   const [reload, setReload] = useState(0)
 

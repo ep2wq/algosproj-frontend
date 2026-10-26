@@ -11,7 +11,7 @@ try {
 }
 
 export type User = {
-  id: number
+  id: string
   name: string
   email: string
   points: number
@@ -26,15 +26,15 @@ export type AuthResponse = {
 }
 
 export type LessonSummary = {
-  id: number
-  module_id: number
+  id: string
+  module_id: string
   slug: string
   title: string
   sort_order: number
 }
 
 export type Module = {
-  id: number
+  id: string
   slug: string
   title: string
   track: string
@@ -43,7 +43,7 @@ export type Module = {
 }
 
 export type TestCase = {
-  id: number
+  id: string
   input: string
   expected_output: string
 }
@@ -53,7 +53,7 @@ export type TestCase = {
 export type ContentLang = 'ar' | 'en'
 
 export type Problem = {
-  id: number
+  id: string
   title: string
   description: string
   description_lang: ContentLang
@@ -63,8 +63,8 @@ export type Problem = {
 }
 
 export type Lesson = {
-  id: number
-  module_id: number
+  id: string
+  module_id: string
   slug: string
   title: string
   body: string | null
@@ -143,8 +143,8 @@ export type MyRank = {
 export type AdminModule = Module & { title_ar: string | null }
 
 export type AdminLesson = {
-  id: number
-  module_id: number
+  id: string
+  module_id: string
   slug: string
   title: string
   title_ar: string | null
@@ -154,8 +154,8 @@ export type AdminLesson = {
 }
 
 export type AdminProblem = {
-  id: number
-  lesson_id: number | null
+  id: string
+  lesson_id: string | null
   slug: string | null
   title: string
   title_ar: string | null
@@ -166,8 +166,8 @@ export type AdminProblem = {
 }
 
 export type AdminTestCase = {
-  id: number
-  problem_id: number
+  id: string
+  problem_id: string
   input: string
   expected_output: string
   is_hidden: boolean
@@ -183,7 +183,7 @@ export type Page<T> = {
 }
 
 export type AdminUserRow = {
-  id: number
+  id: string
   name: string
   email: string
   role: Role
@@ -197,7 +197,7 @@ export type AdminUserDetail = AdminUserRow & {
   ban_reason: string | null
   solved: { title: string; slug: string | null; solved_at: string }[]
   submissions: {
-    id: number
+    id: string
     problem: { title: string; slug: string | null }
     language: string
     status: string
@@ -209,8 +209,8 @@ export type AdminUserDetail = AdminUserRow & {
 }
 
 export type ActivityEntry = {
-  id: number
-  user_id: number | null
+  id: string
+  user_id: string | null
   email: string | null
   event: string
   ip: string | null
@@ -220,12 +220,12 @@ export type ActivityEntry = {
 
 // details.changes holds {old, new} per field, or "changed" for content that is not logged.
 export type AuditEntry = {
-  id: number
-  actor_id: number | null
+  id: string
+  actor_id: string | null
   actor_email: string
   action: string
   target_type: string | null
-  target_id: number | null
+  target_id: string | null
   target_label: string | null
   details: Record<string, unknown> | null
   ip: string | null
@@ -240,7 +240,7 @@ export type ActivityFilters = { event?: string; user?: string; from?: string; to
 // stored as null (not translated).
 export type ModuleInput = { title: string; title_ar: string; slug: string; sort_order: string }
 export type LessonInput = {
-  module_id: number | null
+  module_id: string | null
   title: string
   title_ar: string
   slug: string
@@ -249,7 +249,7 @@ export type LessonInput = {
   sort_order: string
 }
 export type ProblemInput = {
-  lesson_id: number | null
+  lesson_id: string | null
   title: string
   title_ar: string
   slug: string
@@ -433,7 +433,7 @@ export function getChallenge(slug: string) {
   return request<Challenge>('GET', `/challenges/${encodeURIComponent(slug)}`)
 }
 
-export function submitSolution(problemId: number, language: Language, code: string) {
+export function submitSolution(problemId: string, language: Language, code: string) {
   return request<SubmitResult>('POST', `/problems/${problemId}/submit`, { language, code })
 }
 
@@ -454,15 +454,15 @@ export function createModule(data: ModuleInput) {
   return request<AdminModule>('POST', '/admin/modules', data)
 }
 
-export function updateModule(id: number, data: ModuleInput) {
+export function updateModule(id: string, data: ModuleInput) {
   return request<AdminModule>('PUT', `/admin/modules/${id}`, data)
 }
 
-export function deleteModule(id: number) {
+export function deleteModule(id: string) {
   return request<null>('DELETE', `/admin/modules/${id}`)
 }
 
-export function getAdminLesson(id: number) {
+export function getAdminLesson(id: string) {
   return request<AdminLesson>('GET', `/admin/lessons/${id}`)
 }
 
@@ -470,11 +470,11 @@ export function createLesson(data: LessonInput) {
   return request<AdminLesson>('POST', '/admin/lessons', data)
 }
 
-export function updateLesson(id: number, data: LessonInput) {
+export function updateLesson(id: string, data: LessonInput) {
   return request<AdminLesson>('PUT', `/admin/lessons/${id}`, data)
 }
 
-export function deleteLesson(id: number) {
+export function deleteLesson(id: string) {
   return request<null>('DELETE', `/admin/lessons/${id}`)
 }
 
@@ -482,7 +482,7 @@ export function getAdminProblems() {
   return request<Pick<AdminProblem, 'id' | 'lesson_id' | 'slug' | 'title' | 'difficulty' | 'points'>[]>('GET', '/admin/problems')
 }
 
-export function getAdminProblem(id: number) {
+export function getAdminProblem(id: string) {
   return request<AdminProblem>('GET', `/admin/problems/${id}`)
 }
 
@@ -490,27 +490,27 @@ export function createProblem(data: ProblemInput) {
   return request<AdminProblem>('POST', '/admin/problems', data)
 }
 
-export function updateProblem(id: number, data: ProblemInput) {
+export function updateProblem(id: string, data: ProblemInput) {
   return request<AdminProblem>('PUT', `/admin/problems/${id}`, data)
 }
 
-export function deleteProblem(id: number) {
+export function deleteProblem(id: string) {
   return request<null>('DELETE', `/admin/problems/${id}`)
 }
 
-export function getTestCases(problemId: number) {
+export function getTestCases(problemId: string) {
   return request<AdminTestCase[]>('GET', `/admin/problems/${problemId}/test-cases`)
 }
 
-export function createTestCase(problemId: number, data: TestCaseInput) {
+export function createTestCase(problemId: string, data: TestCaseInput) {
   return request<AdminTestCase>('POST', `/admin/problems/${problemId}/test-cases`, data)
 }
 
-export function updateTestCase(problemId: number, id: number, data: TestCaseInput) {
+export function updateTestCase(problemId: string, id: string, data: TestCaseInput) {
   return request<AdminTestCase>('PUT', `/admin/problems/${problemId}/test-cases/${id}`, data)
 }
 
-export function deleteTestCase(problemId: number, id: number) {
+export function deleteTestCase(problemId: string, id: string) {
   return request<null>('DELETE', `/admin/problems/${problemId}/test-cases/${id}`)
 }
 
@@ -519,40 +519,40 @@ export function getAdminUsers(filters: UserFilters) {
   return request<Page<AdminUserRow>>('GET', `/admin/users${query(filters)}`)
 }
 
-export function getAdminUser(id: number) {
+export function getAdminUser(id: string) {
   return request<AdminUserDetail>('GET', `/admin/users/${id}`)
 }
 
-export function getUserActivity(id: number, page = 1) {
+export function getUserActivity(id: string, page = 1) {
   return request<Page<ActivityEntry>>('GET', `/admin/users/${id}/activity${query({ page: String(page) })}`)
 }
 
-export function banUser(id: number, reason: string) {
+export function banUser(id: string, reason: string) {
   return request<AdminUserRow>('POST', `/admin/users/${id}/ban`, { reason })
 }
 
-export function unbanUser(id: number) {
+export function unbanUser(id: string) {
   return request<AdminUserRow>('POST', `/admin/users/${id}/unban`)
 }
 
-export function logoutUserEverywhere(id: number) {
+export function logoutUserEverywhere(id: string) {
   return request<AdminUserRow>('POST', `/admin/users/${id}/logout-everywhere`)
 }
 
-export function setUserRole(id: number, role: 'user' | 'admin') {
+export function setUserRole(id: string, role: 'user' | 'admin') {
   return request<AdminUserRow>('PUT', `/admin/users/${id}/role`, { role })
 }
 
 // amount is sent as typed; the backend validates it as a non-zero integer.
-export function adjustUserPoints(id: number, amount: string, reason: string) {
+export function adjustUserPoints(id: string, amount: string, reason: string) {
   return request<AdminUserRow>('POST', `/admin/users/${id}/points`, { amount, reason })
 }
 
-export function resetUserProgress(id: number) {
+export function resetUserProgress(id: string) {
   return request<AdminUserRow>('POST', `/admin/users/${id}/reset-progress`)
 }
 
-export function deleteUser(id: number, confirmEmail: string) {
+export function deleteUser(id: string, confirmEmail: string) {
   return request<null>('DELETE', `/admin/users/${id}`, { confirm_email: confirmEmail })
 }
 
