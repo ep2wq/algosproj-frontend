@@ -2,7 +2,7 @@
 
 ## Project overview
 
-AlgosProj teaches data structures and algorithms (English and Arabic): lessons, visualizations,
+AlgosLab teaches data structures and algorithms (English and Arabic): lessons, visualizations,
 in-browser code (Python, Java, JavaScript, C++) run against test cases, points, AI tutor hints.
 Three repos, three deployments. Flow: frontend -> backend -> sandbox.
 - **algosproj-frontend** (this repo) talks only to the backend.
@@ -28,7 +28,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   `sitemap.xml`; the Dockerfile has no arg for it.
 - Public pages (README "Public pages"): `/` is `LandingPage` (tabs via `?tab=`), the old lessons list
   is `LessonsPage` at `/lessons`; also `/about`, `/faq`, `/contact`, `/terms`, `/privacy`, `/cookies`.
-  `src/site.ts` holds `PRODUCT_NAME`, `CONTACT_EMAIL` (a placeholder), `SITE_URL`, `LEGAL_UPDATED`;
+  `src/site.ts` holds `PRODUCT_NAME` (AlgosLab), `CONTACT_EMAIL` (contact@algoslab.sa), `SITE_URL`, `LEGAL_UPDATED`;
   strings use `{{product}}` and `{{email}}`. Each public page renders `PageMeta`.
 - `npm run build` also prerenders the public pages (`src/prerender.ts` `ROUTES`, `scripts/prerender.mjs`,
   writes `dist-ssr/`, `dist/*.html`, `robots.txt`, `sitemap.xml`). No hydration. A new public page
@@ -80,7 +80,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.
   `SiteMenu` (`Layout.tsx`, replaced `AccountMenu`): a "More" disclosure at every width (About, FAQ,
   Contact; below `lg` also name and Log out; below `sm` also Admin or Log in), not role="menu". Footer
-  on every page. Legal texts are drafts needing review; `CONTACT_EMAIL` is still a placeholder.
+  on every page. Legal texts are drafts needing review; the `CONTACT_EMAIL` mailbox must exist before launch.
 - Gotchas: Monaco loads from jsDelivr at runtime. Vite must run on port 5173 (CORS and the backend's `SANCTUM_STATEFUL_DOMAINS`); `VITE_API_URL` uses the same host name as the page. One-line
   lint disables: `react/only-export-components` (auth.tsx), `react/static-components`.
   The global `:focus-visible` rule at the end of `src/index.css` is outside any `@layer`, so it beats

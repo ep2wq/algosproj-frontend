@@ -1,6 +1,6 @@
 # algosproj-frontend
 
-The web client for AlgosProj, a platform for learning data structures and algorithms.
+The web client for AlgosLab, a platform for learning data structures and algorithms.
 Students read lessons, watch visualizations, and write code in the browser. This repo
 only talks to the Laravel backend (`algosproj-backend`), which handles auth, lessons and
 grading. It never calls the sandbox service directly.
@@ -52,7 +52,7 @@ Put these in `.env` (copy `.env.example`; `.env` is not committed):
 - `VITE_API_URL` — base URL of the backend, default `http://localhost:8000`. The app
   calls `${VITE_API_URL}/api/...`. It must use the same host name as the page
   (`http://localhost:8000` with the app on `http://localhost:5173`, not `127.0.0.1`).
-- `VITE_SITE_URL` — public address of the site, for example `https://algosproj.example`, no
+- `VITE_SITE_URL` — public address of the site, for example `https://algoslab.sa`, no
   trailing slash. Only for production builds: canonical links, `og:url` and `sitemap.xml` need it
   and are left out without it. Baked in at build time like `VITE_API_URL`.
 
@@ -355,8 +355,8 @@ header and footer measurements are in `../docs/ui-public-pages.md` (outside this
   no progress, solved marks or rank.
 - **Rename the product:** edit `PRODUCT_NAME` in `src/site.ts`. Strings use `{{product}}` and
   `index.html` gets it at build time.
-- **Contact address:** `CONTACT_EMAIL` in `src/site.ts` is a placeholder (`contact@example.com`).
-  Replace it before launch; strings use `{{email}}`. `LEGAL_UPDATED` is the date of the legal texts.
+- **Contact address:** `CONTACT_EMAIL` in `src/site.ts` (`contact@algoslab.sa`); the mailbox or
+  forwarding must exist before launch. Strings use `{{email}}`. `LEGAL_UPDATED` is the date of the legal texts.
 - **Page tags:** every public page renders `PageMeta` (`src/components/PageMeta.tsx`): title,
   description, canonical, Open Graph and Twitter tags. Canonical and `og:url` need `VITE_SITE_URL`.
 - **Prerender:** `npm run build` = `tsc -b && vite build && vite build --ssr src/prerender.ts
@@ -373,7 +373,7 @@ header and footer measurements are in `../docs/ui-public-pages.md` (outside this
   build-machine path (`check()` in `scripts/prerender.mjs`). Lazy parts of a prerendered page render
   their placeholder when `import.meta.env.SSR`, because `renderToString` can't wait for lazy code.
 - **Cloudflare Pages:** build command `npm run build`, output directory `dist`, environment
-  variables `VITE_API_URL` and `VITE_SITE_URL`. Do not add a `404.html`: it turns off the
+  variables `VITE_API_URL=https://api.algoslab.sa` and `VITE_SITE_URL=https://algoslab.sa`. Do not add a `404.html`: it turns off the
   single-page fallback.
 
 ## Admin area
