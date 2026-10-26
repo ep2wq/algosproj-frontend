@@ -649,7 +649,7 @@
     },
     "rows": {
       "session": {
-        "name": "`laravel-session` (the name follows the server's app name)",
+        "name": "`algoslab-session` (the name follows the server's app name)",
         "kind": "Cookie",
         "purpose": "Keeps you logged in between pages.",
         "duration": "Until 2 hours without activity (server setting)",

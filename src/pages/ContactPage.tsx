@@ -4,8 +4,8 @@ import LessonBody from '../components/LessonBody'
 import PageMeta from '../components/PageMeta'
 import { CONTACT_EMAIL } from '../site'
 
-// No form: the site has no mail provider yet (docs/ui-public-pages.md). The address is the one
-// placeholder in src/site.ts.
+// No form: the site has no mail provider yet (docs/ui-public-pages.md). The address is
+// CONTACT_EMAIL in src/site.ts.
 export default function ContactPage() {
   const { t, i18n } = useTranslation()
   return (
