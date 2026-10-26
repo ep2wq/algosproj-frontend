@@ -385,6 +385,10 @@ an owner or admin on the backend with `php artisan user:make-admin <email> [--ow
 owner can then switch other accounts between user and admin on their user page. The
 backend README ("Roles") has the full permissions table.
 
+Ids from the API are UUID strings (`string` in the `api.ts` types and endpoint parameters); the
+admin `:id`, `?module=<id>` and `?lesson=<id>` below are UUIDs. Never parse an id as a number or
+sort by it.
+
 A tab row at the top of every admin page links Content and Users, plus Audit log and
 Activity for owners.
 

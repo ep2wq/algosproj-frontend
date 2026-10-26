@@ -21,6 +21,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   `DirectionProvider` in `Layout` gives Base UI the reading direction.
 - `src/api.ts` (fetch wrapper, one function per endpoint), `src/auth.tsx`, `src/pages/*`,
   `src/components/*`, `src/visuals/*`, `src/lessonText.ts` (lesson text parser; backend README).
+- Ids from the API are UUID strings (`string` in `api.ts`): never `Number()`/`parseInt` an id or sort by it.
 - Visualizations: `src/visuals/index.ts` maps a lesson slug to a lazy component. Steps are
   pure "frames" functions; `usePlayback` + `PlaybackControls` are shared. No chart library.
 - `VITE_API_URL` in `.env` (default `http://localhost:8000`); a build arg in the Dockerfile.
