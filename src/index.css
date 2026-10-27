@@ -452,8 +452,9 @@ html {
   }
 }
 
-/* The footer keeps its own accent for the ring in both themes. */
-footer :focus-visible {
+/* The footer and the dark landing banner keep the footer accent for the ring in both themes. */
+footer :focus-visible,
+.on-dark :focus-visible {
   outline-color: var(--color-footer-accent);
 }
 

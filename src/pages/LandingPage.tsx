@@ -260,17 +260,26 @@ export default function LandingPage() {
         <p className="mt-6 max-w-prose text-muted">{t('landing.bilingual')}</p>
       </section>
 
-      {/* Visitors only: a logged-in user has Continue learning at the top. */}
+      {/* Visitors only: a logged-in user has Continue learning at the top. Dark in both themes (the
+          footer's tokens), so the button is the one bright thing: emerald with a dark label, 7.8:1. */}
       {!loading && !user && (
-      <section aria-labelledby="landing-start" className="mt-20 rounded-lg bg-accent-soft px-6 py-8 sm:px-8">
-        <h2 id="landing-start" className="text-2xl font-semibold tracking-tight">
-          {t('landing.startTitle')}
-        </h2>
-        <p className="mt-2 max-w-prose">{t('landing.startBody')}</p>
-        <Link to={firstLesson ? `/lessons/${firstLesson.slug}` : '/lessons'} className={`${primaryButton} mt-5`}>
-          {t('landing.startFirst')}
-        </Link>
-      </section>
+        <section
+          aria-labelledby="landing-start"
+          className="on-dark mt-20 grid items-end gap-x-10 gap-y-6 rounded-lg bg-footer px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[minmax(0,1fr)_auto]"
+        >
+          <div>
+            <h2 id="landing-start" className="text-3xl font-bold tracking-tight text-footer-ink sm:text-4xl">
+              {t('landing.ctaTitle')}
+            </h2>
+            <p className="mt-3 max-w-prose text-footer-muted">{t('landing.startBody')}</p>
+          </div>
+          <Link
+            to={firstLesson ? `/lessons/${firstLesson.slug}` : '/lessons'}
+            className="inline-flex min-h-12 items-center justify-center rounded bg-footer-accent px-6 font-semibold text-footer hover:bg-footer-accent/90 motion-safe:active:translate-y-px"
+          >
+            {t('landing.startFirst')}
+          </Link>
+        </section>
       )}
     </div>
   )

@@ -563,7 +563,7 @@
       "runTitle": "Example run",
       "note": "A fixed example of a graded run. Nothing is sent from this page: your own code runs on each lesson's page."
     },
-    "startTitle": "Start with lesson one",
+    "ctaTitle": "Start learning for free",
     "startBody": "You can read every lesson and play every visualization without an account. Create one when you want your code graded."
   },
   "about": {
