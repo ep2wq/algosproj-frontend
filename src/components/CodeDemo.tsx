@@ -4,7 +4,7 @@ import { BINARY_SEARCH_SAMPLES, SAMPLE_RUN } from '../codeSamples'
 import { LANGUAGE_LABELS } from '../starters'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 
-// The landing page's code and console: the binary search problem in the four languages and a fixed
+// The landing page's code and console: the binary search loop in the four languages and a fixed
 // run in the words of the real result panel. Static: nothing is run or sent from here. Code panes
 // scroll sideways inside themselves (tabIndex 0, so the keyboard can scroll them too).
 export default function CodeDemo() {
@@ -24,14 +24,14 @@ export default function CodeDemo() {
         </TabsList>
         {LANGUAGES.map((id) => (
           <TabsContent key={id} value={id} className="flex flex-col">
-            {/* As tall as the longest sample, so switching languages moves nothing; down to the foot of
-                the console beside it. */}
+            {/* As tall as the longest sample (11 lines), so switching languages moves nothing; down to the
+                foot of the console beside it. */}
             <pre
               dir="ltr"
               lang="en"
               tabIndex={0}
               aria-label={t('landing.demo.codeLabel', { language: LANGUAGE_LABELS[id] })}
-              className="min-h-[29.5rem] flex-1 overflow-x-auto bg-paper p-4 font-mono text-sm leading-5"
+              className="min-h-[15.75rem] flex-1 overflow-x-auto bg-paper p-4 font-mono text-sm leading-5"
             >
               <code>{BINARY_SEARCH_SAMPLES[id]}</code>
             </pre>

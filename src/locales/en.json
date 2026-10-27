@@ -561,7 +561,7 @@
       "tabsLabel": "Programming language",
       "codeLabel": "Binary search in {{language}}",
       "runTitle": "Example run",
-      "note": "A fixed example of a graded run. Nothing is sent from this page: your own code runs on each lesson's page."
+      "note": "The search loop at the heart of the lesson's problem, and a fixed example of a graded run. Nothing is sent from this page: you write and submit the whole program on the lesson's page."
     },
     "ctaTitle": "Start learning for free",
     "startBody": "You can read every lesson and play every visualization without an account. Create one when you want your code graded."
