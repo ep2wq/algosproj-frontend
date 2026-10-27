@@ -1,17 +1,16 @@
 import { useSyncExternalStore } from 'react'
 
-// Light or dark. Until the user clicks the theme button the app follows the OS
-// (prefers-color-scheme) and updates live when it changes; after the first click the choice is
-// stored under `theme` ('light' or 'dark') and wins. Any other stored value, such as the old
-// 'system', is ignored. index.html applies the same rules before the first paint, so keep the
-// two in step.
+// Light or dark. Dark until the user clicks the theme button; after that the choice is stored
+// under `theme` ('light' or 'dark') and wins. There is no "follow the OS" setting: any other stored
+// value, such as the old 'system', is ignored. index.html applies the same rules before the first
+// paint (and the prerendered HTML is dark), so keep the two in step.
 const KEY = 'theme'
-// No window when the public pages are prerendered in Node (scripts/prerender.mjs): light there.
-const media = typeof window === 'undefined' ? null : window.matchMedia('(prefers-color-scheme: dark)')
 const listeners = new Set<() => void>()
 
-// Blocked or throwing storage behaves as "follow the OS".
+// Blocked or throwing storage behaves as "no choice yet" (dark).
 function readStored(): 'light' | 'dark' | null {
+  // No window when the public pages are prerendered in Node (scripts/prerender.mjs).
+  if (typeof window === 'undefined') return null
   try {
     const value = localStorage.getItem(KEY)
     if (value === 'light' || value === 'dark') return value
@@ -24,19 +23,19 @@ function readStored(): 'light' | 'dark' | null {
 let stored = readStored()
 
 function isDark(): boolean {
-  return stored === null ? (media?.matches ?? false) : stored === 'dark'
+  return stored !== 'light'
 }
 
 // The dark class drives Tailwind's dark: variant and the dark token values in index.css;
-// color-scheme makes scrollbars, form controls and the browser UI match.
+// color-scheme makes scrollbars, form controls and the browser UI match; theme-color is the
+// browser bar (--color-surface).
 function apply() {
   const dark = isDark()
   document.documentElement.classList.toggle('dark', dark)
   document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0f172a' : '#ffffff')
   listeners.forEach((listener) => listener())
 }
-
-media?.addEventListener('change', apply)
 
 export function toggleTheme() {
   stored = isDark() ? 'light' : 'dark'
@@ -55,7 +54,8 @@ function subscribe(listener: () => void) {
   }
 }
 
-// Whether dark is in effect (for the toggle icon and the Monaco editor theme).
+// Whether dark is in effect (for the toggle icon and the Monaco editor theme). The prerendered HTML
+// is dark.
 export function useTheme() {
-  return { dark: useSyncExternalStore(subscribe, isDark, () => false) }
+  return { dark: useSyncExternalStore(subscribe, isDark, () => true) }
 }

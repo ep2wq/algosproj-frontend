@@ -79,6 +79,11 @@
   --input: var(--color-field);
   --ring: var(--color-accent);
   --radius: 0.5rem;
+
+  /* The scrolled header (.site-header below): the surface at 92%. Measured with the worst content
+     behind it, pure black or white and no blur, every header text pair still passes 4.5:1 in both
+     themes (lowest: accent on the light glass over black, 4.6). */
+  --header-glass: color-mix(in srgb, var(--color-surface) 92%, transparent);
 }
 
 @theme inline {
@@ -383,14 +388,70 @@ body {
   outline-offset: 2px;
 }
 
+/* The sticky header: part of the page at the top (paper, no edge); once the page has scrolled
+   (data-scrolled, set by one IntersectionObserver in Layout) frosted glass with a 1 px edge. The
+   blur is small and only here and nowhere large. Solid surface when the browser has no
+   backdrop-filter or the visitor asks for less transparency or more contrast; no fade under reduced
+   motion. */
+.site-header {
+  background-color: var(--color-paper);
+  border-color: transparent;
+}
+
+.site-header[data-scrolled] {
+  background-color: var(--header-glass);
+  border-color: var(--color-line);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-header[data-scrolled] {
+    background-color: var(--color-surface);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .site-header[data-scrolled] {
+    background-color: var(--color-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .site-header {
+    transition:
+      background-color 200ms var(--ease-calm),
+      border-color 200ms var(--ease-calm);
+  }
+}
+
+/* Anything reached by keyboard or a link lands below the sticky header (2 rows on a phone). */
+html {
+  scroll-padding-top: 7.5rem;
+}
+
+@media (min-width: 40rem) {
+  html {
+    scroll-padding-top: 5.5rem;
+  }
+}
+
 /* The footer keeps its own accent for the ring in both themes. */
 footer :focus-visible {
   outline-color: var(--color-footer-accent);
 }
 
-/* The end edge of a sideways-scrolling drawing fades while more of it is hidden (useScrollCue). */
+/* The end edge of a sideways-scrolling drawing fades while more of it is hidden (useScrollCue).
+   Drawings are always left to right; a row that follows the page (the landing tabs) fades on the
+   left in Arabic. */
 @utility scroll-fade {
   mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), rgb(0 0 0 / 0.15));
+
+  &:dir(rtl) {
+    mask-image: linear-gradient(to left, #000 calc(100% - 2.5rem), rgb(0 0 0 / 0.15));
+  }
 }
 
 /* The mask hides anything outside the box, so a faded box draws its focus outline inside. */

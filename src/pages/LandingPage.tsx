@@ -13,6 +13,7 @@ import { formatNumber } from '../i18n'
 import { lessonsDone, nextLesson } from '../progress'
 import { LANGUAGE_LABELS } from '../starters'
 import { VISUALS } from '../visuals'
+import { useScrollCue } from '../visuals/useScrollCue'
 
 // Lazy, like every visualization: the first screen does not wait for the visuals strings. The
 // fallbacks keep the same height, so nothing below moves when they arrive.
@@ -57,6 +58,8 @@ export default function LandingPage() {
   // A panel is rendered the first time its tab opens and then stays mounted (hidden), so its data
   // loads once.
   const [opened, setOpened] = useState([tab])
+  // If the tab labels do not fit (large text), the row scrolls and its end edge fades.
+  const [tabRow, moreTabs] = useScrollCue<HTMLDivElement>()
   if (!opened.includes(tab)) setOpened([...opened, tab])
 
   // Titles come in the app language: load again when it changes.
@@ -149,8 +152,9 @@ export default function LandingPage() {
               </>
             )}
           </div>
-          {/* Real counts from the API; the line keeps its height until they arrive. */}
-          <p className="mt-6 min-h-6 text-sm text-muted">
+          {/* Real counts from the API; the line keeps its height until they arrive (two lines on a
+              phone, where it wraps). */}
+          <p className="mt-6 min-h-[2lh] text-sm text-muted sm:min-h-[1lh]">
             {modules && challenges
               ? t('landing.counts', {
                   modules: t('landing.moduleCount', { count: modules.length, value: formatNumber(modules.length, language) }),
@@ -180,7 +184,7 @@ export default function LandingPage() {
         {/* WAI-ARIA tabs with automatic activation (activateOnFocus): arrows in reading order, Home
             and End; Tab moves from the row into the open panel. */}
         <Tabs value={tab} onValueChange={(value) => selectTab(String(value))} className="mt-6">
-          <TabsList aria-label={t('landing.insideTitle')} activateOnFocus>
+          <TabsList ref={tabRow} aria-label={t('landing.insideTitle')} activateOnFocus className={moreTabs ? 'scroll-fade' : ''}>
             {TAB_IDS.map((id) => (
               <TabsTrigger key={id} value={id}>
                 {t(`nav.${id}`)}

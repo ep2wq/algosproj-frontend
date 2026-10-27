@@ -1,18 +1,19 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark" style="color-scheme: dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- The light and dark header colours (--color-surface in src/index.css). -->
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a" />
+    <!-- The browser bar: --color-surface of the theme in use (src/index.css); dark by default, and
+         src/theme.ts changes it with the theme. -->
+    <meta name="theme-color" content="#0f172a" />
     <!-- The product name from src/site.ts, filled in by vite.config.ts. -->
     <title>%PRODUCT_NAME%</title>
     <script>
-      // Sets the theme, lang and dir before the first paint, so a dark page never flashes light
+      // Sets the theme, lang and dir before the first paint, so a light page never flashes dark
       // and an Arabic page never flashes left-to-right. Same rules as src/theme.ts and src/i18n.ts:
-      // a stored "light"/"dark" and "en"/"ar" win; otherwise the OS theme and the browser language.
+      // a stored "light"/"dark" and "en"/"ar" win; otherwise dark (the static HTML is dark too) and
+      // the browser language.
       try {
         var root = document.documentElement
         var theme = null
@@ -21,9 +22,10 @@
           theme = localStorage.getItem('theme')
           lang = localStorage.getItem('lang')
         } catch (e) {}
-        var dark = theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        var dark = theme !== 'light'
         root.classList.toggle('dark', dark)
         root.style.colorScheme = dark ? 'dark' : 'light'
+        if (!dark) document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
         if (lang !== 'en' && lang !== 'ar') {
           var first = (navigator.languages && navigator.languages[0]) || navigator.language || ''
           lang = first.toLowerCase().indexOf('ar') === 0 ? 'ar' : 'en'

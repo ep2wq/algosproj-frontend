@@ -12,20 +12,22 @@ import { toggleTheme, useTheme } from '../theme'
 // The current page: ink, medium weight and an accent bar under the word (not colour alone).
 const activeMark = 'text-ink font-medium underline decoration-accent decoration-2 underline-offset-[6px]'
 
-// Taller on a phone, where they are tapped, and narrower so the logo and links share a row at 360 px.
+// Below sm the three links share the second header row, 44 px tall; from sm they sit next to the logo.
 const navLink = ({ isActive }: { isActive: boolean }) =>
-  `rounded px-1 py-2 sm:px-2 sm:py-1 hover:text-accent ${isActive ? activeMark : 'text-muted'}`
+  `inline-flex min-h-11 items-center justify-center rounded px-2 hover:text-accent sm:min-h-9 ${isActive ? activeMark : 'text-muted'}`
 
 // 44 px touch targets, like the rest of the header controls on a phone.
 const toggleClass = 'inline-flex min-h-11 min-w-11 items-center justify-center rounded px-2 text-muted hover:text-accent'
 
-// Shows the sun in dark mode and the moon in light mode: the theme a click switches to.
-function ThemeToggle() {
+// Shows the sun in dark mode and the moon in light mode: the theme a click switches to. In the header
+// from sm; below that it is a labelled item in the site menu.
+function ThemeToggle({ className = toggleClass, showLabel = false }: { className?: string; showLabel?: boolean }) {
   const { t } = useTranslation()
   const { dark } = useTheme()
+  const label = dark ? t('theme.toLight') : t('theme.toDark')
 
   return (
-    <button type="button" onClick={toggleTheme} aria-label={dark ? t('theme.toLight') : t('theme.toDark')} className={toggleClass}>
+    <button type="button" onClick={toggleTheme} aria-label={showLabel ? undefined : label} className={className}>
       {dark ? (
         <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
           <circle cx="12" cy="12" r="4" />
@@ -36,6 +38,7 @@ function ThemeToggle() {
           <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
         </svg>
       )}
+      {showLabel && <span className="ms-2">{label}</span>}
     </button>
   )
 }
@@ -81,8 +84,9 @@ function LanguageToggle() {
 
 // The site menu: About, FAQ and Contact at every width (the header has no room for three more
 // links next to a logged-in name). Below lg it also holds the full name and Log out, and on a phone
-// Admin (or, for a visitor, Log in; Register stays in the header), so a phone header stays at 2
-// rows and a tablet header at 1. A disclosure, not role="menu". Escape, a click outside, or focus leaving
+// the theme button and Admin (or, for a visitor, Log in; Register stays in the header), so a phone
+// header stays at 2 rows (controls, then the three links) and a tablet header at 1. A disclosure,
+// not role="menu". Escape, a click outside, or focus leaving
 // it closes it. Layout remounts it on every route change (key), so a new page starts with it closed.
 const MENU_PAGES = [
   ['/about', 'nav.about'],
@@ -124,12 +128,13 @@ function SiteMenu({ name, guest, staff, onLogOut }: { name: string | null; guest
   return (
     <div
       ref={wrapper}
-      className="relative"
+      className="sm:relative"
       onBlur={(event) => {
         if (event.relatedTarget && !wrapper.current?.contains(event.relatedTarget)) setOpen(false)
       }}
     >
-      {/* Icon only below lg, icon and word from lg; the name is always the word. */}
+      {/* Icon only below lg, icon and word from lg; the name is always the word. Below sm the panel
+          below spans the header row (the wrapper is not its containing block there). */}
       <button
         ref={button}
         type="button"
@@ -146,8 +151,10 @@ function SiteMenu({ name, guest, staff, onLogOut }: { name: string | null; guest
       <div
         id={panelId}
         hidden={!open}
-        className="absolute end-0 top-full z-10 mt-1 w-64 max-w-[calc(100vw-2rem)] rounded-lg border border-line bg-surface p-1 shadow-(--float-shadow)"
+        className="absolute inset-x-4 top-full z-10 mt-1 rounded-lg border border-line bg-surface p-1 shadow-(--float-shadow) sm:inset-x-auto sm:end-0 sm:w-64"
       >
+        {/* Below sm the header has no room for the theme button. */}
+        <ThemeToggle className={`${item} sm:hidden`} showLabel />
         {name !== null && (
           <p dir="auto" className="break-words px-3 py-2 font-medium text-ink lg:hidden">
             {name}
@@ -203,6 +210,19 @@ export default function Layout() {
   // Where a page renders its own skip link (passed to pages as the outlet context).
   const [skipSlot, setSkipSlot] = useState<HTMLDivElement | null>(null)
 
+  // The sticky header turns to frosted glass (.site-header in index.css) once the page has scrolled:
+  // one observer on a marker at the top of the page, no scroll listener. The static HTML is the top
+  // state, so nothing moves when the app takes over.
+  const top = useRef<HTMLDivElement>(null)
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const marker = top.current
+    if (!marker) return
+    const observer = new IntersectionObserver(([entry]) => setScrolled(!entry.isIntersecting))
+    observer.observe(marker)
+    return () => observer.disconnect()
+  }, [])
+
   // The points badge pulses once when the points go up (after a passing submit), not on page load.
   // bumps remounts the badge, which replays the motion-safe animation.
   const points = user?.points ?? null
@@ -214,7 +234,8 @@ export default function Layout() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="relative flex min-h-screen flex-col">
+      <div ref={top} aria-hidden="true" className="pointer-events-none absolute top-0 h-2 w-px" />
       {/* Focuses <main> itself: following #main would push a history entry and drop location.state. */}
       <a
         href="#main"
@@ -228,13 +249,18 @@ export default function Layout() {
       </a>
       {/* A page can add its own skip link here, right after this one (LessonPage: Skip to challenge). */}
       <div ref={setSkipSlot} />
-      <header className="border-b border-line bg-surface">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2 sm:gap-x-4 sm:py-3">
+      <header data-scrolled={scrolled ? '' : undefined} className="site-header sticky top-0 z-20 border-b">
+        {/* relative: below sm the site menu's panel spans this row, not its button. */}
+        <div className="relative mx-auto flex max-w-5xl flex-wrap items-center gap-x-2 px-4 pt-1 sm:gap-x-4 sm:py-3">
           {/* The name is English (and Latin script) in both languages. */}
-          <Link to="/" lang="en" className="rounded text-lg font-semibold tracking-tight text-ink">
+          <Link to="/" lang="en" className="inline-flex min-h-11 items-center rounded text-lg font-bold tracking-tight text-ink">
             {PRODUCT_NAME}
           </Link>
-          <nav aria-label={t('nav.main')} className="flex flex-wrap items-center gap-1 text-sm">
+          {/* Below sm: its own row under the controls, one third of the width per link. */}
+          <nav
+            aria-label={t('nav.main')}
+            className="order-last -mx-2 grid w-[calc(100%+1rem)] grid-cols-3 text-sm sm:order-none sm:mx-0 sm:flex sm:w-auto sm:gap-1"
+          >
             <NavLink to="/lessons" className={navLink}>
               {t('nav.lessons')}
             </NavLink>
@@ -246,16 +272,16 @@ export default function Layout() {
             </NavLink>
             {/* On a phone Admin is in the site menu instead. */}
             {staff && (
-              <NavLink to="/admin" className={(state) => `hidden sm:block ${navLink(state)}`}>
+              <NavLink to="/admin" className={(state) => `max-sm:hidden ${navLink(state)}`}>
                 {t('nav.admin')}
               </NavLink>
             )}
           </nav>
           {/* Wraps on narrow screens, so the toggles never push the page sideways. Below lg the
               name and Log out move into the site menu, next to the points. */}
-          <div className="ms-auto flex flex-wrap items-center gap-2 text-sm sm:gap-3">
+          <div className="ms-auto flex items-center gap-1 text-sm sm:gap-3">
             <div className="flex items-center">
-              <ThemeToggle />
+              <ThemeToggle className={toggleClass.replace('inline-flex', 'hidden sm:inline-flex')} />
               <SoundToggle className={`${toggleClass.replace('inline-flex', 'hidden lg:inline-flex')} aria-pressed:text-accent`} />
               <LanguageToggle />
               <SiteMenu
@@ -266,7 +292,9 @@ export default function Layout() {
                 onLogOut={() => logout()}
               />
             </div>
-            {loading ? null : user ? (
+            {/* While /me answers, the visitor's links hold their place invisibly (most visits are
+                visitors, and the static HTML is one): nothing moves when they appear. */}
+            {user ? (
               <>
                 <span className="text-ink">
                   <span dir="auto" className="hidden lg:inline">
@@ -282,18 +310,18 @@ export default function Layout() {
                 <button
                   type="button"
                   onClick={() => logout()}
-                  className="hidden rounded px-2 py-1 text-muted hover:text-accent lg:block"
+                  className="hidden min-h-9 items-center rounded px-2 text-muted hover:text-accent lg:inline-flex"
                 >
                   {t('nav.logOut')}
                 </button>
               </>
             ) : (
-              <>
+              <div className={`flex items-center gap-1 sm:gap-3 ${loading ? 'invisible' : ''}`}>
                 <NavLink
                   to="/login"
                   state={{ from: location }}
                   className={({ isActive }) =>
-                    `hidden rounded px-2 py-1 hover:text-accent sm:block ${isActive ? 'font-medium text-ink' : 'text-muted'}`
+                    `hidden min-h-9 items-center rounded px-2 hover:text-accent sm:inline-flex ${isActive ? activeMark : 'text-muted'}`
                   }
                 >
                   {t('nav.logIn')}
@@ -302,12 +330,12 @@ export default function Layout() {
                   to="/register"
                   state={{ from: location }}
                   className={({ isActive }) =>
-                    `rounded border border-accent px-3 py-1 text-accent hover:bg-accent-soft motion-safe:active:translate-y-px ${isActive ? 'bg-accent-soft font-medium' : ''}`
+                    `inline-flex min-h-11 items-center rounded border border-accent px-3 font-medium text-accent hover:bg-accent-soft motion-safe:active:translate-y-px sm:min-h-9 ${isActive ? 'bg-accent-soft' : ''}`
                   }
                 >
                   {t('nav.register')}
                 </NavLink>
-              </>
+              </div>
             )}
           </div>
         </div>

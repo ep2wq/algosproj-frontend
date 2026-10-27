@@ -59,23 +59,30 @@ Put these in `.env` (copy `.env.example`; `.env` is not committed):
 Only the theme choice (`theme`), the language choice (`lang`) and the sound choice (`sound`)
 are stored in `localStorage`, every read and write in `try`/`catch`. The login is an HttpOnly
 session cookie that JavaScript never sees; a leftover `token` key from the old token login is
-removed once at startup. With storage blocked the app still loads and follows the OS theme and the browser
+removed once at startup. With storage blocked the app still loads in the dark theme and follows the browser
 language, with sound off; the toggles still switch the current page view. No choice is sent to
 the server.
 
 ## Themes
 
-The theme button (sun and moon icon, a real `<button>`, 44 px) in the main navigation switches
-between Light and Dark; its accessible name says what it will do ("Switch to dark theme").
-Until it is clicked, the app follows the OS setting (`prefers-color-scheme`) and changes live
-when the OS setting changes. After the first click the choice is stored under `theme`
-(`light` or `dark`) and wins from then on. Any other stored value, such as an old `system`,
-is ignored and the OS is followed.
+The theme button (sun and moon icon, a real `<button>`, 44 px) in the header switches between
+Light and Dark; its accessible name says what it will do ("Switch to dark theme"). Below `sm` it
+is a labelled item in the site menu. Dark is the default: until the button is clicked the app is
+dark whatever the OS setting (there is no "follow the OS" option). After the first click the
+choice is stored under `theme` (`light` or `dark`) and wins from then on. Any other stored value,
+such as an old `system`, is ignored (dark).
 
 - `src/theme.ts` puts a `dark` class and `color-scheme` (so scrollbars, form controls and the
   browser UI match) on `<html>`, and exposes `useTheme()` and `toggleTheme()`. A small inline
-  script in `index.html` does the same before the first paint, so a dark page never flashes
-  light; keep the two in step.
+  script in `index.html` does the same before the first paint, so a light page never flashes
+  dark; keep the two in step. The prerendered HTML is dark (`class="dark"` on `<html>` in
+  `index.html`), and both set the single `theme-color` meta (the browser bar).
+- The sticky header is part of the page at the top and turns to frosted glass once the page has
+  scrolled (`.site-header` in `src/index.css`, one IntersectionObserver in `Layout.tsx`): the
+  surface at 92% (`--header-glass`, which keeps every header text pair at 4.5:1 even over black
+  or white with no blur) and a 14 px backdrop blur. A solid surface without `backdrop-filter`
+  support, under `prefers-reduced-transparency` or `prefers-contrast: more`; no fade under reduced
+  motion. Blur is used nowhere else.
 - Colors are tokens in `src/index.css` (`paper`, `surface`, `ink`, `muted`, `line`, `field`,
   `accent`, `accent-soft`, `pass`, `fail`, `warn`, `inverse`). `.dark` redefines them, so a
   token class such as `bg-surface` or `text-muted` is right in both themes with no `dark:`
