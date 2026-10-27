@@ -529,19 +529,19 @@
       "signUp": "Want your name here? Solve problems to earn points.",
       "full": "See the full leaderboard"
     },
-    "howTitle": "How a lesson works",
-    "how": {
-      "watch": {
-        "title": "Watch it run",
-        "body": "Read a short explanation. Where the lesson has a visualization, play it, pause it, step back and forward, or give it your own input."
+    "featuresTitle": "Read it, watch it, write it",
+    "features": {
+      "steps": {
+        "title": "Step through it",
+        "body": "Each lesson starts with a short explanation. Where it has a visualization, play it, pause it, step back and forward, and in most of them try your own input."
       },
       "code": {
-        "title": "Write the code",
+        "title": "Write it in your language",
         "body": "Solve the lesson's problem in the editor, in Python, Java, JavaScript or C++. The examples show what your program reads and what it should print."
       },
       "graded": {
-        "title": "Get graded",
-        "body": "Your code runs against every test, the hidden ones too. Pass them all and the problem's points are yours, once."
+        "title": "Graded on a separate server",
+        "body": "Your code runs in its own throwaway container, with no network and a time limit on each test. Pass every test, the hidden ones too, and the problem's points are yours, once."
       }
     },
     "languagesTitle": "Four languages to code in, two to learn in",

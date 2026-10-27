@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
+import { Box, SquareCode, StepForward } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import { getChallenges, getModules, LANGUAGES, type ChallengeSummary, type Module } from '../api'
@@ -22,16 +23,12 @@ const BilingualCaption = lazy(() => import('../visuals/AutoSearchVisual').then((
 
 const TAB_IDS = ['lessons', 'challenges', 'leaderboard']
 
-// One array cell from the visualizations (value box, index under it): the step markers.
-function CellMarker({ index }: { index: number }) {
-  return (
-    <span aria-hidden="true" dir="ltr" className="flex w-10 shrink-0 flex-col items-center">
-      <span className="flex size-10 items-center justify-center rounded border-2 border-accent bg-accent-soft font-semibold text-accent tabular-nums">
-        {index}
-      </span>
-    </span>
-  )
-}
+// The three parts of a lesson, in order, with their icons.
+const FEATURES = [
+  { id: 'steps', Icon: StepForward },
+  { id: 'code', Icon: SquareCode },
+  { id: 'graded', Icon: Box },
+] as const
 
 export default function LandingPage() {
   const { t, i18n } = useTranslation()
@@ -221,20 +218,19 @@ export default function LandingPage() {
         </Tabs>
       </section>
 
-      <section aria-labelledby="landing-how" className="mt-20">
-        <h2 id="landing-how" className="text-2xl font-semibold tracking-tight">
-          {t('landing.howTitle')}
+      {/* One panel split into three cells by its own lines (stacked on a phone), not three cards. */}
+      <section aria-labelledby="landing-features" className="mt-20">
+        <h2 id="landing-features" className="text-2xl font-semibold tracking-tight">
+          {t('landing.featuresTitle')}
         </h2>
-        <ol className="mt-8 grid gap-8 md:grid-cols-3">
-          {(['watch', 'code', 'graded'] as const).map((step, index) => (
-            <li key={step} className="flex gap-4">
-              <CellMarker index={index} />
-              <div>
-                <h3 className="font-semibold">{t(`landing.how.${step}.title`)}</h3>
-                <p className="mt-1 text-muted">
-                  <TextWithCode text={t(`landing.how.${step}.body`)} />
-                </p>
-              </div>
+        <ol className="mt-8 grid overflow-hidden rounded-lg border border-line bg-surface md:grid-cols-3">
+          {FEATURES.map(({ id, Icon }) => (
+            <li key={id} className="border-line p-6 not-first:border-t md:not-first:border-t-0 md:not-first:border-s">
+              <Icon aria-hidden="true" className="size-6 text-accent" strokeWidth={1.75} />
+              <h3 className="mt-4 text-lg font-semibold">{t(`landing.features.${id}.title`)}</h3>
+              <p className="mt-2 text-muted">
+                <TextWithCode text={t(`landing.features.${id}.body`)} />
+              </p>
             </li>
           ))}
         </ol>
