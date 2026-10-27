@@ -364,12 +364,12 @@ const FOOTER_GROUPS = [
 // src/index.css), compact, Latin and numbers in JetBrains Mono (Arabic falls through to Plex Sans
 // Arabic in the same stack). Brand and the three link groups: 4 columns from lg, 2 x 2 from sm (the
 // nav is a subgrid, so it stays one landmark; its first cell is left to the brand), one column below.
-// Below lg each group's links wrap in a row and are 44 px tall. Hover and the current page add an
-// underline, not only a colour.
+// Below lg each group's links wrap in a row and are at least 44 x 44 px (a short one, FAQ, too). Hover
+// and the current page add an underline, not only a colour.
 function Footer() {
   const { t } = useTranslation()
   const footerLink =
-    'inline-flex min-h-11 items-center rounded underline-offset-4 decoration-footer-accent hover:text-footer-accent hover:underline lg:pointer-fine:min-h-7'
+    'inline-flex min-h-11 min-w-11 items-center rounded underline-offset-4 decoration-footer-accent hover:text-footer-accent hover:underline lg:pointer-fine:min-h-7 lg:pointer-fine:min-w-0'
 
   return (
     <footer className="border-t border-footer-line bg-footer font-mono text-xs text-footer-muted">
