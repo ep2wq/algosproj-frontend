@@ -85,8 +85,9 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   scroll (one IntersectionObserver), hero badge from `VISUALS.size`, features matrix, growth chart
   (`GrowthChart.tsx`, n slider + table), code sample + fixed example run (`CodeDemo.tsx`,
   `codeSamples.ts`), dark CTA banner, responsive pass of every page (320 to 2560, landscape, 200% text).
-- Open: no social links (no real URLs); the home page shows a full binary search solution (a graded
-  problem) as the code sample.
+- The landing code sample is only the search loop (`codeSamples.ts`), never a whole graded solution.
+- Open: no social links (no real URLs yet); favicon is still Vite's default; Plex Sans fits about 88
+  characters into `max-w-prose` (65ch) on lesson and legal text.
 - Decisions: oxlint. Lint/build pass. A 401 while `signedIn` (not login/register/logout), or a
   403 with `reason`, clears it; a 419 refreshes the CSRF cookie and retries once, a second 419 = ended; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.
