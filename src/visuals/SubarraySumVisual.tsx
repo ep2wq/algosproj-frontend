@@ -155,7 +155,7 @@ export default function SubarraySumVisual() {
           </div>
           {current.values.map((value, index) => (
             <div key={index} className="flex flex-col items-center">
-              <span className="h-4 text-xs text-muted tabular-nums">{index}</span>
+              <span className="h-4 font-mono text-xs text-muted tabular-nums">{index}</span>
               <span
                 className={`flex h-10 min-w-14 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${numberStyle(current, index)}`}
               >

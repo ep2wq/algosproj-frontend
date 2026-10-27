@@ -155,7 +155,7 @@ export default function PermutationsVisual() {
                   >
                     {placed === undefined ? '' : items[placed]}
                   </span>
-                  <span className="mt-0.5 text-xs text-muted tabular-nums">{position + 1}</span>
+                  <span className="mt-0.5 font-mono text-xs text-muted tabular-nums">{position + 1}</span>
                 </li>
               )
             })}

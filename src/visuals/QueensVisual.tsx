@@ -140,14 +140,14 @@ export default function QueensVisual() {
             <div aria-hidden="true" className="flex">
               <span className="w-5" />
               {cells.map((col) => (
-                <span key={col} className="w-10 text-center text-xs text-muted tabular-nums">
+                <span key={col} className="w-10 text-center font-mono text-xs text-muted tabular-nums">
                   {col + 1}
                 </span>
               ))}
             </div>
             {cells.map((row) => (
               <div key={row} aria-hidden="true" className="flex items-center">
-                <span className="w-5 text-xs text-muted tabular-nums">{row + 1}</span>
+                <span className="w-5 font-mono text-xs text-muted tabular-nums">{row + 1}</span>
                 {cells.map((col) => {
                   const square = squareOf(current, attacked, row, col)
                   const dark = (row + col) % 2 === 1

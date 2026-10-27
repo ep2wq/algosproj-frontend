@@ -25,14 +25,13 @@ function readLanguage(): AppLanguage {
   return first.toLowerCase().startsWith('ar') ? 'ar' : 'en'
 }
 
-// lang and dir on <html> flip the whole layout (Tailwind's logical classes follow dir). The
-// Arabic font is fetched only once Arabic is used, so English pages load exactly as before.
+// lang and dir on <html> flip the whole layout (Tailwind's logical classes follow dir). The fonts
+// (src/index.css) need nothing here: the browser fetches the Arabic file when Arabic text shows.
 function applyLanguage(language: string) {
   // No document when the public pages are prerendered in Node (scripts/prerender.mjs).
   if (typeof document === 'undefined') return
   document.documentElement.lang = language
   document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr'
-  if (language === 'ar') void import('@fontsource-variable/noto-sans-arabic/wght.css')
 }
 
 const initial = readLanguage()

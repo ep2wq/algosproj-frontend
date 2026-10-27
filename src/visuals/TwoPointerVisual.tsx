@@ -111,7 +111,7 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
               >
                 {char === ' ' ? '␣' : char}
               </span>
-              <span className="mt-0.5 text-xs text-muted tabular-nums">{index}</span>
+              <span className="mt-0.5 font-mono text-xs text-muted tabular-nums">{index}</span>
             </div>
           ))}
         </div>

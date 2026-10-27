@@ -167,14 +167,14 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
           <div role="img" aria-label={gridLabel(mode, current, t)} className="w-max">
             <div className="flex gap-0.5 ps-5">
               {Array.from({ length: cols }, (_, c) => (
-                <span key={c} className="w-8 text-center text-xs text-muted tabular-nums">
+                <span key={c} className="w-8 text-center font-mono text-xs text-muted tabular-nums">
                   {c}
                 </span>
               ))}
             </div>
             {current.grid.map((row, r) => (
               <div key={r} className="mt-0.5 flex items-center gap-0.5">
-                <span className="w-4.5 text-end text-xs text-muted tabular-nums">{r}</span>
+                <span className="w-4.5 text-end font-mono text-xs text-muted tabular-nums">{r}</span>
                 {[...row].map((_, c) => {
                   const mark = current.marks[r][c]
                   const cellClass = mode === 'islands' ? islandCellClass(current, r, c) : shortestCellClass(current, r, c)

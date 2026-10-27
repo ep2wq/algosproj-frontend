@@ -186,7 +186,7 @@ function Diagram({ frame }: { frame: ListFrame }) {
             <text x={center} y={BOX_MID + 5} textAnchor="middle" className={`font-mono text-sm font-medium ${frame.highlight === i ? 'fill-inverse' : 'fill-ink'}`}>
               {value}
             </text>
-            <text x={center} y={INDEX_Y} textAnchor="middle" className="fill-muted text-xs tabular-nums">
+            <text x={center} y={INDEX_Y} textAnchor="middle" className="fill-muted font-mono text-xs tabular-nums">
               {i}
             </text>
             {labelText(String(i), center)}

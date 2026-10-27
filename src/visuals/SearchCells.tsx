@@ -64,7 +64,7 @@ export default function SearchCells({
             >
               {value}
             </span>
-            <span className="mt-0.5 text-xs text-muted tabular-nums">{index}</span>
+            <span className="mt-0.5 font-mono text-xs text-muted tabular-nums">{index}</span>
           </div>
         ))}
       </div>

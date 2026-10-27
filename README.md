@@ -280,11 +280,16 @@ Visualizations are translated too; their drawings stay left to right.
 - **Product name and email:** every string can use `{{product}}` and `{{email}}`; `src/i18n.ts`
   passes them from `src/site.ts` as `defaultVariables`. The consent line on `/register` has
   links inside the sentence, so it uses react-i18next `<Trans>` with named tags (`<terms>`, `<privacy>`).
-- **Font:** Noto Sans Arabic (variable weights), self-hosted from
-  `@fontsource-variable/noto-sans-arabic`. `src/i18n.ts` imports its CSS only when Arabic is
-  active, so English pages load no extra font. Under `:root[lang="ar"]` it goes ahead of the
-  system font and lines are a little taller; English passages (`[lang="en"]`) inside an
-  Arabic page keep the English font and line heights. `letter-spacing` and `text-transform`
+- **Fonts:** IBM Plex Sans Arabic (Latin and Arabic, weights 400/500/700) for all interface
+  text and JetBrains Mono (400/700) for code, index markers and other data, self-hosted as
+  woff2 in `public/fonts` under the SIL Open Font License (texts next to the files); no font
+  service and no npm font package. The `@font-face` rules in `src/index.css` split each font by
+  script (`unicode-range`), so a page downloads only what it shows; `font-display: swap` with
+  size-adjusted local fallbacks (`Plex Fallback`, `Mono Fallback`) keeps text from moving when the
+  font arrives. Nothing is preloaded (measured: a preload delayed the first paint). Arabic text
+  is never set in the monospace font (Plex Sans Arabic follows JetBrains Mono in `--font-mono`).
+  Monaco gets the same stack in `ProblemSolver.tsx`. Arabic lines are a little taller;
+  English passages (`[lang="en"]`) inside an Arabic page keep the English line heights. `letter-spacing` and `text-transform`
   never apply to Arabic text (a rule on `:lang(ar)`), because they break letter joining.
 - **Server messages:** the backend answers in the `Accept-Language` language (its `lang/`
   files), so its message is shown as sent: login and register errors, field errors, the ban

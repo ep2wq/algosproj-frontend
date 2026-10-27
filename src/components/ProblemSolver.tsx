@@ -144,12 +144,18 @@ export default function ProblemSolver({
             value={code[language]}
             onChange={(value) => setCode((current) => ({ ...current, [language]: value ?? '' }))}
             // Screen readers read the Tab hint with the editor.
-            onMount={(editor) => editor.getDomNode()?.querySelector('textarea, .native-edit-context')?.setAttribute('aria-describedby', hintId)}
+            // Monaco measures the font once; measure again when JetBrains Mono has arrived.
+            onMount={(editor, monaco) => {
+              editor.getDomNode()?.querySelector('textarea, .native-edit-context')?.setAttribute('aria-describedby', hintId)
+              void document.fonts.load("14px 'JetBrains Mono'").then(() => monaco.editor.remeasureFonts())
+            }}
             loading={<CellLoader label={t('solver.loadingEditor')} className="h-[280px] w-full" />}
             options={{
               ariaLabel: t('solver.editorLabel', { language: LANGUAGE_LABELS[language], title: problem.title }),
               minimap: { enabled: false },
               fontSize: 14,
+              // The --font-mono stack in src/index.css (Monaco can't read a CSS variable).
+              fontFamily: "'JetBrains Mono', 'Mono Fallback', 'IBM Plex Sans Arabic', monospace",
               scrollBeyondLastLine: false,
               automaticLayout: true,
               tabSize: 4,

@@ -30,6 +30,16 @@
         }
         root.lang = lang
         root.dir = lang === 'ar' ? 'rtl' : 'ltr'
+        // No font preload: measured on a slow connection, it delayed the first paint (English)
+        // and the app's script (Arabic) without reducing layout shift (src/index.css has
+        // size-matched fallbacks). Arabic: the static HTML is English, so keep it from being laid
+        // out (and from fetching fonts) until the script below has emptied it.
+        if (lang !== 'en') {
+          var hide = document.createElement('style')
+          hide.id = 'hide-static'
+          hide.textContent = '#root{display:none}'
+          document.head.appendChild(hide)
+        }
       } catch (e) {}
     </script>
   </head>
@@ -43,6 +53,8 @@
         var page = document.getElementById('root')
         var path = location.pathname.replace(/\/+$/, '') || '/'
         if (page.getAttribute('data-prerendered') !== path || document.documentElement.lang !== 'en') page.textContent = ''
+        var hidden = document.getElementById('hide-static')
+        if (hidden) hidden.remove()
       } catch (e) {}
     </script>
     <script type="module" src="/src/main.tsx"></script>

@@ -178,7 +178,7 @@ export default function StackVisual({ mode }: { mode: StackMode }) {
                 >
                   {item}
                 </span>
-                <span className="mt-0.5 text-xs text-muted tabular-nums">{index}</span>
+                <span className="mt-0.5 font-mono text-xs text-muted tabular-nums">{index}</span>
                 {showAnswers && (
                   <span
                     className={`mt-1 flex h-8 w-10 items-center justify-center rounded border text-sm tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
