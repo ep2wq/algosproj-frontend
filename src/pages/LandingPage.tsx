@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import { getChallenges, getModules, LANGUAGES, type ChallengeSummary, type Module } from '../api'
 import { useAuth } from '../auth'
@@ -115,7 +115,8 @@ export default function LandingPage() {
   const firstLesson = modules?.find((module) => module.lessons.length > 0)?.lessons[0]
 
   const data = { modules, challenges, failure, retry }
-  const heroPlaceholder = <CellLoader className="h-[22.5rem] rounded-lg border border-line bg-surface" />
+  // The tallest the hero visual gets (phone; from sm), so nothing moves when it arrives.
+  const heroPlaceholder = <CellLoader className="h-[28.5rem] rounded-lg border border-line bg-surface sm:h-[23.25rem]" />
   const captionPlaceholder = <div aria-hidden="true" className="h-24" />
 
   return (
@@ -124,7 +125,7 @@ export default function LandingPage() {
 
       <section aria-labelledby="landing-title" className="grid grid-cols-1 items-start gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,32rem)]">
         <div className="lg:pt-6">
-          <h1 id="landing-title" className="max-w-xl text-4xl font-semibold tracking-tight sm:text-5xl">
+          <h1 id="landing-title" className="max-w-xl text-4xl font-bold tracking-tight sm:text-5xl">
             {t('landing.title')}
           </h1>
           <p className="mt-5 max-w-xl text-lg text-ink">
@@ -159,21 +160,35 @@ export default function LandingPage() {
               ? t('landing.counts', {
                   modules: t('landing.moduleCount', { count: modules.length, value: formatNumber(modules.length, language) }),
                   lessons: t('landing.lessonCount', { count: lessonCount, value: formatNumber(lessonCount, language) }),
-                  visuals: t('landing.visualCount', { count: VISUALS.size, value: formatNumber(VISUALS.size, language) }),
                   problems: t('landing.problemCount', { count: challenges.length, value: formatNumber(challenges.length, language) }),
                 })
               : ' '}
           </p>
         </div>
-        {/* The static HTML (src/prerender.ts) gets the placeholder itself: renderToString can't wait
-            for lazy code and would mark the boundary with an error. */}
-        {import.meta.env.SSR ? (
-          heroPlaceholder
-        ) : (
-          <Suspense fallback={heroPlaceholder}>
-            <HeroSearch />
-          </Suspense>
-        )}
+        <div>
+          {/* A fact from the app itself (the lessons that ship a visualization), the same in the
+              static HTML: not a live figure. */}
+          <p className="mb-3 inline-flex items-center gap-2 rounded border border-line bg-surface px-2.5 py-1 text-xs text-muted">
+            <span aria-hidden="true" className="size-1.5 rounded-full bg-accent" />
+            <span>
+              <Trans
+                i18nKey="landing.visualBadge"
+                count={VISUALS.size}
+                values={{ value: formatNumber(VISUALS.size, language) }}
+                components={{ num: <span className="font-mono font-bold text-ink" /> }}
+              />
+            </span>
+          </p>
+          {/* The static HTML (src/prerender.ts) gets the placeholder itself: renderToString can't
+              wait for lazy code and would mark the boundary with an error. */}
+          {import.meta.env.SSR ? (
+            heroPlaceholder
+          ) : (
+            <Suspense fallback={heroPlaceholder}>
+              <HeroSearch />
+            </Suspense>
+          )}
+        </div>
       </section>
 
       <section aria-labelledby="landing-inside" className="mt-20">
