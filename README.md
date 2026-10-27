@@ -113,9 +113,9 @@ such as an old `system`, is ignored (dark).
 ## UI components (shadcn/ui)
 
 `src/components/ui` has 8 shadcn/ui components on Base UI: tabs, progress, skeleton, accordion,
-button, input, label and checkbox. Tabs, progress and skeleton are used: tabs on the landing page
+button, input, label and checkbox. Tabs, progress, skeleton and label are used: tabs on the landing page
 (`src/components/ui/tabs.tsx`), progress for the landing progress bars (with `aria-label` and
-`getAriaValueText`, key `landing.progressValue`), skeleton for loading states. The shadcn color
+`getAriaValueText`, key `landing.progressValue`), skeleton for loading states, label in `AuthForm`. The shadcn color
 roles in `src/index.css` point at our tokens; `muted` and `accent` keep our meaning (muted text,
 emerald accent).
 
@@ -337,7 +337,8 @@ default; the session then lasts 30 days instead of the idle timeout). Every pass
 between password and text). Register shows the hint "At least 8 characters." under the password
 (`aria-describedby`, the backend rule is `min:8`). After a failed submit the focus moves to the
 first field the server marked invalid, and a submit is ignored while one is running. There is no "forgot password" link: it
-needs email, which the app does not send.
+needs email, which the app does not send. Both forms have a required Terms of use / Privacy policy
+checkbox (a native input; its label is the `auth.acceptTerms` key).
 
 On the lessons page each lesson row shows difficulty bars (the hardest problem of the lesson) and,
 when logged in, a solved check. Both come from the existing `GET /api/challenges` response

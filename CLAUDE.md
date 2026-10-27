@@ -85,6 +85,10 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   scroll (one IntersectionObserver), hero badge from `VISUALS.size`, features matrix, growth chart
   (`GrowthChart.tsx`, n slider + table), code sample + fixed example run (`CodeDemo.tsx`,
   `codeSamples.ts`), dark CTA banner, responsive pass of every page (320 to 2560, landscape, 200% text).
+- Done: required Terms of use + Privacy policy checkbox on login and register (native checkbox in the
+  shared `AuthForm`). Unchecked = no request is sent; register sends `accepted_terms: true`, login sends
+  nothing new. When the Terms, Privacy or Cookies text changes, change `LEGAL_UPDATED` in `src/site.ts`
+  together with `terms_version` in the backend's `config/legal.php`.
 - The landing code sample is only the search loop (`codeSamples.ts`), never a whole graded solution.
 - Open: no social links (no real URLs yet); favicon is still Vite's default; Plex Sans fits about 88
   characters into `max-w-prose` (65ch) on lesson and legal text.
