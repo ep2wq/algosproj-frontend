@@ -30,10 +30,9 @@
         }
         root.lang = lang
         root.dir = lang === 'ar' ? 'rtl' : 'ltr'
-        // No font preload: measured on a slow connection, it delayed the first paint (English)
-        // and the app's script (Arabic) without reducing layout shift (src/index.css has
-        // size-matched fallbacks). Arabic: the static HTML is English, so keep it from being laid
-        // out (and from fetching fonts) until the script below has emptied it.
+        // Arabic: the static HTML is English, so keep it from being laid out until the script
+        // below has emptied it (no flash of the English page). No font preload: the web fonts load
+        // after the app (src/fonts.css).
         if (lang !== 'en') {
           var hide = document.createElement('style')
           hide.id = 'hide-static'

@@ -283,10 +283,13 @@ Visualizations are translated too; their drawings stay left to right.
 - **Fonts:** IBM Plex Sans Arabic (Latin and Arabic, weights 400/500/700) for all interface
   text and JetBrains Mono (400/700) for code, index markers and other data, self-hosted as
   woff2 in `public/fonts` under the SIL Open Font License (texts next to the files); no font
-  service and no npm font package. The `@font-face` rules in `src/index.css` split each font by
-  script (`unicode-range`), so a page downloads only what it shows; `font-display: swap` with
-  size-adjusted local fallbacks (`Plex Fallback`, `Mono Fallback`) keeps text from moving when the
-  font arrives. Nothing is preloaded (measured: a preload delayed the first paint). Arabic text
+  service and no npm font package. The `@font-face` rules in `src/fonts.css` split each font by
+  script (`unicode-range`), so a page downloads only what it shows. `src/main.tsx` imports that
+  file after the app has rendered: until then the static HTML and the first render use the
+  size-adjusted local fallbacks in `src/index.css` (`Plex Fallback`, `Mono Fallback`), so the font
+  downloads never compete with the app's script, and the swap (`font-display: swap`) moves nothing.
+  Nothing is preloaded. Measured on a slow connection: loading the fonts from `index.css`, or a
+  preload, made LCP worse. Arabic text
   is never set in the monospace font (Plex Sans Arabic follows JetBrains Mono in `--font-mono`).
   Monaco gets the same stack in `ProblemSolver.tsx`. Arabic lines are a little taller;
   English passages (`[lang="en"]`) inside an Arabic page keep the English line heights. `letter-spacing` and `text-transform`

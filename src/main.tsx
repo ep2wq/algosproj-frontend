@@ -19,3 +19,6 @@ createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </StrictMode>,
 )
+
+// The web fonts, after the app (src/fonts.css says why).
+void import('./fonts.css')
