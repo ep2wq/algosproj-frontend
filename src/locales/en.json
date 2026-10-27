@@ -544,6 +544,16 @@
         "body": "Your code runs in its own throwaway container, with no network and a time limit on each test. Pass every test, the hidden ones too, and the problem's points are yours, once."
       }
     },
+    "growth": {
+      "title": "How the work grows",
+      "intro": "The growth classes you meet in the lessons. Move `n` to see how many operations each one takes.",
+      "caption": "A count of operations, not measured time. The curves that leave the top go past {{max}}.",
+      "chartLabel": "Line chart of the seven growth classes for n from 1 to 20. The table next to it has the numbers.",
+      "n": "Input size `n`",
+      "tableCaption": "Operations at `n = {{n}}`",
+      "class": "Class",
+      "operations": "Operations"
+    },
     "languagesTitle": "Four languages to code in, two to learn in",
     "codeLanguages": "Pick the language you know, or the one you want to practise. The editor starts you off with a few lines that read the input.",
     "bilingual": "Lessons, visualizations, problems and messages are all in English and Arabic. The Arabic keeps technical terms in English, the way they're used in class. Switch language from the header at any time; code you've typed stays in the editor.",

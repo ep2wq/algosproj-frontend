@@ -5,6 +5,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { getChallenges, getModules, LANGUAGES, type ChallengeSummary, type Module } from '../api'
 import { useAuth } from '../auth'
 import { primaryButton, secondaryButton } from '../components/buttonStyles'
+import GrowthChart from '../components/GrowthChart'
 import { ChallengesPanel, LeaderboardPanel, LessonsPanel } from '../components/LandingPanels'
 import { TextWithCode } from '../components/LessonBody'
 import { CellLoader } from '../components/Loading'
@@ -234,6 +235,18 @@ export default function LandingPage() {
             </li>
           ))}
         </ol>
+      </section>
+
+      <section aria-labelledby="landing-growth" className="mt-20">
+        <h2 id="landing-growth" className="text-2xl font-semibold tracking-tight">
+          {t('landing.growth.title')}
+        </h2>
+        <p className="mt-2 max-w-prose text-muted">
+          <TextWithCode text={t('landing.growth.intro')} />
+        </p>
+        <div className="mt-8">
+          <GrowthChart />
+        </div>
       </section>
 
       <section aria-labelledby="landing-languages" className="mt-20 grid grid-cols-1 gap-x-12 gap-y-6 lg:grid-cols-2">
