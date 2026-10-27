@@ -467,11 +467,11 @@
   },
   "footer": {
     "label": "Site",
-    "tagline": "Algorithms and data structures, one step at a time, in English and Arabic.",
+    "mission": "Learn data structures and algorithms one step at a time, in English and Arabic, then write the code and let the tests check it.",
     "learn": "Learn",
     "site": "About the site",
     "legal": "Legal",
-    "copyright": "© {{year}} {{product}}"
+    "copyright": "© {{product}} {{year}}"
   },
   "landing": {
     "metaTitle": "Learn algorithms step by step",

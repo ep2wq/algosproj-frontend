@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth'
 import { skipLink } from './buttonStyles'
 import { setLanguage } from '../i18n'
-import { PRODUCT_NAME } from '../site'
+import { CONTACT_EMAIL, PRODUCT_NAME } from '../site'
 import { setSoundOn, useSoundOn } from '../sound'
 import { toggleTheme, useTheme } from '../theme'
 
@@ -333,39 +333,65 @@ const FOOTER_GROUPS = [
 // When the page was opened: the copyright year comes from it.
 const opened = new Date()
 
-// On every page, admin included. The year is computed, in the page language.
+// On every page, admin included. Brand and the three link groups: 4 columns from lg, 2 x 2 from sm
+// (the nav is a subgrid, so it stays one landmark; its first cell is left to the brand), one column
+// below that. Below lg each group's links wrap in a row. The year is computed, in the page language.
 function Footer({ language }: { language: string }) {
   const { t } = useTranslation()
   const year = new Intl.DateTimeFormat(`${language}-u-ca-gregory-nu-latn`, { year: 'numeric' }).format(opened)
-  const footerLink = ({ isActive }: { isActive: boolean }) =>
-    `inline-flex min-h-11 items-center rounded sm:min-h-8 hover:text-accent ${isActive ? activeMark : 'text-muted'}`
+  // 44 px tall wherever it may be tapped (below lg).
+  const footerLink = 'inline-flex min-h-11 items-center rounded hover:text-accent lg:min-h-8'
 
   return (
     <footer className="border-t border-line bg-surface">
-      <div className="mx-auto grid max-w-5xl gap-x-8 gap-y-6 px-4 pt-8 pb-4 sm:grid-cols-[1fr_auto]">
-        <div className="max-w-xs">
-          <p lang="en" className="text-lg font-semibold tracking-tight text-ink">
-            {PRODUCT_NAME}
+      <div className="mx-auto grid max-w-5xl gap-x-8 gap-y-8 px-4 pt-10 pb-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,1fr))]">
+        {/* relative: painted above the nav, whose subgrid also covers this cell from sm to lg. */}
+        <div className="relative sm:col-start-1 sm:row-start-1">
+          {/* The name as an array, cells with their index under them, like the ones the lessons draw.
+              Read as one word. */}
+          <p lang="en" className="text-ink">
+            <span className="sr-only">{PRODUCT_NAME}</span>
+            {/* Inline, so it sits at the start edge of the column in both directions. */}
+            <span aria-hidden="true" dir="ltr" className="inline-flex flex-wrap gap-1 align-top">
+              {[...PRODUCT_NAME].map((letter, index) => (
+                <span key={index} className="flex flex-col items-center">
+                  <span className="flex size-8 items-center justify-center rounded border-2 border-muted bg-surface font-semibold">
+                    {letter}
+                  </span>
+                  <span className="mt-0.5 text-xs text-muted tabular-nums">{index}</span>
+                </span>
+              ))}
+            </span>
           </p>
-          <p className="mt-1 text-sm text-muted">{t('footer.tagline')}</p>
+          <p className="mt-4 max-w-sm text-sm leading-6 text-ink">{t('footer.mission')}</p>
         </div>
-        <nav aria-label={t('footer.label')} className="grid grid-cols-2 gap-x-10 gap-y-6 text-sm min-[420px]:grid-cols-3">
-          {FOOTER_GROUPS.map(([heading, links]) => (
-            <div key={heading}>
+        <nav
+          aria-label={t('footer.label')}
+          className="grid gap-y-8 text-sm sm:col-span-2 sm:col-start-1 sm:row-span-2 sm:row-start-1 sm:grid-cols-subgrid sm:grid-rows-subgrid lg:col-span-3 lg:col-start-2 lg:row-span-1"
+        >
+          {FOOTER_GROUPS.map(([heading, links], index) => (
+            <div key={heading} className={index === 0 ? 'sm:col-start-2 lg:col-start-1' : ''}>
               <h2 className="text-sm font-semibold text-ink">{t(heading)}</h2>
-              <ul className="mt-1">
+              <ul className="mt-1 flex flex-wrap gap-x-6 lg:mt-2 lg:block">
                 {links.map(([path, key]) => (
                   <li key={path}>
-                    <NavLink to={path} className={footerLink}>
+                    <NavLink to={path} className={({ isActive }) => `${footerLink} ${isActive ? activeMark : 'text-muted'}`}>
                       {t(key)}
                     </NavLink>
                   </li>
                 ))}
+                {heading === 'footer.site' && (
+                  <li>
+                    <a href={`mailto:${CONTACT_EMAIL}`} dir="ltr" className={`${footerLink} text-muted`}>
+                      {CONTACT_EMAIL}
+                    </a>
+                  </li>
+                )}
               </ul>
             </div>
           ))}
         </nav>
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-line pt-3 text-sm text-muted sm:col-span-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-line pt-3 text-sm text-muted sm:col-span-2 lg:col-span-4">
           <p>{t('footer.copyright', { year })}</p>
           {/* Below lg the sound switch has no room in the header. */}
           <SoundToggle className="-ms-2 inline-flex min-h-11 items-center rounded px-2 text-sm text-muted hover:text-accent lg:hidden" showLabel />

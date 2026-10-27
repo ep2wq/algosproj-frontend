@@ -76,6 +76,9 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   binary search 404, prerender, Challenges, admin, dark mode, Arabic
   interface + content (all 19 modules), visualizations translated, shadcn/ui setup + landing tabs on Base UI,
   loading skeletons, cell loader, scroll progress, skip to challenge. Next: AI hint UI.
+- Landing redesign (plan and reports in `docs/landing-sections-audit.md`, outside the repo): step 1
+  (slate/emerald colour tokens) is committed and pushed; step 2 (footer: brand + mission, Learn,
+  About the site with the contact email, Legal; 4 columns from lg, 2 x 2 from sm, 1 below) is done.
 - Decisions: oxlint. Lint/build pass. A 401 while `signedIn` (not login/register/logout), or a
   403 with `reason`, clears it; a 419 refreshes the CSRF cookie and retries once, a second 419 = ended; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.
