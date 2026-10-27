@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api'
 import { useAuth } from '../auth'
@@ -44,6 +44,7 @@ export default function RegisterPage() {
       busy={busy}
       error={error}
       onSubmit={handleSubmit}
+      termsErrors={fieldErrors.accepted_terms}
       footer={
         <>
           {t('auth.haveAccount')}{' '}
@@ -65,16 +66,6 @@ export default function RegisterPage() {
         autoComplete="new-password"
         errors={fieldErrors.password}
       />
-      {/* Links, not a checkbox: creating the account is the agreement. */}
-      <p className="text-sm text-muted">
-        <Trans
-          i18nKey="auth.agree"
-          components={{
-            terms: <Link to="/terms" className="rounded text-accent underline underline-offset-2" />,
-            privacy: <Link to="/privacy" className="rounded text-accent underline underline-offset-2" />,
-          }}
-        />
-      </p>
     </AuthForm>
   )
 }

@@ -392,9 +392,10 @@ async function request<T>(method: string, path: string, body?: unknown, retried 
 }
 
 // Login and register start a session (the server sets the cookie); the response has only the user.
+// Register is only called once the Terms and Privacy box is checked (AuthForm); the server records it.
 export async function register(name: string, email: string, password: string) {
   await refreshCsrfCookie()
-  const result = await request<AuthResponse>('POST', '/register', { name, email, password })
+  const result = await request<AuthResponse>('POST', '/register', { name, email, password, accepted_terms: true })
   signedIn = true
   return result
 }
