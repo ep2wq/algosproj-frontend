@@ -7,17 +7,17 @@
    themes without a dark: class. Every pair used for text is at least 4.5:1, borders of inputs
    (field) and meaningful shapes at least 3:1, in both themes (README "Themes"). */
 @theme {
-  --color-paper: #f8f9fb;
+  --color-paper: #f8fafc;
   --color-surface: #ffffff;
-  --color-ink: #1e2532;
-  --color-muted: #5a6475;
-  --color-line: #dde2ea;
-  --color-field: #848d9c;
-  --color-accent: #15626a;
-  --color-accent-soft: #e3f0f1;
-  --color-pass: #23703a;
-  --color-fail: #b42318;
-  --color-warn: #8a5300;
+  --color-ink: #0f172a;
+  --color-muted: #475569;
+  --color-line: #e2e8f0;
+  --color-field: #64748b;
+  --color-accent: #047857;
+  --color-accent-soft: #ecfdf5;
+  --color-pass: #3f6212;
+  --color-fail: #be123c;
+  --color-warn: #9a3412;
   --color-inverse: #ffffff;
 
   /* Elevation, radius and motion: docs/ui-restyle.md (outside this repo) and README "Themes". Only
@@ -41,11 +41,11 @@
 :root {
   /* Not a theme value: Tailwind would bake it into the utility, and .dark could not swap it. Used as
      shadow-(--float-shadow). */
-  --float-shadow: 0 8px 24px -6px rgb(15 20 27 / 0.18), 0 2px 6px -2px rgb(15 20 27 / 0.1);
+  --float-shadow: 0 8px 24px -6px rgb(15 23 42 / 0.18), 0 2px 6px -2px rgb(15 23 42 / 0.1);
 
   /* shadcn/ui roles (src/components/ui, docs/ui-shadcn.md outside this repo), pointed at our tokens,
      so .dark swaps them too. Its muted and accent are left out: here muted is a text colour and
-     accent the teal, so a generated bg-muted or bg-accent is rewritten to one of our tokens. */
+     accent the emerald, so a generated bg-muted or bg-accent is rewritten to one of our tokens. */
   --background: var(--color-paper);
   --foreground: var(--color-ink);
   --card: var(--color-surface);
@@ -226,18 +226,18 @@
 /* Dark depth comes from surface layers: cards sit one step above the paper and code and values sit
    back down on the paper inside them, so dark mode is not a plain inversion. */
 .dark {
-  --color-paper: #0f141b;
-  --color-surface: #19202a;
-  --color-ink: #e5e9f0;
-  --color-muted: #a1abba;
-  --color-line: #313b49;
-  --color-field: #6f7a8b;
-  --color-accent: #5bbfc8;
-  --color-accent-soft: #163a40;
-  --color-pass: #5cc98a;
-  --color-fail: #f2867d;
-  --color-warn: #e2ac4a;
-  --color-inverse: #0f141b;
+  --color-paper: #0b0f19;
+  --color-surface: #0f172a;
+  --color-ink: #f8fafc;
+  --color-muted: #94a3b8;
+  --color-line: #1e293b;
+  --color-field: #64748b;
+  --color-accent: #10b981;
+  --color-accent-soft: #0a3b30;
+  --color-pass: #a3e635;
+  --color-fail: #f87171;
+  --color-warn: #fdba74;
+  --color-inverse: #020617;
   --float-shadow: 0 8px 24px -6px rgb(0 0 0 / 0.5), 0 2px 6px -2px rgb(0 0 0 / 0.4);
 }
 

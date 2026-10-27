@@ -110,7 +110,7 @@ button, input, label and checkbox. Tabs, progress and skeleton are used: tabs on
 (`src/components/ui/tabs.tsx`), progress for the landing progress bars (with `aria-label` and
 `getAriaValueText`, key `landing.progressValue`), skeleton for loading states. The shadcn color
 roles in `src/index.css` point at our tokens; `muted` and `accent` keep our meaning (muted text,
-teal accent).
+emerald accent).
 
 To add a component:
 
