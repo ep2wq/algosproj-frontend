@@ -312,6 +312,16 @@ body {
     text-align: inherit;
   }
 
+  /* JetBrains Mono's ligatures draw <= as ≤ and == as one long bar. In code that is being learned,
+     every character shows as typed. */
+  pre,
+  code,
+  kbd,
+  samp,
+  .font-mono {
+    font-variant-ligatures: none;
+  }
+
   /* Placeholders use the muted token (4.5:1 in both themes); Tailwind's default is the text at 50%. */
   input::placeholder,
   textarea::placeholder {

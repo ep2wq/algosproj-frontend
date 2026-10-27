@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import i18n from '../i18n'
 import { TextWithCode } from '../components/LessonBody'
 import { binarySearchFrames } from './binarySearchFrames'
 import './i18n'
@@ -83,25 +82,6 @@ export function NotFoundSearch() {
         </button>
       </div>
       <PlaybackControls playback={playback} />
-    </div>
-  )
-}
-
-// One step of the lesson's text in both languages, from the real translation files.
-export function BilingualCaption() {
-  const params = { value: HERO_TARGET, mid: HERO_ARRAY.indexOf(HERO_TARGET) }
-  return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {(['en', 'ar'] as const).map((language) => (
-        <p
-          key={language}
-          lang={language}
-          dir={language === 'ar' ? 'rtl' : 'ltr'}
-          className="rounded-lg border border-line bg-surface px-4 py-3"
-        >
-          <TextWithCode text={i18n.getFixedT(language, 'visuals')('binarySearch.found', params)} />
-        </p>
-      ))}
     </div>
   )
 }

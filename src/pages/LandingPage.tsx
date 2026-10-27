@@ -2,9 +2,10 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { Box, SquareCode, StepForward } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
-import { getChallenges, getModules, LANGUAGES, type ChallengeSummary, type Module } from '../api'
+import { getChallenges, getModules, type ChallengeSummary, type Module } from '../api'
 import { useAuth } from '../auth'
 import { primaryButton, secondaryButton } from '../components/buttonStyles'
+import CodeDemo from '../components/CodeDemo'
 import GrowthChart from '../components/GrowthChart'
 import { ChallengesPanel, LeaderboardPanel, LessonsPanel } from '../components/LandingPanels'
 import { TextWithCode } from '../components/LessonBody'
@@ -13,14 +14,12 @@ import PageMeta from '../components/PageMeta'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { formatNumber } from '../i18n'
 import { lessonsDone, nextLesson } from '../progress'
-import { LANGUAGE_LABELS } from '../starters'
 import { VISUALS } from '../visuals'
 import { useScrollCue } from '../visuals/useScrollCue'
 
 // Lazy, like every visualization: the first screen does not wait for the visuals strings. The
 // fallbacks keep the same height, so nothing below moves when they arrive.
 const HeroSearch = lazy(() => import('../visuals/AutoSearchVisual').then((m) => ({ default: m.HeroSearch })))
-const BilingualCaption = lazy(() => import('../visuals/AutoSearchVisual').then((m) => ({ default: m.BilingualCaption })))
 
 const TAB_IDS = ['lessons', 'challenges', 'leaderboard']
 
@@ -115,7 +114,6 @@ export default function LandingPage() {
   const data = { modules, challenges, failure, retry }
   // The tallest the hero visual gets (phone; from sm), so nothing moves when it arrives.
   const heroPlaceholder = <CellLoader className="h-[28.5rem] rounded-lg border border-line bg-surface sm:h-[23.25rem]" />
-  const captionPlaceholder = <div aria-hidden="true" className="h-24" />
 
   return (
     <div>
@@ -249,33 +247,17 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section aria-labelledby="landing-languages" className="mt-20 grid grid-cols-1 gap-x-12 gap-y-6 lg:grid-cols-2">
-        <div>
-          <h2 id="landing-languages" className="text-2xl font-semibold tracking-tight">
-            {t('landing.languagesTitle')}
-          </h2>
-          <p className="mt-2 max-w-prose text-muted">{t('landing.codeLanguages')}</p>
-          <ul className="mt-4 flex flex-wrap gap-2" lang="en" dir="ltr">
-            {LANGUAGES.map((id) => (
-              <li key={id} className="rounded border border-line bg-surface px-3 py-1.5 text-sm font-medium">
-                {LANGUAGE_LABELS[id]}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-6 max-w-prose text-muted">{t('landing.bilingual')}</p>
+      {/* Code is the subject here, so the section is the code itself: the four languages as tabs, and
+          a fixed run in the words of the real result panel. */}
+      <section aria-labelledby="landing-languages" className="mt-20">
+        <h2 id="landing-languages" className="text-2xl font-semibold tracking-tight">
+          {t('landing.languagesTitle')}
+        </h2>
+        <p className="mt-2 max-w-prose text-muted">{t('landing.codeLanguages')}</p>
+        <div className="mt-8">
+          <CodeDemo />
         </div>
-        <figure>
-          {import.meta.env.SSR ? (
-            captionPlaceholder
-          ) : (
-            <Suspense fallback={captionPlaceholder}>
-              <BilingualCaption />
-            </Suspense>
-          )}
-          <figcaption className="mt-2 text-sm text-muted">
-            <TextWithCode text={t('landing.bilingualCaption')} />
-          </figcaption>
-        </figure>
+        <p className="mt-6 max-w-prose text-muted">{t('landing.bilingual')}</p>
       </section>
 
       {/* Visitors only: a logged-in user has Continue learning at the top. */}

@@ -557,7 +557,12 @@
     "languagesTitle": "Four languages to code in, two to learn in",
     "codeLanguages": "Pick the language you know, or the one you want to practise. The editor starts you off with a few lines that read the input.",
     "bilingual": "Lessons, visualizations, problems and messages are all in English and Arabic. The Arabic keeps technical terms in English, the way they're used in class. Switch language from the header at any time; code you've typed stays in the editor.",
-    "bilingualCaption": "The same step of the binary search lesson, in both languages.",
+    "demo": {
+      "tabsLabel": "Programming language",
+      "codeLabel": "Binary search in {{language}}",
+      "runTitle": "Example run",
+      "note": "A fixed example of a graded run. Nothing is sent from this page: your own code runs on each lesson's page."
+    },
     "startTitle": "Start with lesson one",
     "startBody": "You can read every lesson and play every visualization without an account. Create one when you want your code graded."
   },
