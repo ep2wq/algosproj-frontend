@@ -97,7 +97,8 @@ export default function LoginPage() {
           onChange={(event) => setRemember(event.target.checked)}
           className="size-4 accent-accent"
         />
-        <label htmlFor="remember" className="py-1 text-sm text-ink">
+        {/* The label is the large target: 44 px tall on a phone. */}
+        <label htmlFor="remember" className="flex min-h-11 items-center text-sm text-ink sm:pointer-fine:min-h-0 sm:py-1">
           {t('auth.rememberMe')}
         </label>
       </div>

@@ -5,7 +5,7 @@ import { CellLoader } from './Loading'
 import NotFoundPage from '../pages/NotFoundPage'
 
 const tabClass = ({ isActive }: { isActive: boolean }) =>
-  `rounded px-2 py-1 hover:text-accent ${isActive ? 'bg-accent-soft font-medium text-ink' : 'text-muted'}`
+  `inline-flex min-h-11 items-center rounded px-2 hover:text-accent sm:pointer-fine:min-h-8 ${isActive ? 'bg-accent-soft font-medium text-ink' : 'text-muted'}`
 
 // Guests and users who are neither admin nor owner see the same page as an unknown address. This
 // only hides the pages; the backend refuses every admin request from them (401 or 403).

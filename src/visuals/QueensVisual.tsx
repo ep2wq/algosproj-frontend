@@ -279,7 +279,7 @@ export default function QueensVisual() {
         <button type="button" onClick={() => restart(randomN(n))} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
+        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
           <label htmlFor={`${id}-n`} className="block text-sm font-medium">
             <TextWithCode text={t('queens.ownN')} />
           </label>

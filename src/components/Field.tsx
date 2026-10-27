@@ -54,13 +54,13 @@ export default function Field({ id, label, type = 'text', value, onChange, autoC
       />
       {isPassword ? (
         // After the input, so Tab goes from the field to its toggle (the hint, if any, shares the row).
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-wrap items-start justify-between gap-x-2">
           {hintEl || <span />}
           <button
             type="button"
             aria-controls={id}
             onClick={() => setVisible((v) => !v)}
-            className="mt-1 inline-flex min-h-6 shrink-0 items-center rounded px-1 text-sm text-accent underline-offset-2 hover:underline"
+            className="mt-1 inline-flex min-h-11 shrink-0 items-center rounded px-1 text-sm text-accent underline-offset-2 hover:underline sm:pointer-fine:min-h-6"
           >
             {t(visible ? 'auth.hidePassword' : 'auth.showPassword')}
           </button>

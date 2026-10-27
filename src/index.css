@@ -312,6 +312,22 @@ body {
     text-align: inherit;
   }
 
+  /* A word longer than its line (a heading at 200% text size on a phone, a long email) breaks
+     instead of pushing the page sideways. Only such words: the rest wrap as usual. */
+  body {
+    overflow-wrap: break-word;
+  }
+
+  /* On a phone or any touch screen every text field, select and textarea is at least 44 px tall (a
+     utility can still set its own). Not Monaco's hidden textarea, which it sizes itself. */
+  @media (width < 40rem), (pointer: coarse) {
+    :where(input:not([type='checkbox'], [type='radio'], [type='range'], [type='hidden']), select, textarea):not(
+        .monaco-editor *
+      ) {
+      min-height: 2.75rem;
+    }
+  }
+
   /* JetBrains Mono's ligatures draw <= as ≤ and == as one long bar. In code that is being learned,
      every character shows as typed. */
   pre,

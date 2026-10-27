@@ -84,7 +84,7 @@ export default function ChallengePage() {
   }
 
   const backLink = (
-    <Link to="/challenges" className="inline-block rounded py-1 text-sm text-muted hover:text-accent">
+    <Link to="/challenges" className="inline-flex min-h-11 items-center rounded text-sm text-muted hover:text-accent sm:pointer-fine:min-h-8">
       {t('challenge.back')}
     </Link>
   )
@@ -164,7 +164,7 @@ export default function ChallengePage() {
           </span>
         )}
         {challenge.lesson_slug && (
-          <Link to={`/lessons/${challenge.lesson_slug}`} className="rounded text-accent underline underline-offset-2">
+          <Link to={`/lessons/${challenge.lesson_slug}`} className="inline-flex min-h-11 items-center rounded text-accent underline underline-offset-2 sm:pointer-fine:min-h-0">
             {t('challenge.openLesson')}
           </Link>
         )}

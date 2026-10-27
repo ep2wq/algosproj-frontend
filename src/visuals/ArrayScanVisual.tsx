@@ -123,11 +123,11 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
         <button type="button" onClick={() => restart(randomArray())} className={buttonClass}>
           <TextWithCode text={t('common.newRandomArray')} />
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
+        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
           <label htmlFor={`${id}-numbers`} className="block text-sm font-medium">
             {t('common.yourOwnNumbers')}
           </label>
-          <div className="mt-1 flex gap-2">
+          <div className="mt-1 flex flex-col gap-2 sm:flex-row">
             <input
               id={`${id}-numbers`}
               type="text"

@@ -87,7 +87,7 @@ export default function LessonPage() {
   }
 
   const backLink = (
-    <Link to="/lessons" className="inline-block rounded py-1 text-sm text-muted hover:text-accent">
+    <Link to="/lessons" className="inline-flex min-h-11 items-center rounded text-sm text-muted hover:text-accent sm:pointer-fine:min-h-8">
       {t('lesson.allLessons')}
     </Link>
   )

@@ -283,7 +283,7 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
         <button type="button" onClick={() => restart(config.random())} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
+        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
           <div className="flex flex-wrap items-end gap-2">
             <div className="min-w-0 flex-1 basis-40">
               <label htmlFor={`${id}-input`} className="block text-sm font-medium">

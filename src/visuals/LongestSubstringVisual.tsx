@@ -237,7 +237,7 @@ export default function LongestSubstringVisual() {
         <button type="button" onClick={() => restart(randomExample(text))} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
+        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
           <div className="flex flex-wrap items-end gap-2">
             <div className="min-w-0 flex-1 basis-40">
               <label htmlFor={`${id}-input`} className="block text-sm font-medium">

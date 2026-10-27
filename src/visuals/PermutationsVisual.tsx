@@ -209,11 +209,11 @@ export default function PermutationsVisual() {
         <button type="button" onClick={() => restart(randomItems())} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
+        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
           <label htmlFor={`${id}-items`} className="block text-sm font-medium">
             {t('permutations.ownItems')}
           </label>
-          <div className="mt-1 flex gap-2">
+          <div className="mt-1 flex flex-col gap-2 sm:flex-row">
             <input
               id={`${id}-items`}
               type="text"

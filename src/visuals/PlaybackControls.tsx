@@ -5,9 +5,9 @@ import type { Speed, usePlayback } from './usePlayback'
 
 type Playback = ReturnType<typeof usePlayback>
 
-// 44 px tall on a phone, where they are tapped; 36 px from sm.
+// 44 px tall on a touch screen (a phone, either way up); 36 px from sm with a mouse.
 export const buttonClass =
-  'inline-flex min-h-11 items-center justify-center rounded border border-field bg-surface px-3 text-sm hover:border-muted aria-disabled:cursor-not-allowed aria-disabled:opacity-60 sm:min-h-9'
+  'inline-flex min-h-11 items-center justify-center rounded border border-field bg-surface px-3 text-sm hover:border-muted aria-disabled:cursor-not-allowed aria-disabled:opacity-60 sm:pointer-fine:min-h-9'
 
 export function SpeedSelect({ playback }: { playback: Playback }) {
   const { t } = useTranslation('visuals')
@@ -41,7 +41,7 @@ export default function PlaybackControls({ playback }: { playback: Playback }) {
         type="button"
         onClick={togglePlay}
         aria-disabled={lastStep === 0}
-        className="inline-flex min-h-11 min-w-20 items-center justify-center rounded bg-accent px-4 text-sm font-medium text-inverse hover:bg-accent/90 aria-disabled:cursor-not-allowed aria-disabled:opacity-60 sm:min-h-9"
+        className="inline-flex min-h-11 min-w-20 items-center justify-center rounded bg-accent px-4 text-sm font-medium text-inverse hover:bg-accent/90 aria-disabled:cursor-not-allowed aria-disabled:opacity-60 sm:pointer-fine:min-h-9"
       >
         {playing ? t('common.pause') : t('common.play')}
       </button>

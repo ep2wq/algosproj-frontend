@@ -84,7 +84,7 @@ export default function GrowthChart() {
   const [n, setN] = useState(10)
 
   return (
-    <div className="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_17rem]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_17rem]">
       {/* Maths reads left to right on an Arabic page too. */}
       <figure dir="ltr" lang="en" className="min-w-0">
         <div className="relative ms-8 me-20 mt-16 mb-8 h-64 sm:h-80">
@@ -152,7 +152,7 @@ export default function GrowthChart() {
         </figcaption>
       </figure>
 
-      <div>
+      <div className="min-w-0">
         <label htmlFor={`${id}-n`} className="flex items-center justify-between gap-4 font-medium">
           <span>
             <TextWithCode text={t('landing.growth.n')} />
@@ -172,32 +172,35 @@ export default function GrowthChart() {
           onChange={(event) => setN(Number(event.target.value))}
           className="mt-2 h-11 w-full cursor-pointer accent-accent"
         />
-        <table className="mt-4 w-full text-sm">
-          <caption className="mb-2 text-start text-muted">
-            <TextWithCode text={t('landing.growth.tableCaption', { n })} />
-          </caption>
-          <thead className="sr-only">
-            <tr>
-              <th scope="col">{t('landing.growth.class')}</th>
-              <th scope="col">{t('landing.growth.operations')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {CLASSES.map((c) => (
-              <tr key={c.label} className="border-t border-line">
-                <th scope="row" className="py-1.5 text-start font-normal">
-                  <span dir="ltr" className="inline-flex items-center gap-2 font-mono">
-                    <Swatch dash={c.dash} />
-                    {c.label}
-                  </span>
-                </th>
-                <td className="py-1.5 text-end font-mono tabular-nums">
-                  <span dir="ltr">{formatNumber(round(c.f(n)), language)}</span>
-                </td>
+        {/* Scrolls inside itself only when it can't fit (very large text on a phone). */}
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-sm">
+            <caption className="mb-2 text-start text-muted">
+              <TextWithCode text={t('landing.growth.tableCaption', { n })} />
+            </caption>
+            <thead className="sr-only">
+              <tr>
+                <th scope="col">{t('landing.growth.class')}</th>
+                <th scope="col">{t('landing.growth.operations')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {CLASSES.map((c) => (
+                <tr key={c.label} className="border-t border-line">
+                  <th scope="row" className="py-1.5 text-start font-normal">
+                    <span dir="ltr" className="inline-flex items-center gap-2 font-mono">
+                      <Swatch dash={c.dash} />
+                      {c.label}
+                    </span>
+                  </th>
+                  <td className="py-1.5 text-end font-mono tabular-nums">
+                    <span dir="ltr">{formatNumber(round(c.f(n)), language)}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )

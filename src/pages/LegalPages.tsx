@@ -45,7 +45,7 @@ function LegalPage({ name }: { name: Name }) {
                 <p className="font-medium">
                   <TextWithCode text={t(`cookies.rows.${id}.name`)} />
                 </p>
-                <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+                <dl className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
                   {(['kind', 'purpose', 'duration', 'necessary'] as const).map((field) => (
                     <div key={field} className="contents">
                       <dt className="text-muted">{t(`cookies.table.${field}`)}</dt>
@@ -117,7 +117,7 @@ function LegalPage({ name }: { name: Name }) {
       </section>
       <p className="mt-6 flex flex-wrap gap-x-4 gap-y-1">
         {RELATED[name].map((other) => (
-          <Link key={other} to={`/${other}`} className="rounded text-accent underline underline-offset-2">
+          <Link key={other} to={`/${other}`} className="inline-flex min-h-11 items-center rounded text-accent underline underline-offset-2 sm:pointer-fine:min-h-0">
             {t(`${other}.title`)}
           </Link>
         ))}

@@ -145,11 +145,11 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
         <button type="button" onClick={() => restart(randomSample(config.samples, text))} className={buttonClass}>
           {t(`twoPointer.${mode}.randomLabel`)}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1">
+        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
           <label htmlFor={`${id}-text`} className="block text-sm font-medium">
             {t(`twoPointer.${mode}.inputLabel`)}
           </label>
-          <div className="mt-1 flex gap-2">
+          <div className="mt-1 flex flex-col gap-2 sm:flex-row">
             <input
               id={`${id}-text`}
               type="text"

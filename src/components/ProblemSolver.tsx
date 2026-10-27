@@ -89,9 +89,11 @@ export default function ProblemSolver({
       {problem.test_cases.length > 0 && (
         <div className="mt-5">
           <ExamplesHeading className="text-sm font-semibold">{t('solver.examples')}</ExamplesHeading>
+          {/* In each example the input gets more room: on a phone an even split wraps a short line
+              of numbers. */}
           <div className="mt-2 grid gap-3 sm:grid-cols-2">
             {problem.test_cases.map((testCase) => (
-              <dl key={testCase.id} className="grid grid-cols-2 gap-3 rounded-lg border border-line bg-surface p-3">
+              <dl key={testCase.id} className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-3 rounded-lg border border-line bg-surface p-3">
                 <div className="min-w-0">
                   <dt className="text-xs text-muted">{t('solver.input')}</dt>
                   <dd>
@@ -176,7 +178,7 @@ export default function ProblemSolver({
             type="button"
             onClick={handleSubmit}
             disabled={busy}
-            className="rounded bg-accent px-4 py-2 font-medium text-inverse hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-11 items-center justify-center rounded bg-accent px-4 font-medium text-inverse hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {busy ? t('solver.running') : t('solver.submit')}
           </button>
@@ -184,7 +186,7 @@ export default function ProblemSolver({
           <Link
             to="/login"
             state={{ from: location }}
-            className="rounded border border-accent px-4 py-2 font-medium text-accent hover:bg-accent-soft motion-safe:active:translate-y-px"
+            className="inline-flex min-h-11 items-center justify-center rounded border border-accent px-4 font-medium text-accent hover:bg-accent-soft motion-safe:active:translate-y-px"
           >
             {t('solver.logInToSubmit')}
           </Link>

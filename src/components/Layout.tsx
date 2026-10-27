@@ -12,9 +12,10 @@ import { toggleTheme, useTheme } from '../theme'
 // The current page: ink, medium weight and an accent bar under the word (not colour alone).
 const activeMark = 'text-ink font-medium underline decoration-accent decoration-2 underline-offset-[6px]'
 
-// Below sm the three links share the second header row, 44 px tall; from sm they sit next to the logo.
+// Below sm the three links share the second header row, 44 px tall; from sm they sit next to the logo,
+// 36 px with a mouse (44 on a touch screen at any width, such as a phone on its side).
 const navLink = ({ isActive }: { isActive: boolean }) =>
-  `inline-flex min-h-11 items-center justify-center rounded px-2 hover:text-accent sm:min-h-9 ${isActive ? activeMark : 'text-muted'}`
+  `inline-flex min-h-11 grow items-center justify-center rounded px-2 hover:text-accent sm:grow-0 sm:pointer-fine:min-h-9 ${isActive ? activeMark : 'text-muted'}`
 
 // 44 px touch targets, like the rest of the header controls on a phone.
 const toggleClass = 'inline-flex min-h-11 min-w-11 items-center justify-center rounded px-2 text-muted hover:text-accent'
@@ -256,10 +257,11 @@ export default function Layout() {
           <Link to="/" lang="en" className="inline-flex min-h-11 items-center rounded text-lg font-bold tracking-tight text-ink">
             {PRODUCT_NAME}
           </Link>
-          {/* Below sm: its own row under the controls, one third of the width per link. */}
+          {/* Below sm: its own row under the controls, the links sharing its width (with very large
+              text they wrap instead of overlapping). */}
           <nav
             aria-label={t('nav.main')}
-            className="order-last -mx-2 grid w-[calc(100%+1rem)] grid-cols-3 text-sm sm:order-none sm:mx-0 sm:flex sm:w-auto sm:gap-1"
+            className="order-last -mx-2 flex w-[calc(100%+1rem)] flex-wrap text-sm sm:order-none sm:mx-0 sm:w-auto sm:flex-nowrap sm:gap-1"
           >
             <NavLink to="/lessons" className={navLink}>
               {t('nav.lessons')}
@@ -279,7 +281,7 @@ export default function Layout() {
           </nav>
           {/* Wraps on narrow screens, so the toggles never push the page sideways. Below lg the
               name and Log out move into the site menu, next to the points. */}
-          <div className="ms-auto flex items-center gap-1 text-sm sm:gap-3">
+          <div className="ms-auto flex flex-wrap items-center justify-end gap-1 text-sm sm:gap-3">
             <div className="flex items-center">
               <ThemeToggle className={toggleClass.replace('inline-flex', 'hidden sm:inline-flex')} />
               <SoundToggle className={`${toggleClass.replace('inline-flex', 'hidden lg:inline-flex')} aria-pressed:text-accent`} />
@@ -310,18 +312,18 @@ export default function Layout() {
                 <button
                   type="button"
                   onClick={() => logout()}
-                  className="hidden min-h-9 items-center rounded px-2 text-muted hover:text-accent lg:inline-flex"
+                  className="hidden min-h-11 items-center rounded px-2 text-muted hover:text-accent lg:inline-flex pointer-fine:min-h-9"
                 >
                   {t('nav.logOut')}
                 </button>
               </>
             ) : (
-              <div className={`flex items-center gap-1 sm:gap-3 ${loading ? 'invisible' : ''}`}>
+              <div className={`flex flex-wrap items-center justify-end gap-1 sm:gap-3 ${loading ? 'invisible' : ''}`}>
                 <NavLink
                   to="/login"
                   state={{ from: location }}
                   className={({ isActive }) =>
-                    `hidden min-h-9 items-center rounded px-2 hover:text-accent sm:inline-flex ${isActive ? activeMark : 'text-muted'}`
+                    `hidden min-h-11 items-center rounded px-2 hover:text-accent sm:inline-flex pointer-fine:min-h-9 ${isActive ? activeMark : 'text-muted'}`
                   }
                 >
                   {t('nav.logIn')}
@@ -330,7 +332,7 @@ export default function Layout() {
                   to="/register"
                   state={{ from: location }}
                   className={({ isActive }) =>
-                    `inline-flex min-h-11 items-center rounded border border-accent px-3 font-medium text-accent hover:bg-accent-soft motion-safe:active:translate-y-px sm:min-h-9 ${isActive ? 'bg-accent-soft' : ''}`
+                    `inline-flex min-h-11 items-center rounded border border-accent px-3 font-medium text-accent hover:bg-accent-soft motion-safe:active:translate-y-px sm:pointer-fine:min-h-9 ${isActive ? 'bg-accent-soft' : ''}`
                   }
                 >
                   {t('nav.register')}
@@ -367,7 +369,7 @@ const FOOTER_GROUPS = [
 function Footer() {
   const { t } = useTranslation()
   const footerLink =
-    'inline-flex min-h-11 items-center rounded underline-offset-4 decoration-footer-accent hover:text-footer-accent hover:underline lg:min-h-7'
+    'inline-flex min-h-11 items-center rounded underline-offset-4 decoration-footer-accent hover:text-footer-accent hover:underline lg:pointer-fine:min-h-7'
 
   return (
     <footer className="border-t border-footer-line bg-footer font-mono text-xs text-footer-muted">
