@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth'
 import { skipLink } from './buttonStyles'
 import { setLanguage } from '../i18n'
-import { CONTACT_EMAIL, PRODUCT_NAME } from '../site'
+import { CONTACT_EMAIL, COPYRIGHT_YEAR, PRODUCT_NAME } from '../site'
 import { setSoundOn, useSoundOn } from '../sound'
 import { toggleTheme, useTheme } from '../theme'
 
@@ -44,7 +44,7 @@ function ThemeToggle() {
 // says whether sound is on; the icon shows the current state. Next to the theme and language buttons
 // from lg up. Below that the header has no room for it (logged-out Arabic would take 3 rows on a phone,
 // a logged-in header 2 rows at 768 px), so it is in the footer with its name shown.
-function SoundToggle({ className = toggleClass, showLabel = false }: { className?: string; showLabel?: boolean }) {
+function SoundToggle({ className = `${toggleClass} aria-pressed:text-accent`, showLabel = false }: { className?: string; showLabel?: boolean }) {
   const { t } = useTranslation()
   const on = useSoundOn()
 
@@ -54,7 +54,7 @@ function SoundToggle({ className = toggleClass, showLabel = false }: { className
       onClick={() => setSoundOn(!on)}
       aria-pressed={on}
       aria-label={showLabel ? undefined : t('sound.label')}
-      className={`${className} aria-pressed:text-accent`}
+      className={className}
     >
       <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
         <path d="M11 5 6 9H3v6h3l5 4z" />
@@ -256,7 +256,7 @@ export default function Layout() {
           <div className="ms-auto flex flex-wrap items-center gap-2 text-sm sm:gap-3">
             <div className="flex items-center">
               <ThemeToggle />
-              <SoundToggle className={toggleClass.replace('inline-flex', 'hidden lg:inline-flex')} />
+              <SoundToggle className={`${toggleClass.replace('inline-flex', 'hidden lg:inline-flex')} aria-pressed:text-accent`} />
               <LanguageToggle />
               <SiteMenu
                 key={location.pathname}
@@ -319,7 +319,7 @@ export default function Layout() {
           <Outlet context={skipSlot} />
         </DirectionProvider>
       </main>
-      <Footer language={i18n.language} />
+      <Footer />
     </div>
   )
 }
@@ -330,59 +330,48 @@ const FOOTER_GROUPS = [
   ['footer.legal', [['/terms', 'nav.terms'], ['/privacy', 'nav.privacy'], ['/cookies', 'nav.cookies']]],
 ] as const
 
-// When the page was opened: the copyright year comes from it.
-const opened = new Date()
-
-// On every page, admin included. Brand and the three link groups: 4 columns from lg, 2 x 2 from sm
-// (the nav is a subgrid, so it stays one landmark; its first cell is left to the brand), one column
-// below that. Below lg each group's links wrap in a row. The year is computed, in the page language.
-function Footer({ language }: { language: string }) {
+// On every page, admin included, and in the static HTML. Dark in both themes (footer-* tokens in
+// src/index.css), compact, Latin and numbers in JetBrains Mono (Arabic falls through to Plex Sans
+// Arabic in the same stack). Brand and the three link groups: 4 columns from lg, 2 x 2 from sm (the
+// nav is a subgrid, so it stays one landmark; its first cell is left to the brand), one column below.
+// Below lg each group's links wrap in a row and are 44 px tall. Hover and the current page add an
+// underline, not only a colour.
+function Footer() {
   const { t } = useTranslation()
-  const year = new Intl.DateTimeFormat(`${language}-u-ca-gregory-nu-latn`, { year: 'numeric' }).format(opened)
-  // 44 px tall wherever it may be tapped (below lg).
-  const footerLink = 'inline-flex min-h-11 items-center rounded hover:text-accent lg:min-h-8'
+  const footerLink =
+    'inline-flex min-h-11 items-center rounded underline-offset-4 decoration-footer-accent hover:text-footer-accent hover:underline lg:min-h-7'
 
   return (
-    <footer className="border-t border-line bg-surface">
-      <div className="mx-auto grid max-w-5xl gap-x-8 gap-y-8 px-4 pt-10 pb-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,1fr))]">
+    <footer className="border-t border-footer-line bg-footer font-mono text-xs text-footer-muted">
+      <div className="mx-auto grid max-w-5xl gap-x-8 gap-y-6 px-4 pt-8 pb-2 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
         {/* relative: painted above the nav, whose subgrid also covers this cell from sm to lg. */}
         <div className="relative sm:col-start-1 sm:row-start-1">
-          {/* The name as an array, cells with their index under them, like the ones the lessons draw.
-              Read as one word. */}
-          <p lang="en" className="text-ink">
-            <span className="sr-only">{PRODUCT_NAME}</span>
-            {/* Inline, so it sits at the start edge of the column in both directions. */}
-            <span aria-hidden="true" dir="ltr" className="inline-flex flex-wrap gap-1 align-top">
-              {[...PRODUCT_NAME].map((letter, index) => (
-                <span key={index} className="flex flex-col items-center">
-                  <span className="flex size-8 items-center justify-center rounded border-2 border-muted bg-surface font-semibold">
-                    {letter}
-                  </span>
-                  <span className="mt-0.5 text-xs text-muted tabular-nums">{index}</span>
-                </span>
-              ))}
-            </span>
+          <p lang="en" className="text-sm font-bold text-footer-ink">
+            {PRODUCT_NAME}
           </p>
-          <p className="mt-4 max-w-sm text-sm leading-6 text-ink">{t('footer.mission')}</p>
+          <p className="mt-2 max-w-xs leading-5">{t('footer.mission')}</p>
         </div>
         <nav
           aria-label={t('footer.label')}
-          className="grid gap-y-8 text-sm sm:col-span-2 sm:col-start-1 sm:row-span-2 sm:row-start-1 sm:grid-cols-subgrid sm:grid-rows-subgrid lg:col-span-3 lg:col-start-2 lg:row-span-1"
+          className="grid gap-y-6 sm:col-span-2 sm:col-start-1 sm:row-span-2 sm:row-start-1 sm:grid-cols-subgrid sm:grid-rows-subgrid lg:col-span-3 lg:col-start-2 lg:row-span-1"
         >
           {FOOTER_GROUPS.map(([heading, links], index) => (
             <div key={heading} className={index === 0 ? 'sm:col-start-2 lg:col-start-1' : ''}>
-              <h2 className="text-sm font-semibold text-ink">{t(heading)}</h2>
-              <ul className="mt-1 flex flex-wrap gap-x-6 lg:mt-2 lg:block">
+              <h2 className="text-xs font-bold text-footer-ink">{t(heading)}</h2>
+              <ul className="mt-1 flex flex-wrap gap-x-5 lg:mt-2 lg:block">
                 {links.map(([path, key]) => (
                   <li key={path}>
-                    <NavLink to={path} className={({ isActive }) => `${footerLink} ${isActive ? activeMark : 'text-muted'}`}>
+                    <NavLink
+                      to={path}
+                      className={({ isActive }) => `${footerLink} ${isActive ? 'text-footer-ink underline' : ''}`}
+                    >
                       {t(key)}
                     </NavLink>
                   </li>
                 ))}
                 {heading === 'footer.site' && (
                   <li>
-                    <a href={`mailto:${CONTACT_EMAIL}`} dir="ltr" className={`${footerLink} text-muted`}>
+                    <a href={`mailto:${CONTACT_EMAIL}`} dir="ltr" className={footerLink}>
                       {CONTACT_EMAIL}
                     </a>
                   </li>
@@ -391,10 +380,13 @@ function Footer({ language }: { language: string }) {
             </div>
           ))}
         </nav>
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-line pt-3 text-sm text-muted sm:col-span-2 lg:col-span-4">
-          <p>{t('footer.copyright', { year })}</p>
+        <div className="flex flex-wrap items-center justify-between gap-x-4 pt-2 sm:col-span-2 lg:col-span-4">
+          <p className="py-2">{t('footer.copyright', { year: COPYRIGHT_YEAR })}</p>
           {/* Below lg the sound switch has no room in the header. */}
-          <SoundToggle className="-ms-2 inline-flex min-h-11 items-center rounded px-2 text-sm text-muted hover:text-accent lg:hidden" showLabel />
+          <SoundToggle
+            className="-ms-2 inline-flex min-h-11 items-center rounded px-2 hover:text-footer-accent aria-pressed:text-footer-accent lg:hidden"
+            showLabel
+          />
         </div>
       </div>
     </footer>

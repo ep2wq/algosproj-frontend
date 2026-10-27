@@ -471,7 +471,7 @@
     "learn": "Learn",
     "site": "About the site",
     "legal": "Legal",
-    "copyright": "© {{product}} {{year}}"
+    "copyright": "© {{product}} {{year}}. All rights reserved."
   },
   "landing": {
     "metaTitle": "Learn algorithms step by step",

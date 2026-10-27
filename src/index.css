@@ -20,6 +20,15 @@
   --color-warn: #9a3412;
   --color-inverse: #ffffff;
 
+  /* The footer is dark in both themes (.dark does not swap these). On footer (#070a11): ink 18.93,
+     muted 7.72, accent 7.81 (text and focus ring); line 1.35 is the decorative top edge. The light
+     theme's accent is only 3.61 there, so footer states use footer-accent. */
+  --color-footer: #070a11;
+  --color-footer-line: #1e293b;
+  --color-footer-ink: #f8fafc;
+  --color-footer-muted: #94a3b8;
+  --color-footer-accent: #10b981;
+
   /* Fonts (README "Languages"): IBM Plex Sans Arabic for all interface text, Latin and Arabic;
      JetBrains Mono for code and numbers set as data. Each is followed by its size-adjusted local
      fallback (below), so text does not move when the web font arrives. Arabic characters in a
@@ -372,6 +381,11 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+/* The footer keeps its own accent for the ring in both themes. */
+footer :focus-visible {
+  outline-color: var(--color-footer-accent);
 }
 
 /* The end edge of a sideways-scrolling drawing fades while more of it is hidden (useScrollCue). */

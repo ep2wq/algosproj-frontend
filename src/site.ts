@@ -11,5 +11,8 @@ export const CONTACT_EMAIL = 'contact@algoslab.sa'
 // left out rather than pointing at a wrong host.
 export const SITE_URL = (import.meta.env.VITE_SITE_URL ?? '').replace(/\/+$/, '')
 
+// The year in the footer's copyright line. Change it here only.
+export const COPYRIGHT_YEAR = 2026
+
 // The date the Terms, Privacy and Cookies texts were last changed (YYYY-MM-DD). Change it with the text.
 export const LEGAL_UPDATED = '2026-10-26'

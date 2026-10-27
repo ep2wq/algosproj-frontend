@@ -232,7 +232,7 @@
     "learn": "تعلّم",
     "site": "عن الموقع",
     "legal": "المعلومات القانونية",
-    "copyright": "© {{product}} {{year}}"
+    "copyright": "© {{product}} {{year}}. جميع الحقوق محفوظة."
   },
   "landing": {
     "metaTitle": "تعلّم الخوارزميات خطوة بعد خطوة",
