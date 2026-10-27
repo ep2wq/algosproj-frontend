@@ -14,7 +14,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 ## This repo
 
 - React 19, TypeScript, Vite, Tailwind v4 (no `tailwind.config`), react-router-dom, Monaco,
-  i18next + react-i18next, Noto Sans Arabic (fontsource). Base UI (`@base-ui/react`), class-variance-authority, clsx, tailwind-merge and lucide-react for shadcn/ui. No other runtime deps.
+  i18next + react-i18next. Fonts: IBM Plex Sans Arabic (UI, Arabic) and JetBrains Mono (code, numbers),
+  self-hosted woff2 in `public/fonts` (OFL), `src/fonts.css` loaded after render from `main.tsx`. Base UI (`@base-ui/react`), class-variance-authority, clsx, tailwind-merge and lucide-react for shadcn/ui. No other runtime deps.
 - shadcn/ui (Base UI) is the standard for new UI: `src/components/ui/*`, `cn` in `src/lib/utils.ts`,
   `components.json` (hand-written, rtl true), `@/` alias in `tsconfig.json`, `tsconfig.app.json`, `vite.config.ts`.
   Add with `npx shadcn@latest add <name>`, then map to our tokens (docs/ui-shadcn.md outside the repo).
@@ -37,8 +38,11 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Only `theme`, `lang`, `sound` in `localStorage` (try/catch); login is an HttpOnly session cookie
   (`credentials: 'include'`, `X-XSRF-TOKEN`). No `dangerouslySetInnerHTML`.
 - Sound (README "Sound"): `src/sound.ts`, off by default, one AudioContext made only in a user gesture, tune the constants block at the top; never the only signal.
-- Themes (README "Themes"): toggle, `src/theme.ts` + inline script in `index.html`. Tokens in
-  `src/index.css`, other colors need `dark:`. Text 4.5:1, borders/shapes 3:1, both themes.
+- Themes (README "Themes"): dark by default (no OS following), toggle, `src/theme.ts` + inline
+  script in `index.html`. Tokens in `src/index.css` (footer and CTA banner use the `footer-*` tokens,
+  dark in both themes), other colors need `dark:`. Text 4.5:1, borders/shapes 3:1, both themes.
+- Touch targets: 44 px on phones and touch screens; a smaller size only with `sm:pointer-fine:` (a
+  phone on its side is still touch). Text fields and selects get 44 px from a base rule in `index.css`.
 - Restyle (docs/ui-restyle.md outside the repo): radius 4/8 px, shadow only on floating things
   (--float-shadow), motion only behind motion-safe:, Icons.tsx and EmptyState.tsx shared.
 - English/Arabic (README "Languages"): no literal UI text; `t()` with keys in `en.json`/`ar.json`,
@@ -76,9 +80,13 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   binary search 404, prerender, Challenges, admin, dark mode, Arabic
   interface + content (all 19 modules), visualizations translated, shadcn/ui setup + landing tabs on Base UI,
   loading skeletons, cell loader, scroll progress, skip to challenge. Next: AI hint UI.
-- Landing redesign (plan and reports in `docs/landing-sections-audit.md`, outside the repo): step 1
-  (slate/emerald colour tokens) is committed and pushed; step 2 (footer: brand + mission, Learn,
-  About the site with the contact email, Legal; 4 columns from lg, 2 x 2 from sm, 1 below) is done.
+- Landing redesign done and pushed (plan in `docs/landing-sections-audit.md`, outside the repo):
+  fonts, compact dark footer (`COPYRIGHT_YEAR` in `site.ts`), two-row phone header with glass on
+  scroll (one IntersectionObserver), hero badge from `VISUALS.size`, features matrix, growth chart
+  (`GrowthChart.tsx`, n slider + table), code sample + fixed example run (`CodeDemo.tsx`,
+  `codeSamples.ts`), dark CTA banner, responsive pass of every page (320 to 2560, landscape, 200% text).
+- Open: no social links (no real URLs); the home page shows a full binary search solution (a graded
+  problem) as the code sample.
 - Decisions: oxlint. Lint/build pass. A 401 while `signedIn` (not login/register/logout), or a
   403 with `reason`, clears it; a 419 refreshes the CSRF cookie and retries once, a second 419 = ended; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.
