@@ -53,8 +53,8 @@ Put these in `.env` (copy `.env.example`; `.env` is not committed):
   calls `${VITE_API_URL}/api/...`. It must use the same host name as the page
   (`http://localhost:8000` with the app on `http://localhost:5173`, not `127.0.0.1`).
 - `VITE_SITE_URL` — public address of the site, for example `https://algoslab.sa`, no
-  trailing slash. Only for production builds: canonical links, `og:url` and `sitemap.xml` need it
-  and are left out without it. Baked in at build time like `VITE_API_URL`.
+  trailing slash. Only for production builds: canonical links, `og:url`, `og:image` and `sitemap.xml`
+  need it and are left out without it. Baked in at build time like `VITE_API_URL`.
 
 Only the theme choice (`theme`), the language choice (`lang`) and the sound choice (`sound`)
 are stored in `localStorage`, every read and write in `try`/`catch`. The login is an HttpOnly
@@ -140,8 +140,8 @@ Details: docs/ui-shadcn.md (outside this repo).
   content. Nothing loops. The status text is the existing loading key (`lesson.loading`, `home.loading`, ...).
 - Skeletons: landing panels, `/lessons`, `/challenges`, lesson, challenge and leaderboard pages. Labels
   known before the data (table headers, Easy/Medium/Hard, filter labels) stay real text.
-- `CellLoader`: Suspense fallbacks of the lazy `LessonPage`/`ChallengePage`, lazy visualizations (in the
-  drawing's frame), Monaco's `loading`, `AdminRoute` while `/me` loads; silent (no status) in the landing
+- `CellLoader`: Suspense fallbacks of the lazy `LessonPage`/`ChallengePage` and of the admin chunk (in
+  `Layout`, direct loads only), lazy visualizations (in the drawing's frame), Monaco's `loading`, `AdminRoute` while `/me` loads; silent (no status) in the landing
   hero and the 404 drawing. Admin tables keep their text.
 - `src/components/ScrollProgress.tsx`: 3 px accent bar fixed at the top, `scaleX` from the start edge (right
   in Arabic), set from a passive scroll listener with one `requestAnimationFrame` write per frame, no React
@@ -374,7 +374,14 @@ header and footer measurements are in `../docs/ui-public-pages.md` (outside this
 - **Contact address:** `CONTACT_EMAIL` in `src/site.ts` (`contact@algoslab.sa`); the mailbox or
   forwarding must exist before launch. Strings use `{{email}}`. `LEGAL_UPDATED` is the date of the legal texts.
 - **Page tags:** every public page renders `PageMeta` (`src/components/PageMeta.tsx`): title,
-  description, canonical, Open Graph and Twitter tags. Canonical and `og:url` need `VITE_SITE_URL`.
+  description, canonical, Open Graph and Twitter tags. Canonical, `og:url` and the share image need
+  `VITE_SITE_URL`; with it the Twitter card is `summary_large_image`, without it `summary`.
+- **Icons:** `public/favicon.svg` is the AlgosLab mark (search brackets around the middle cell, emerald
+  `#10b981` on `#0f172a`, drawn on a 16 px grid). `favicon.ico` (one 32 px PNG inside) and
+  `apple-touch-icon.png` (180 px, square, the mark with a margin) are rendered from it with Chrome; redo
+  both when the SVG changes. `public/og.png` (1200x630, about 42 KB) is the share image: the mark, the
+  name, the landing headline and one binary search step in the dark tokens. Its alt text is `meta.ogImageAlt`.
+  `index.html` links the icons, so every prerendered page has them.
 - **Prerender:** `npm run build` = `tsc -b && vite build && vite build --ssr src/prerender.ts
   --outDir dist-ssr && node scripts/prerender.mjs`. The last step renders each path in `ROUTES`
   (`src/prerender.ts`) to English HTML and writes `dist/index.html` (the landing page) and
@@ -382,7 +389,9 @@ header and footer measurements are in `../docs/ui-public-pages.md` (outside this
   `VITE_SITE_URL`, `sitemap.xml`. `node scripts/prerender.mjs <folder>` works on another client
   build folder. The browser does not hydrate: the app renders afresh and replaces the markup.
   An inline script after `#root` in `index.html` empties it first when the address is not the one
-  prerendered or the language is Arabic; `src/main.tsx` removes the static head tags
+  prerendered; in Arabic it keeps the English markup laid out but hidden (`visibility: hidden`) until
+  the app replaces it, so the browser's first layout runs while the script downloads (Arabic LCP on a
+  slow profile: about 140-210 ms sooner); `src/main.tsx` removes the static head tags
   (`data-prerender`). `theme.ts`, `sound.ts` and `i18n.ts` check for `window` and `document` so
   they load in Node. A new public page needs its path in `ROUTES` and a `PageMeta`. The build fails
   if a prerendered page, `sitemap.xml` or `robots.txt` contains a React client-render marker or a
@@ -449,6 +458,11 @@ request once; a second 419 counts as the session ended. The notice is not shown 
 Log out (a 401 from `/logout` only clears the state), and the 401 of a wrong password on login
 or register keeps its own message. The notice lives in the navigation state, so it is gone
 after logging in.
+
+The admin pages are one lazy chunk (`src/pages/admin/index.ts`, `lazy()` in `src/App.tsx`): guests and
+users never download it, and `App` fetches it in the background once `/me` says admin or owner. The
+Suspense boundary is in `Layout` (always mounted), so a link to an admin page keeps the current page
+until the code is there; a direct load shows the `CellLoader`.
 
 `src/components/AdminRoute.tsx` wraps these routes: guests and users who are neither admin
 nor owner get the same "Page not found" as an unknown path. That is only convenience; the backend answers every

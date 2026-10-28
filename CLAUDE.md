@@ -44,7 +44,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Touch targets: 44 px on phones and touch screens; a smaller size only with `sm:pointer-fine:` (a
   phone on its side is still touch). Text fields and selects get 44 px from a base rule in `index.css`.
 - Restyle (docs/ui-restyle.md outside the repo): radius 4/8 px, shadow only on floating things
-  (--float-shadow), motion only behind motion-safe:, Icons.tsx and EmptyState.tsx shared.
+  (--float-shadow), motion only behind motion-safe:, Icons.tsx and EmptyState.tsx shared. Reading width:
+  `max-w-prose` is 52ch (a `.max-w-prose` rule in `@layer utilities` in `src/index.css`; Tailwind hard-codes 65ch).
 - English/Arabic (README "Languages"): no literal UI text; `t()` with keys in `en.json`/`ar.json`,
   visuals in lazy `visuals.en.json`/`.ar.json`, `admin.*` in `en.json` only. Whole sentences, six
   Arabic plural forms. Frame functions take `t` last. Arabic marks terms `~term~`, values
@@ -90,8 +91,11 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   nothing new. When the Terms, Privacy or Cookies text changes, change `LEGAL_UPDATED` in `src/site.ts`
   together with `terms_version` in the backend's `config/legal.php`.
 - The landing code sample is only the search loop (`codeSamples.ts`), never a whole graded solution.
-- Open: no social links (no real URLs yet); favicon is still Vite's default; Plex Sans fits about 88
-  characters into `max-w-prose` (65ch) on lesson and legal text.
+- Done (polish): AlgosLab favicon (`favicon.svg`, `.ico`, apple touch icon) and share image `og.png` with
+  `og:image` tags (README "Icons"); reading width 52ch (about 65 characters English, 75 Arabic); Arabic
+  visitors get the static page laid out but hidden, not emptied (`index.html`); admin pages in one lazy
+  chunk, preloaded for staff, Suspense in `Layout` (README "Admin area").
+- Open: no social links (no real URLs yet).
 - Decisions: oxlint. Lint/build pass. A 401 while `signedIn` (not login/register/logout), or a
   403 with `reason`, clears it; a 419 refreshes the CSRF cookie and retries once, a second 419 = ended; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.
