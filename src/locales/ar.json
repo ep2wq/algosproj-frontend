@@ -226,7 +226,8 @@
     "label": "المؤثرات الصوتية"
   },
   "meta": {
-    "siteName": "{{product}}"
+    "siteName": "{{product}}",
+    "ogImageAlt": "{{product}}: شاهد الخوارزمية وهي تعمل، ثم اكتبها. صف من الأعداد المرتبة خلال إحدى خطوات الـbinary search، والخلية الوسطى مظللة."
   },
   "footer": {
     "label": "الموقع",

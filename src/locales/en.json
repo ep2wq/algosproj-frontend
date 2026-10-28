@@ -465,7 +465,8 @@
     "label": "Sound effects"
   },
   "meta": {
-    "siteName": "{{product}}"
+    "siteName": "{{product}}",
+    "ogImageAlt": "{{product}}: Watch the algorithm run. Then write it. A row of sorted numbers during a binary search, with the middle cell highlighted."
   },
   "footer": {
     "label": "Site",
