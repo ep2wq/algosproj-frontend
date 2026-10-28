@@ -10,6 +10,7 @@ import AboutPage from './pages/AboutPage'
 import ChallengesPage from './pages/ChallengesPage'
 import ContactPage from './pages/ContactPage'
 import FaqPage from './pages/FaqPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import LandingPage from './pages/LandingPage'
 import LeaderboardPage from './pages/LeaderboardPage'
 import { CookiesPage, PrivacyPage, TermsPage } from './pages/LegalPages'
@@ -17,6 +18,8 @@ import LessonsPage from './pages/LessonsPage'
 import LoginPage from './pages/LoginPage'
 import NotFoundPage from './pages/NotFoundPage'
 import RegisterPage from './pages/RegisterPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
+import VerifyEmailPage from './pages/VerifyEmailPage'
 
 // Lazy, so the Monaco editor isn't part of the first bundle.
 const LessonPage = lazy(() => import('./pages/LessonPage'))
@@ -75,6 +78,10 @@ function App() {
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        {/* Email links land on these (backend README "Email"); noindex, not prerendered. */}
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         {/* Admins only; everyone else sees the not-found page. The backend enforces the role. */}
         <Route path="/admin" element={<AdminRoute />}>
           <Route index element={<AdminContentPage />} />

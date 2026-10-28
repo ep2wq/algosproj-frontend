@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth'
 import { skipLink } from './buttonStyles'
 import { CellLoader } from './Loading'
+import VerifyEmailNotice from './VerifyEmailNotice'
 import { setLanguage } from '../i18n'
 import { CONTACT_EMAIL, COPYRIGHT_YEAR, PRODUCT_NAME } from '../site'
 import { setSoundOn, useSoundOn } from '../sound'
@@ -342,6 +343,7 @@ export default function Layout() {
             )}
           </div>
         </div>
+        <VerifyEmailNotice />
       </header>
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
         {/* Base UI (src/components/ui) reads the direction from here, not from dir: arrow keys follow

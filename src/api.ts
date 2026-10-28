@@ -17,6 +17,8 @@ export type User = {
   points: number
   // Only for showing admin links and pages; the backend checks the role on every admin request.
   role: Role
+  // Submitting code needs a verified email; the backend checks it on every submit.
+  email_verified: boolean
 }
 
 export type Role = 'user' | 'admin' | 'owner'
@@ -264,12 +266,15 @@ export class ApiError extends Error {
   fieldErrors: Record<string, string[]>
   // Set on a 403 for a banned account (login, or any request while logged in).
   banReason?: string
+  // A 403 because the email is not verified yet (submit). The user stays logged in.
+  emailUnverified: boolean
 
-  constructor(status: number, message: string, fieldErrors: Record<string, string[]> = {}, banReason?: string) {
+  constructor(status: number, message: string, fieldErrors: Record<string, string[]> = {}, banReason?: string, emailUnverified = false) {
     super(message)
     this.status = status
     this.fieldErrors = fieldErrors
     this.banReason = banReason
+    this.emailUnverified = emailUnverified
   }
 }
 
@@ -365,6 +370,11 @@ async function request<T>(method: string, path: string, body?: unknown, retried 
     onUnauthorized()
     throw new ApiError(401, t('errors.sessionEnded'))
   }
+  // Submit without a verified email: {"message", "reason": "email_unverified"}. Not a ban, so the
+  // user stays logged in; the page shows how to verify.
+  if (response.status === 403 && data?.reason === 'email_unverified') {
+    throw new ApiError(403, serverMessage || t('verify.required'), {}, undefined, true)
+  }
   // A banned account: {"message": "This account is banned.", "reason": ...}. When logged in it is
   // handled like a 401; on login it is shown on the form.
   if (response.status === 403 && typeof data?.reason === 'string') {
@@ -410,6 +420,23 @@ export async function login(email: string, password: string, remember: boolean) 
 export async function logout() {
   signedIn = false
   return request<{ message: string }>('POST', '/logout')
+}
+
+// Email verification and password reset (backend README "Email"). The guest requests need the
+// CSRF cookie first, like login. Forgot password always answers the same, whether or not the
+// account exists.
+export function resendVerification() {
+  return request<{ message: string }>('POST', '/email/verification-notification')
+}
+
+export async function forgotPassword(email: string) {
+  await refreshCsrfCookie()
+  return request<{ message: string }>('POST', '/forgot-password', { email })
+}
+
+export async function resetPassword(token: string, email: string, password: string, passwordConfirmation: string) {
+  await refreshCsrfCookie()
+  return request<{ message: string }>('POST', '/reset-password', { token, email, password, password_confirmation: passwordConfirmation })
 }
 
 export async function getMe() {

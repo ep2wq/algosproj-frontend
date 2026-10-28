@@ -457,14 +457,15 @@ body {
   }
 }
 
-/* Anything reached by keyboard or a link lands below the sticky header (2 rows on a phone). */
+/* Anything reached by keyboard or a link lands below the sticky header (2 rows on a phone) and
+   the verify-email notice under it, when shown (--notice-h, VerifyEmailNotice.tsx). */
 html {
-  scroll-padding-top: 7.5rem;
+  scroll-padding-top: calc(7.5rem + var(--notice-h, 0px));
 }
 
 @media (min-width: 40rem) {
   html {
-    scroll-padding-top: 5.5rem;
+    scroll-padding-top: calc(5.5rem + var(--notice-h, 0px));
   }
 }
 

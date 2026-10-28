@@ -17,4 +17,4 @@ export const COPYRIGHT_YEAR = 2026
 // The date the Terms, Privacy and Cookies texts were last changed (YYYY-MM-DD). Change it with the text,
 // and change terms_version in the backend's config/legal.php to the same date: it is the version a
 // new account accepts at registration.
-export const LEGAL_UPDATED = '2026-10-28'
+export const LEGAL_UPDATED = '2026-10-29'

@@ -90,6 +90,11 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   shared `AuthForm`). Unchecked = no request is sent; register sends `accepted_terms: true`, login sends
   nothing new. When the Terms, Privacy or Cookies text changes, change `LEGAL_UPDATED` in `src/site.ts`
   together with `terms_version` in the backend's `config/legal.php`.
+- Done: email verification + password reset UI (README "Pages"): `/forgot-password`, `/reset-password`
+  (token removed from the URL, no referrer), `/verify-email`, all noindex and not prerendered; "Forgot
+  password?" on login; `VerifyEmailNotice` overlays under the header for unverified users (no layout
+  shift); submit is replaced by the explanation for them. `user.email_verified` (boolean) from the API; a 403
+  `reason: email_unverified` is not a logout (`ApiError.emailUnverified`). Privacy text names Resend.
 - The landing code sample is only the search loop (`codeSamples.ts`), never a whole graded solution.
 - Done (polish): AlgosLab favicon (`favicon.svg`, `.ico`, apple touch icon) and share image `og.png` with
   `og:image` tags (README "Icons"); reading width 52ch (about 65 characters English, 75 Arabic); Arabic
@@ -103,7 +108,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   14rem (container queries); the skeleton has a row per row asked for (50 / 10). Lesson code blocks are named regions.
 - Open: no social links (no real URLs yet).
 - Decisions: oxlint. Lint/build pass. A 401 while `signedIn` (not login/register/logout), or a
-  403 with `reason`, clears it; a 419 refreshes the CSRF cookie and retries once, a second 419 = ended; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
+  403 with `reason` (except `email_unverified`), clears it; a 419 refreshes the CSRF cookie and retries once, a second 419 = ended; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.
   `SiteMenu` (`Layout.tsx`, replaced `AccountMenu`): a "More" disclosure at every width (About, FAQ,
   Contact; below `lg` also name and Log out; below `sm` also Admin or Log in), not role="menu". Footer

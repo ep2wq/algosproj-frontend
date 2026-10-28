@@ -1,8 +1,8 @@
 import Editor from '@monaco-editor/react'
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
-import { ApiError, LANGUAGES, submitSolution, type Language, type Problem, type SubmitResult } from '../api'
+import { ApiError, LANGUAGES, submitSolution, type Language, type Problem, type SubmitResult, type User } from '../api'
 import { useAuth } from '../auth'
 import { play } from '../sound'
 import { useTheme } from '../theme'
@@ -10,6 +10,7 @@ import { LANGUAGE_LABELS, STARTER_CODE } from '../starters'
 import Content from './Content'
 import { CellLoader } from './Loading'
 import { TextWithCode } from './LessonBody'
+import ResendVerification from './ResendVerification'
 import SubmitResultPanel from './SubmitResultPanel'
 
 // A description line that is only one of these labels is shown as a small heading (display only;
@@ -39,6 +40,17 @@ export default function ProblemSolver({
   const [result, setResult] = useState<SubmitResult | null>(null)
   // Counts results, so the result panel can replay its pass moment for each new one.
   const [attempt, setAttempt] = useState(0)
+  // Submitting needs a verified email. The server's 403 email_unverified also shows the
+  // explanation, for the user object it was refused with (it may be out of date here; the refreshed
+  // one decides from then on). The code stays in the editor either way.
+  const [refusedUser, setRefusedUser] = useState<User | null>(null)
+  const unverified = Boolean(user && (!user.email_verified || refusedUser === user))
+  const unverifiedRef = useRef<HTMLDivElement>(null)
+
+  // The Submit button just went away under the user's focus: move it to the explanation.
+  useEffect(() => {
+    if (refusedUser) unverifiedRef.current?.focus()
+  }, [refusedUser])
 
   const languageId = `language-${problem.id}`
   const hintId = `editor-hint-${problem.id}`
@@ -58,7 +70,10 @@ export default function ProblemSolver({
         onPassed?.(submitted)
       }
     } catch (err) {
-      if (err instanceof ApiError && err.status === 422) {
+      if (err instanceof ApiError && err.emailUnverified) {
+        setRefusedUser(user)
+        refreshUser().catch(() => {})
+      } else if (err instanceof ApiError && err.status === 422) {
         setError(Object.values(err.fieldErrors).flat().join(' ') || err.message)
       } else {
         setError(err instanceof ApiError ? err.message : t('common.genericError'))
@@ -173,7 +188,12 @@ export default function ProblemSolver({
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         {/* Nothing while /me is still loading at startup, so a logged-in user never sees "Log in". */}
-        {loading ? null : user ? (
+        {loading ? null : unverified ? (
+          <div ref={unverifiedRef} tabIndex={-1} className="max-w-prose rounded-lg border border-line bg-accent-soft px-3 py-2 text-sm text-ink">
+            <p>{t('verify.submitBlocked')}</p>
+            <ResendVerification />
+          </div>
+        ) : user ? (
           <button
             type="button"
             onClick={handleSubmit}

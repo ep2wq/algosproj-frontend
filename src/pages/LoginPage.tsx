@@ -88,6 +88,11 @@ export default function LoginPage() {
         autoComplete="current-password"
         errors={fieldErrors.password}
       />
+      <p className="-mt-2 text-sm">
+        <Link to="/forgot-password" className="inline-flex min-h-11 items-center rounded text-accent underline underline-offset-2 sm:pointer-fine:min-h-6">
+          {t('auth.forgotPassword')}
+        </Link>
+      </p>
       <div className="flex items-center gap-2">
         <input
           id="remember"

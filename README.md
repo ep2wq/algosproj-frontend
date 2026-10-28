@@ -336,9 +336,31 @@ default; the session then lasts 30 days instead of the idle timeout). Every pass
 "Show password" / "Hide password" text button after it (`aria-controls`; the input switches
 between password and text). Register shows the hint "At least 8 characters." under the password
 (`aria-describedby`, the backend rule is `min:8`). After a failed submit the focus moves to the
-first field the server marked invalid, and a submit is ignored while one is running. There is no "forgot password" link: it
-needs email, which the app does not send. Both forms have a required Terms of use / Privacy policy
+first field the server marked invalid, and a submit is ignored while one is running. Both forms have a required Terms of use / Privacy policy
 checkbox (a native input; its label is the `auth.acceptTerms` key).
+
+Email (backend README "Email"). These three pages are `noindex` and not prerendered:
+
+- `/forgot-password` (linked as "Forgot password?" under the login password): one email field
+  (`autocomplete="email"`). After a submit it always shows "If an account exists for that email,
+  we have sent a link." (the backend answers the same either way) and focuses it.
+- `/reset-password?token=...&email=...` (the link in the email): reads both once, then removes
+  them from the address bar with `history.replaceState`, and renders `<meta name="referrer"
+  content="no-referrer">`. New password + confirmation (`autocomplete="new-password"`, Show
+  password). Success: "Password changed" with a Log in link (the server ended every session, so a
+  logged-in browser is logged out here). A wrong, expired or used link: a message and "Request a new link".
+- `/verify-email?status=success|invalid` (where the verification link ends): the result, a Log in
+  or Go to challenges link, and Resend for a logged-in unverified user.
+
+`AuthForm` has `terms={false}` for the forgot and reset forms (no Terms checkbox). After register
+the user stays logged in and unverified. `VerifyEmailNotice` (in the header) is shown to a
+logged-in user with `email_verified: false`: a strip that overlays the page under the sticky header
+(nothing moves when `/me` answers), with "Resend email" (`ResendVerification`: one `role="status"`
+line, a 60 s wait shared by every Resend button, 429 handled) and a dismiss button that hides it
+until the next page load (nothing stored). Its height is added to `scroll-padding-top`
+(`--notice-h`). On a challenge, an unverified user sees the same explanation instead of Submit; a
+403 `reason: email_unverified` from submit shows it too (not a logout; the code stays in the
+editor). `api.ts`: `ApiError.emailUnverified`.
 
 On the lessons page each lesson row shows difficulty bars (the hardest problem of the lesson) and,
 when logged in, a solved check. Both come from the existing `GET /api/challenges` response
