@@ -474,6 +474,16 @@ footer :focus-visible,
   outline-color: var(--color-footer-accent);
 }
 
+/* Reading width of every max-w-prose text (lessons, problem statements, legal and info pages),
+   replacing Tailwind's 65ch. Plex letters are narrow for the width of its "0", so 65ch held about
+   85 characters per line in English and 95 in Arabic. Tailwind writes 65ch into the utility (no
+   theme value), and a same-named @utility is ignored, so this rule follows it in the same layer. */
+@layer utilities {
+  .max-w-prose {
+    max-width: 52ch;
+  }
+}
+
 /* The end edge of a sideways-scrolling drawing fades while more of it is hidden (useScrollCue).
    Drawings are always left to right; a row that follows the page (the landing tabs) fades on the
    left in Arabic. */
