@@ -68,6 +68,17 @@ function round(value: number) {
   return value < 1000 ? Math.round(value * 10) / 10 : value
 }
 
+// Above this the table shows "2.43 × 10¹⁸", so a row fits its narrow column; the exact count is
+// still there for screen readers.
+const EXACT_MAX = 9_999_999
+const SUPERSCRIPT = '⁰¹²³⁴⁵⁶⁷⁸⁹'
+
+function scientific(value: number) {
+  const [mantissa, exponent] = value.toExponential(2).split('e')
+  const power = [...String(Number(exponent))].map((digit) => SUPERSCRIPT[Number(digit)]).join('')
+  return `${mantissa} × 10${power}`
+}
+
 // One swatch per class (its dash), for the table.
 function Swatch({ dash }: { dash: string }) {
   return (
@@ -157,7 +168,8 @@ export default function GrowthChart() {
           <span>
             <TextWithCode text={t('landing.growth.n')} />
           </span>
-          <output htmlFor={`${id}-n`} className="font-mono text-lg text-ink tabular-nums">
+          {/* Room for two digits, so the label doesn't rewrap when n reaches 10. */}
+          <output htmlFor={`${id}-n`} className="min-w-[2ch] text-end font-mono text-lg text-ink tabular-nums">
             {n}
           </output>
         </label>
@@ -172,8 +184,9 @@ export default function GrowthChart() {
           onChange={(event) => setN(Number(event.target.value))}
           className="mt-2 h-11 w-full cursor-pointer accent-accent"
         />
-        {/* Scrolls inside itself only when it can't fit (very large text on a phone). */}
-        <div className="mt-4 overflow-x-auto">
+        {/* When the column is too narrow for name and value side by side (very large text on a
+            phone), each value goes under its name instead of scrolling. */}
+        <div className="@container mt-4">
           <table className="w-full text-sm">
             <caption className="mb-2 text-start text-muted">
               <TextWithCode text={t('landing.growth.tableCaption', { n })} />
@@ -185,19 +198,32 @@ export default function GrowthChart() {
               </tr>
             </thead>
             <tbody>
-              {CLASSES.map((c) => (
-                <tr key={c.label} className="border-t border-line">
-                  <th scope="row" className="py-1.5 text-start font-normal">
-                    <span dir="ltr" className="inline-flex items-center gap-2 font-mono">
-                      <Swatch dash={c.dash} />
-                      {c.label}
-                    </span>
-                  </th>
-                  <td className="py-1.5 text-end font-mono tabular-nums">
-                    <span dir="ltr">{formatNumber(round(c.f(n)), language)}</span>
-                  </td>
-                </tr>
-              ))}
+              {CLASSES.map((c) => {
+                const value = round(c.f(n))
+                return (
+                  <tr key={c.label} className="border-t border-line">
+                    <th scope="row" className="py-1.5 pe-4 text-start font-normal whitespace-nowrap @max-[15rem]:block @max-[15rem]:pe-0 @max-[15rem]:pb-0">
+                      <span dir="ltr" className="inline-flex items-center gap-2 font-mono">
+                        <Swatch dash={c.dash} />
+                        {c.label}
+                      </span>
+                    </th>
+                    {/* As wide as the longest value, "2.43 × 10¹⁸", so the column doesn't move with n. */}
+                    <td className="w-[11ch] py-1.5 text-end font-mono whitespace-nowrap tabular-nums @max-[15rem]:block @max-[15rem]:w-auto @max-[15rem]:pt-0">
+                      {value > EXACT_MAX ? (
+                        <>
+                          <span aria-hidden="true" dir="ltr">
+                            {scientific(value)}
+                          </span>
+                          <span className="sr-only">{formatNumber(value, language)}</span>
+                        </>
+                      ) : (
+                        <span dir="ltr">{formatNumber(value, language)}</span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

@@ -95,6 +95,9 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   `og:image` tags (README "Icons"); reading width 52ch (about 65 characters English, 75 Arabic); Arabic
   visitors get the static page laid out but hidden, not emptied (`index.html`); admin pages in one lazy
   chunk, preloaded for staff, Suspense in `Layout` (README "Admin area").
+- Growth chart table: counts up to 9,999,999 exact, above that "2.43 × 10¹⁸" with the exact number only for
+  screen readers; no inner scroll (value under the name when the column is narrow). Browser checks now also
+  assert no clipped inner scroll box (scrollWidth <= clientWidth), not only page-level overflow.
 - Open: no social links (no real URLs yet).
 - Decisions: oxlint. Lint/build pass. A 401 while `signedIn` (not login/register/logout), or a
   403 with `reason`, clears it; a 419 refreshes the CSRF cookie and retries once, a second 419 = ended; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
