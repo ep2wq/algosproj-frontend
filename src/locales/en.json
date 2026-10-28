@@ -40,7 +40,8 @@
     "noTopic": "No topic",
     "solved": "Solved",
     "notSolved": "Not solved",
-    "genericError": "Something went wrong. Try again."
+    "genericError": "Something went wrong. Try again.",
+    "codeSnippet": "Code snippet"
   },
   "difficulty": {
     "easy": "Easy",

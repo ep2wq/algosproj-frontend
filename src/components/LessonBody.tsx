@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { parseLessonText, splitInlineCode, splitTerms } from '../lessonText'
 import Content from './Content'
 
@@ -87,6 +88,7 @@ function Terms({ text }: { text: string }) {
 // React text node; the text is never treated as HTML. lang is the language of the text (see
 // Content); headings, paragraphs and lists follow its direction, code blocks are always LTR.
 export default function LessonBody({ text, lang }: { text: string; lang: string }) {
+  const { t } = useTranslation()
   return (
     <Content lang={lang} as="div" className="mt-4 max-w-prose leading-relaxed">
       {parseLessonText(text).map((block, index) => {
@@ -109,15 +111,18 @@ export default function LessonBody({ text, lang }: { text: string; lang: string 
             )
           case 'code':
             return (
-              // Focusable so keyboard users can scroll long lines sideways.
+              // Focusable so keyboard users can scroll long lines sideways, and a named region (a
+              // plain pre can't carry a name) like the scrolling visualizations. The name is in the
+              // page's language, so lang="en" is on the code only.
               <pre
                 key={index}
                 tabIndex={0}
                 dir="ltr"
-                lang="en"
+                role="region"
+                aria-label={t('common.codeSnippet')}
                 className="mt-4 overflow-x-auto rounded-lg border border-line bg-surface px-4 py-3 font-mono text-sm leading-normal"
               >
-                <code>{block.text}</code>
+                <code lang="en">{block.text}</code>
               </pre>
             )
           case 'paragraph':

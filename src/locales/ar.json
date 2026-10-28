@@ -48,7 +48,8 @@
     "noTopic": "بلا موضوع",
     "solved": "تم الحل",
     "notSolved": "لم يُحل بعد",
-    "genericError": "حدث خطأ ما. حاول مرة أخرى."
+    "genericError": "حدث خطأ ما. حاول مرة أخرى.",
+    "codeSnippet": "مقتطف كود"
   },
   "difficulty": {
     "easy": "سهل",
