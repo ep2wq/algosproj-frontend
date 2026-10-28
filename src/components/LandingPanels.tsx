@@ -7,6 +7,7 @@ import { formatNumber, formatPercent } from '../i18n'
 import Content from './Content'
 import EmptyState from './EmptyState'
 import { CheckIcon } from './Icons'
+import { boardName, boardPoints, boardRank, boardRow } from './leaderboardStyles'
 import { LoadingRegion, SkeletonLines } from './Loading'
 import { Progress } from './ui/progress'
 import { Skeleton } from './ui/skeleton'
@@ -366,6 +367,9 @@ export function ChallengesPanel({ challenges, failure, retry }: Data) {
   )
 }
 
+// Rows asked for, and rows in the loading skeleton, so a full list doesn't push the page down.
+const BOARD_LIMIT = 10
+
 export function LeaderboardPanel() {
   const { t, i18n } = useTranslation()
   const { user, loading } = useAuth()
@@ -380,7 +384,7 @@ export function LeaderboardPanel() {
   useEffect(() => {
     if (loading) return
     let active = true
-    getLeaderboard(10)
+    getLeaderboard(BOARD_LIMIT)
       .then((list) => {
         if (active) setEntries(list)
       })
@@ -408,30 +412,30 @@ export function LeaderboardPanel() {
   }
 
   if (failure !== null) return <LoadError failure={failure} fallback={t('leaderboard.loadFailed')} retry={retry} />
-  // The table with its real header and three rows.
+  // The table with its real header and a row for each one asked for.
   if (entries === null) {
     return (
       <div className="max-w-2xl">
         <LoadingRegion label={t('leaderboard.loading')}>
-          <div className="overflow-hidden rounded-lg border border-line bg-surface">
+          <div className="@container overflow-hidden rounded-lg border border-line bg-surface">
             <table className="w-full text-start">
               <thead className="border-b border-line text-sm text-muted">
-                <tr>
-                  <th className="w-16 px-4 py-2 font-medium">{t('leaderboard.rank')}</th>
-                  <th className="px-4 py-2 font-medium">{t('leaderboard.name')}</th>
-                  <th className="px-4 py-2 text-end font-medium">{t('leaderboard.points')}</th>
+                <tr className={boardRow}>
+                  <th className={`${boardRank} font-medium`}>{t('leaderboard.rank')}</th>
+                  <th className={`${boardName} font-medium`}>{t('leaderboard.name')}</th>
+                  <th className={`${boardPoints} font-medium`}>{t('leaderboard.points')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {[0, 1, 2].map((row) => (
-                  <tr key={row}>
-                    <td className="px-4 py-2">
+                {Array.from({ length: BOARD_LIMIT }, (_, row) => (
+                  <tr key={row} className={boardRow}>
+                    <td className={boardRank}>
                       <SkeletonLines lines={1} className="w-5" />
                     </td>
-                    <td className="px-4 py-2">
+                    <td className={boardName}>
                       <SkeletonLines lines={1} className={row % 2 ? 'w-28' : 'w-40'} />
                     </td>
-                    <td className="px-4 py-2">
+                    <td className={boardPoints}>
                       <SkeletonLines lines={1} className="ms-auto w-12" />
                     </td>
                   </tr>
@@ -452,18 +456,19 @@ export function LeaderboardPanel() {
       {entries.length === 0 ? (
         <EmptyState className="">{t('leaderboard.empty')}</EmptyState>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-line bg-surface">
+        // Clips only the row tints at the rounded corners; the table always fits (leaderboardStyles).
+        <div className="@container overflow-hidden rounded-lg border border-line bg-surface">
           <table className="w-full text-start">
             <caption className="sr-only">{t('landing.board.caption', { count: entries.length, value: formatNumber(entries.length, language) })}</caption>
             <thead className="border-b border-line text-sm text-muted">
-              <tr>
-                <th scope="col" className="w-16 px-4 py-2 font-medium">
+              <tr className={boardRow}>
+                <th scope="col" className={`${boardRank} font-medium`}>
                   {t('leaderboard.rank')}
                 </th>
-                <th scope="col" className="px-4 py-2 font-medium">
+                <th scope="col" className={`${boardName} font-medium`}>
                   {t('leaderboard.name')}
                 </th>
-                <th scope="col" className="px-4 py-2 text-end font-medium">
+                <th scope="col" className={`${boardPoints} font-medium`}>
                   {t('leaderboard.points')}
                 </th>
               </tr>
@@ -472,15 +477,17 @@ export function LeaderboardPanel() {
               {entries.map((entry, index) => {
                 const isMe = user !== null && entry.is_you
                 return (
-                  <tr key={index} className={isMe ? 'bg-accent-soft' : undefined} aria-current={isMe ? 'true' : undefined}>
-                    <td className="px-4 py-2 text-muted tabular-nums">{formatNumber(entry.rank, language)}</td>
-                    <td className="px-4 py-2">
-                      <span dir="auto" className="break-words">
-                        {entry.name}
-                      </span>
-                      {isMe && <span className="ms-2 text-sm font-medium text-accent">{t('leaderboard.you')}</span>}
+                  <tr
+                    key={index}
+                    className={isMe ? `${boardRow} bg-accent-soft` : boardRow}
+                    aria-current={isMe ? 'true' : undefined}
+                  >
+                    <td className={`${boardRank} text-muted`}>{formatNumber(entry.rank, language)}</td>
+                    <td className={boardName}>
+                      <span dir="auto">{entry.name}</span>
+                      {isMe && <span className="ms-2 text-sm font-medium whitespace-nowrap text-accent">{t('leaderboard.you')}</span>}
                     </td>
-                    <td className="px-4 py-2 text-end tabular-nums">{formatNumber(entry.points, language)}</td>
+                    <td className={boardPoints}>{formatNumber(entry.points, language)}</td>
                   </tr>
                 )
               })}
