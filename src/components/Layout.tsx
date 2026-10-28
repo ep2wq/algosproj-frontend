@@ -1,9 +1,10 @@
 import { DirectionProvider } from '@base-ui/react/direction-provider'
-import { useEffect, useId, useRef, useState } from 'react'
+import { Suspense, useEffect, useId, useRef, useState } from 'react'
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth'
 import { skipLink } from './buttonStyles'
+import { CellLoader } from './Loading'
 import { setLanguage } from '../i18n'
 import { CONTACT_EMAIL, COPYRIGHT_YEAR, PRODUCT_NAME } from '../site'
 import { setSoundOn, useSoundOn } from '../sound'
@@ -346,7 +347,12 @@ export default function Layout() {
         {/* Base UI (src/components/ui) reads the direction from here, not from dir: arrow keys follow
             the reading order. */}
         <DirectionProvider direction={i18n.dir()}>
-          <Outlet context={skipSlot} />
+          {/* The admin pages (one lazy chunk, src/App.tsx) wait here. This boundary stays mounted,
+              so a link to them keeps the current page on screen until the code is ready (the router
+              navigates in a transition); only a direct load shows the loader. */}
+          <Suspense fallback={<CellLoader label={t('admin.common.loading')} className="min-h-screen items-start pt-20" />}>
+            <Outlet context={skipSlot} />
+          </Suspense>
         </DirectionProvider>
       </main>
       <Footer />

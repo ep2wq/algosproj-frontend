@@ -1,18 +1,11 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Route, Routes } from 'react-router-dom'
+import { useAuth } from './auth'
 import AdminRoute from './components/AdminRoute'
 import Layout from './components/Layout'
 import { CellLoader } from './components/Loading'
 import OwnerRoute from './components/OwnerRoute'
-import AdminActivityPage from './pages/admin/AdminActivityPage'
-import AdminAuditLogPage from './pages/admin/AdminAuditLogPage'
-import AdminContentPage from './pages/admin/AdminContentPage'
-import AdminLessonPage from './pages/admin/AdminLessonPage'
-import AdminModulePage from './pages/admin/AdminModulePage'
-import AdminProblemPage from './pages/admin/AdminProblemPage'
-import AdminUserPage from './pages/admin/AdminUserPage'
-import AdminUsersPage from './pages/admin/AdminUsersPage'
 import AboutPage from './pages/AboutPage'
 import ChallengesPage from './pages/ChallengesPage'
 import ContactPage from './pages/ContactPage'
@@ -28,9 +21,28 @@ import RegisterPage from './pages/RegisterPage'
 // Lazy, so the Monaco editor isn't part of the first bundle.
 const LessonPage = lazy(() => import('./pages/LessonPage'))
 const ChallengePage = lazy(() => import('./pages/ChallengePage'))
+// The admin pages, one chunk for all of them, only ever fetched for admins and owners.
+const admin = () => import('./pages/admin')
+const AdminActivityPage = lazy(() => admin().then((m) => ({ default: m.AdminActivityPage })))
+const AdminAuditLogPage = lazy(() => admin().then((m) => ({ default: m.AdminAuditLogPage })))
+const AdminContentPage = lazy(() => admin().then((m) => ({ default: m.AdminContentPage })))
+const AdminLessonPage = lazy(() => admin().then((m) => ({ default: m.AdminLessonPage })))
+const AdminModulePage = lazy(() => admin().then((m) => ({ default: m.AdminModulePage })))
+const AdminProblemPage = lazy(() => admin().then((m) => ({ default: m.AdminProblemPage })))
+const AdminUserPage = lazy(() => admin().then((m) => ({ default: m.AdminUserPage })))
+const AdminUsersPage = lazy(() => admin().then((m) => ({ default: m.AdminUsersPage })))
 
 function App() {
   const { t } = useTranslation()
+  const { user } = useAuth()
+  const staff = user?.role === 'admin' || user?.role === 'owner'
+
+  // Staff only: fetch the admin chunk in the background, so the first admin page opens without a
+  // loader. A failure here is ignored; opening an admin page loads it again.
+  useEffect(() => {
+    if (staff) admin().catch(() => {})
+  }, [staff])
+
   return (
     <Routes>
       <Route element={<Layout />}>
