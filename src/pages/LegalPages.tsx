@@ -20,8 +20,8 @@ const RELATED: Record<Name, Name[]> = {
 }
 
 // Every cookie and browser storage key the site uses. All are strictly necessary or a setting the
-// visitor chose, so there is no consent banner.
-const STORAGE = ['session', 'xsrf', 'remember', 'lang', 'theme', 'sound']
+// visitor chose, so the cookie notice (CookieNotice.tsx) only informs and asks for no consent.
+const STORAGE = ['session', 'xsrf', 'remember', 'lang', 'theme', 'sound', 'cookieNotice']
 
 function LegalPage({ name }: { name: Name }) {
   const { t, i18n } = useTranslation()

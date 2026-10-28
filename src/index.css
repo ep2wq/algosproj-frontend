@@ -458,9 +458,12 @@ body {
 }
 
 /* Anything reached by keyboard or a link lands below the sticky header (2 rows on a phone) and
-   the verify-email notice under it, when shown (--notice-h, VerifyEmailNotice.tsx). */
+   the verify-email notice under it, when shown (--notice-h, VerifyEmailNotice.tsx), and above the
+   cookie notice at the bottom, when shown (--cookie-h, CookieNotice.tsx; the footer gets the same
+   bottom padding). */
 html {
   scroll-padding-top: calc(7.5rem + var(--notice-h, 0px));
+  scroll-padding-bottom: var(--cookie-h, 0px);
 }
 
 @media (min-width: 40rem) {

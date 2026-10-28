@@ -56,8 +56,8 @@ Put these in `.env` (copy `.env.example`; `.env` is not committed):
   trailing slash. Only for production builds: canonical links, `og:url`, `og:image` and `sitemap.xml`
   need it and are left out without it. Baked in at build time like `VITE_API_URL`.
 
-Only the theme choice (`theme`), the language choice (`lang`) and the sound choice (`sound`)
-are stored in `localStorage`, every read and write in `try`/`catch`. The login is an HttpOnly
+Only the theme choice (`theme`), the language choice (`lang`), the sound choice (`sound`) and the
+closed cookie notice (`cookie-notice`, value `LEGAL_UPDATED`) are stored in `localStorage`, every read and write in `try`/`catch`. The login is an HttpOnly
 session cookie that JavaScript never sees; a leftover `token` key from the old token login is
 removed once at startup. With storage blocked the app still loads in the dark theme and follows the browser
 language, with sound off; the toggles still switch the current page view. No choice is sent to
@@ -394,7 +394,9 @@ header and footer measurements are in `../docs/ui-public-pages.md` (outside this
 - **Rename the product:** edit `PRODUCT_NAME` in `src/site.ts`. Strings use `{{product}}` and
   `index.html` gets it at build time.
 - **Contact address:** `CONTACT_EMAIL` in `src/site.ts` (`contact@algoslab.sa`); the mailbox or
-  forwarding must exist before launch. Strings use `{{email}}`. `LEGAL_UPDATED` is the date of the legal texts.
+  forwarding must exist before launch. Strings use `{{email}}`. `LEGAL_UPDATED` is the date of the legal texts. The cookie notice (`CookieNotice.tsx`, fixed at the
+  bottom of every page, not in the static HTML) only informs; "Got it" stores `LEGAL_UPDATED` under
+  `cookie-notice`, so it shows again when the date changes, and on every visit when storage is blocked.
 - **Page tags:** every public page renders `PageMeta` (`src/components/PageMeta.tsx`): title,
   description, canonical, Open Graph and Twitter tags. Canonical, `og:url` and the share image need
   `VITE_SITE_URL`; with it the Twitter card is `summary_large_image`, without it `summary`.

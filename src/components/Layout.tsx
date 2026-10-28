@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth'
 import { skipLink } from './buttonStyles'
 import { CellLoader } from './Loading'
+import CookieNotice from './CookieNotice'
 import VerifyEmailNotice from './VerifyEmailNotice'
 import { setLanguage } from '../i18n'
 import { CONTACT_EMAIL, COPYRIGHT_YEAR, PRODUCT_NAME } from '../site'
@@ -358,6 +359,7 @@ export default function Layout() {
         </DirectionProvider>
       </main>
       <Footer />
+      <CookieNotice />
     </div>
   )
 }
@@ -380,7 +382,7 @@ function Footer() {
     'inline-flex min-h-11 min-w-11 items-center rounded underline-offset-4 decoration-footer-accent hover:text-footer-accent hover:underline lg:pointer-fine:min-h-7 lg:pointer-fine:min-w-0'
 
   return (
-    <footer className="border-t border-footer-line bg-footer font-mono text-xs text-footer-muted">
+    <footer className="border-t border-footer-line bg-footer pb-(--cookie-h) font-mono text-xs text-footer-muted">
       <div className="mx-auto grid max-w-5xl gap-x-8 gap-y-6 px-4 pt-8 pb-2 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
         {/* relative: painted above the nav, whose subgrid also covers this cell from sm to lg. */}
         <div className="relative sm:col-start-1 sm:row-start-1">

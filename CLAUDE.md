@@ -35,7 +35,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - `npm run build` also prerenders the public pages (`src/prerender.ts` `ROUTES`, `scripts/prerender.mjs`,
   writes `dist-ssr/`, `dist/*.html`, `robots.txt`, `sitemap.xml`). No hydration. A new public page
   needs its path in `ROUTES`. The build fails on a React client-render marker or build path in the output.
-- Only `theme`, `lang`, `sound` in `localStorage` (try/catch); login is an HttpOnly session cookie
+- Only `theme`, `lang`, `sound`, `cookie-notice` in `localStorage` (try/catch); login is an HttpOnly session cookie
   (`credentials: 'include'`, `X-XSRF-TOKEN`). No `dangerouslySetInnerHTML`.
 - Sound (README "Sound"): `src/sound.ts`, off by default, one AudioContext made only in a user gesture, tune the constants block at the top; never the only signal.
 - Themes (README "Themes"): dark by default (no OS following), toggle, `src/theme.ts` + inline
@@ -95,6 +95,9 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   password?" on login; `VerifyEmailNotice` overlays under the header for unverified users (no layout
   shift); submit is replaced by the explanation for them. `user.email_verified` (boolean) from the API; a 403
   `reason: email_unverified` is not a logout (`ApiError.emailUnverified`). Privacy text names Resend.
+- Done: cookie notice (`CookieNotice.tsx`, in `Layout`): informational, "Got it" only, fixed at the bottom, shown after the
+  first paint (not prerendered); "Got it" stores `LEGAL_UPDATED` under `cookie-notice` (listed on /cookies), so changing
+  `LEGAL_UPDATED` (always together with the backend's `terms_version`) shows it again. `--cookie-h` pads the footer and scroll-padding-bottom.
 - The landing code sample is only the search loop (`codeSamples.ts`), never a whole graded solution.
 - Done (polish): AlgosLab favicon (`favicon.svg`, `.ico`, apple touch icon) and share image `og.png` with
   `og:image` tags (README "Icons"); reading width 52ch (about 65 characters English, 75 Arabic); Arabic
