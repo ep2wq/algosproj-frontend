@@ -36,9 +36,9 @@
         }
         root.lang = lang
         root.dir = lang === 'ar' ? 'rtl' : 'ltr'
-        // Arabic: the static HTML is English, so keep it from being laid out until the script
-        // below has emptied it (no flash of the English page). No font preload: the web fonts load
-        // after the app (src/fonts.css).
+        // Arabic: the static HTML is English, so keep it from showing until the script below has
+        // hidden it (no flash of the English page). No font preload: the web fonts load after the
+        // app (src/fonts.css), and the first Arabic paint does not wait for them.
         if (lang !== 'en') {
           var hide = document.createElement('style')
           hide.id = 'hide-static'
@@ -52,12 +52,15 @@
     <div id="root"></div>
     <script>
       // A prerendered page's static HTML (scripts/prerender.mjs) is English and for one address.
-      // The same index.html is served for every unknown address, and Arabic visitors get Arabic:
-      // in those cases empty it now, so the wrong page or language never shows before the app.
+      // The same index.html is served for every unknown address: there, empty it now, so the wrong
+      // page never shows before the app. Arabic visitors get Arabic: their English page stays laid
+      // out but invisible until the app replaces it, so the browser's first layout of the page (a
+      // few hundred ms on a slow phone) runs while the script downloads, not before the first paint.
       try {
         var page = document.getElementById('root')
         var path = location.pathname.replace(/\/+$/, '') || '/'
-        if (page.getAttribute('data-prerendered') !== path || document.documentElement.lang !== 'en') page.textContent = ''
+        if (page.getAttribute('data-prerendered') !== path) page.textContent = ''
+        else if (document.documentElement.lang !== 'en') for (var child = page.firstElementChild; child; child = child.nextElementSibling) child.style.visibility = 'hidden'
         var hidden = document.getElementById('hide-static')
         if (hidden) hidden.remove()
       } catch (e) {}
