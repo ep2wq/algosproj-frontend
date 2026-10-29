@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api'
@@ -20,6 +20,10 @@ function BanMessage({ reason }: { reason: string }) {
   )
 }
 
+// Where a Google or GitHub sign-in that did not log in sends the browser: /login?error=<code>
+// (backend README "Social login").
+const SOCIAL_ERRORS = ['social_cancelled', 'social_failed', 'social_email_unverified', 'social_email_exists', 'social_banned']
+
 export default function LoginPage() {
   const { t } = useTranslation()
   const { login } = useAuth()
@@ -36,10 +40,20 @@ export default function LoginPage() {
   const sessionEnded = state?.sessionEnded === true
   const [error, setError] = useState<ReactNode>(stateBanReason === undefined ? '' : <BanMessage reason={stateBanReason} />)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
+  // Read once; the code then leaves the address bar, so a reload or a shared link does not show it again.
+  const [socialError, setSocialError] = useState(() => {
+    const code = new URLSearchParams(location.search).get('error')
+    return code !== null && SOCIAL_ERRORS.includes(code) ? code : null
+  })
+
+  useEffect(() => {
+    if (location.search) navigate({ search: '' }, { replace: true, state: location.state })
+  }, [location.search, location.state, navigate])
 
   async function handleSubmit() {
     setBusy(true)
     setError('')
+    setSocialError(null)
     setFieldErrors({})
     try {
       await login(email, password, remember)
@@ -62,8 +76,9 @@ export default function LoginPage() {
       submitLabel={t('auth.logIn')}
       busyLabel={t('auth.loggingIn')}
       busy={busy}
-      error={error}
+      error={error || (socialError !== null && t(`auth.socialErrors.${socialError}`))}
       onSubmit={handleSubmit}
+      social
       footer={
         <>
           {t('auth.noAccount')}{' '}

@@ -7,6 +7,7 @@ import Layout from './components/Layout'
 import { CellLoader } from './components/Loading'
 import OwnerRoute from './components/OwnerRoute'
 import AboutPage from './pages/AboutPage'
+import AuthCompletePage from './pages/AuthCompletePage'
 import ChallengesPage from './pages/ChallengesPage'
 import ContactPage from './pages/ContactPage'
 import FaqPage from './pages/FaqPage'
@@ -82,6 +83,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/auth/complete" element={<AuthCompletePage />} />
         {/* Admins only; everyone else sees the not-found page. The backend enforces the role. */}
         <Route path="/admin" element={<AdminRoute />}>
           <Route index element={<AdminContentPage />} />

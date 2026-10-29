@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'rea
 import { flushSync } from 'react-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import { Label } from '@/components/ui/label'
+import SocialSignIn from './SocialSignIn'
 
 type AuthFormProps = {
   title: string
@@ -16,6 +17,8 @@ type AuthFormProps = {
   termsErrors?: string[]
   // The Terms and Privacy box, on by default (login, register). The password reset forms leave it out.
   terms?: boolean
+  // "Continue with Google / GitHub" under the form (login, register); gated by the Terms box too.
+  social?: boolean
 }
 
 // Opens in a new tab, so a half-filled form is not lost; screen readers are told.
@@ -30,7 +33,7 @@ function NewTabLink({ href, children }: { href: string; children?: ReactNode }) 
 }
 
 // Shared frame for the login, register, forgot password and reset password pages.
-export default function AuthForm({ title, submitLabel, busyLabel, busy, error, onSubmit, footer, children, termsErrors, terms = true }: AuthFormProps) {
+export default function AuthForm({ title, submitLabel, busyLabel, busy, error, onSubmit, footer, children, termsErrors, terms = true, social = false }: AuthFormProps) {
   const { t } = useTranslation()
   const formRef = useRef<HTMLFormElement>(null)
   const termsRef = useRef<HTMLInputElement>(null)
@@ -45,14 +48,18 @@ export default function AuthForm({ title, submitLabel, busyLabel, busy, error, o
     if (!busy) formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
   }, [busy])
 
+  // Nothing is sent, and no sign-in starts, until the box is checked. The error is rendered before
+  // the focus moves, so the box is read out with it.
+  function refuseWithoutTerms() {
+    flushSync(() => setTermsMissing(true))
+    termsRef.current?.focus()
+  }
+
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     if (busy) return
-    // Nothing is sent until the box is checked. The error is rendered before the focus moves, so
-    // the box is read out with it.
     if (terms && !accepted) {
-      flushSync(() => setTermsMissing(true))
-      termsRef.current?.focus()
+      refuseWithoutTerms()
       return
     }
     onSubmit()
@@ -111,6 +118,7 @@ export default function AuthForm({ title, submitLabel, busyLabel, busy, error, o
           {busy ? busyLabel : submitLabel}
         </button>
       </form>
+      {social && <SocialSignIn accepted={accepted} onRefused={refuseWithoutTerms} />}
       <p className="mt-4 text-sm text-muted">{footer}</p>
     </div>
   )

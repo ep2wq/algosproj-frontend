@@ -9,6 +9,8 @@ type AuthContextValue = {
   loading: boolean
   login: (email: string, password: string, remember: boolean) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
+  // Finishes a Google or GitHub sign-up (/auth/complete).
+  completeSignIn: (name: string) => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
 }
@@ -54,6 +56,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(result.user)
   }, [])
 
+  const completeSignIn = useCallback(async (name: string) => {
+    const result = await api.completeSignIn(name)
+    setUser(result.user)
+  }, [])
+
   const logout = useCallback(async () => {
     try {
       await api.logout()
@@ -68,8 +75,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo(
-    () => ({ user, loading, login, register, logout, refreshUser }),
-    [user, loading, login, register, logout, refreshUser],
+    () => ({ user, loading, login, register, completeSignIn, logout, refreshUser }),
+    [user, loading, login, register, completeSignIn, logout, refreshUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -20,6 +20,13 @@
   --color-warn: #9a3412;
   --color-inverse: #ffffff;
 
+  /* The Google and GitHub sign-in buttons (SocialSignIn.tsx): the fill, 1 px border and text that
+     Google's branding guidelines require around its "G", light here and dark in .dark. Border on the
+     paper 4.33:1 light, 6.02:1 dark; text 16.48:1 and 14.47:1. */
+  --color-social: #ffffff;
+  --color-social-line: #747775;
+  --color-social-ink: #1f1f1f;
+
   /* The footer is dark in both themes (.dark does not swap these). On footer (#070a11): ink 18.93,
      muted 7.72, accent 7.81 (text and focus ring); line 1.35 is the decorative top edge. The light
      theme's accent is only 3.61 there, so footer states use footer-accent. */
@@ -259,6 +266,9 @@
   --color-fail: #f87171;
   --color-warn: #fdba74;
   --color-inverse: #020617;
+  --color-social: #131314;
+  --color-social-line: #8e918f;
+  --color-social-ink: #e3e3e3;
   --float-shadow: 0 8px 24px -6px rgb(0 0 0 / 0.5), 0 2px 6px -2px rgb(0 0 0 / 0.4);
 }
 

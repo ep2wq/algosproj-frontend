@@ -313,7 +313,7 @@ Visualizations are translated too; their drawings stay left to right.
 
 - `/` the landing page with Lessons, Challenges and Leaderboard tabs (see "Public pages"),
   `/lessons` lessons grouped by track, `/lessons/:slug` lesson with editor and submit,
-  `/login`, `/register`, `/leaderboard`, `/admin/*` (admins and owners, see "Admin area").
+  `/login`, `/register`, `/auth/complete`, `/leaderboard`, `/admin/*` (admins and owners, see "Admin area").
   Public pages: `/about`, `/faq`, `/contact`, `/terms`, `/privacy`, `/cookies`.
   Every other path, unknown `/admin` paths too, shows "Page not found" (a binary search over
   HTTP status codes that does not find 404, then the plain message).
@@ -338,6 +338,26 @@ between password and text). Register shows the hint "At least 8 characters." und
 (`aria-describedby`, the backend rule is `min:8`). After a failed submit the focus moves to the
 first field the server marked invalid, and a submit is ignored while one is running. Both forms have a required Terms of use / Privacy policy
 checkbox (a native input; its label is the `auth.acceptTerms` key).
+
+Google and GitHub sign-in (backend README "Social login"). Under both forms, after an "or" divider,
+`SocialSignIn` shows "Continue with Google" and "Continue with GitHub": real links to
+`${VITE_API_URL}/auth/{provider}/redirect` (a full page visit, no fetch). They only work once the
+Terms box is checked; unchecked, the click goes nowhere, the box shows its error and gets focus, like
+Submit. Both buttons use Google's button colours (`--color-social`, `--color-social-line`,
+`--color-social-ink` in `index.css`, light and dark) so neither stands out. The marks are official:
+Google's "G" (`src/assets/google-g.svg`, from Google's Sign in with Google branding assets, cut to the
+logo) and the Octicons `mark-github` 24 (MIT) inline; both scale with the text. The API sends errors
+back as `/login?error=<code>` (`social_cancelled`, `social_failed`, `social_email_unverified`,
+`social_email_exists`, `social_banned`; `auth.socialErrors.*`): login shows the message once as the
+form's alert and removes the query. An unknown code shows nothing.
+
+`/auth/complete` (`AuthCompletePage`, noindex, not prerendered): a new Google or GitHub user lands
+here. It loads `GET /api/auth/pending` (a skeleton shaped like the form; 404: "Your sign-in expired"
+with a Log in link; other errors: the message and Try again), then shows the provider, the email
+(read-only), the name (prefilled, editable) and the Terms box. Submit calls
+`POST /api/auth/complete` (`completeSignIn` in `auth.tsx`): 422 shows the field errors, 410 shows
+the expired message and focuses it, success goes home logged in. The email and any token never
+appear in the address bar.
 
 Email (backend README "Email"). These three pages are `noindex` and not prerendered:
 

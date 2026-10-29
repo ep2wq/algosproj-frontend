@@ -417,6 +417,34 @@ export async function login(email: string, password: string, remember: boolean) 
   return result
 }
 
+// Google and GitHub sign-in (backend README "Social login"). The button is a link to the API, a
+// full page visit: the API sends the browser to the provider and back, then to "/" (logged in),
+// "/auth/complete" (a new account) or "/login?error=...".
+export type SocialProvider = 'google' | 'github'
+
+export const SOCIAL_PROVIDER_NAMES: Record<SocialProvider, string> = { google: 'Google', github: 'GitHub' }
+
+export function socialSignInUrl(provider: SocialProvider) {
+  return `${BASE_URL}/auth/${provider}/redirect`
+}
+
+// The verified sign-in of a new email, kept in the session until the account is made (404 when
+// there is none or it expired).
+export type PendingSignIn = { name: string; email: string; provider: SocialProvider }
+
+export function getPendingSignIn() {
+  return request<PendingSignIn>('GET', '/auth/pending')
+}
+
+// Creates the account like register (only once the Terms box is checked); 410 when the pending
+// sign-in is gone.
+export async function completeSignIn(name: string) {
+  await refreshCsrfCookie()
+  const result = await request<AuthResponse>('POST', '/auth/complete', { name, accepted_terms: true })
+  signedIn = true
+  return result
+}
+
 export async function logout() {
   signedIn = false
   return request<{ message: string }>('POST', '/logout')

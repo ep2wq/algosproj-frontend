@@ -45,6 +45,7 @@ export default function RegisterPage() {
       error={error}
       onSubmit={handleSubmit}
       termsErrors={fieldErrors.accepted_terms}
+      social
       footer={
         <>
           {t('auth.haveAccount')}{' '}

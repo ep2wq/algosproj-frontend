@@ -95,6 +95,10 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   password?" on login; `VerifyEmailNotice` overlays under the header for unverified users (no layout
   shift); submit is replaced by the explanation for them. `user.email_verified` (boolean) from the API; a 403
   `reason: email_unverified` is not a logout (`ApiError.emailUnverified`). Privacy text names Resend.
+- Done: Google and GitHub sign-in (README "Pages"): `SocialSignIn` under login and register (links to
+  the API, gated by the Terms box), `/login?error=` codes shown once then removed, `/auth/complete`
+  (noindex, not prerendered) for new users. Tokens `--color-social*` (Google's button colours). The
+  privacy and cookies texts describe it (drafts for legal review). Owner must test a real login after deploy.
 - Done: cookie notice (`CookieNotice.tsx`, in `Layout`): informational, "Got it" only, fixed at the bottom, shown after the
   first paint (not prerendered); "Got it" stores `LEGAL_UPDATED` under `cookie-notice` (listed on /cookies), so changing
   `LEGAL_UPDATED` (always together with the backend's `terms_version`) shows it again. `--cookie-h` pads the footer and scroll-padding-bottom.
