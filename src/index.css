@@ -7,14 +7,16 @@
    themes without a dark: class. Every pair used for text is at least 4.5:1, borders of inputs
    (field) and meaningful shapes at least 3:1, in both themes (README "Themes"). */
 @theme {
-  --color-paper: #f8fafc;
+  /* Light: a cool gray paper, so white surfaces (cards, header, inputs) stand on it. On the paper:
+     muted 6.34, field 3.98, accent 6.43; accent on surface 7.68, on accent-soft 6.78. */
+  --color-paper: #e8ebef;
   --color-surface: #ffffff;
   --color-ink: #0f172a;
   --color-muted: #475569;
-  --color-line: #e2e8f0;
+  --color-line: #d4d9e0;
   --color-field: #64748b;
-  --color-accent: #047857;
-  --color-accent-soft: #ecfdf5;
+  --color-accent: #065f46;
+  --color-accent-soft: #d1fae5;
   --color-pass: #3f6212;
   --color-fail: #be123c;
   --color-warn: #9a3412;
@@ -22,19 +24,23 @@
 
   /* The Google and GitHub sign-in buttons (SocialSignIn.tsx): the fill, 1 px border and text that
      Google's branding guidelines require around its "G", light here and dark in .dark. Border on the
-     paper 4.33:1 light, 6.02:1 dark; text 16.48:1 and 14.47:1. */
+     paper 3.79:1 light, 6.02:1 dark; text 16.48:1 and 14.47:1. */
   --color-social: #ffffff;
   --color-social-line: #747775;
   --color-social-ink: #1f1f1f;
 
-  /* The footer is dark in both themes (.dark does not swap these). On footer (#070a11): ink 18.93,
-     muted 7.72, accent 7.81 (text and focus ring); line 1.35 is the decorative top edge. The light
-     theme's accent is only 3.61 there, so footer states use footer-accent. */
+  /* The landing CTA banner is dark in both themes (.dark does not swap these). On footer (#070a11):
+     ink 18.93, muted 7.72, accent 7.81 (text and focus ring). */
   --color-footer: #070a11;
   --color-footer-line: #1e293b;
   --color-footer-ink: #f8fafc;
   --color-footer-muted: #94a3b8;
   --color-footer-accent: #10b981;
+
+  /* The site footer follows the theme (.dark swaps these): its background and top edge. Text is ink
+     and muted; light: ink 13.85, muted 5.88, accent focus ring 5.96; dark: as the banner above. */
+  --color-foot: #dfe3e8;
+  --color-foot-line: #cdd2d9;
 
   /* Fonts (README "Languages"): IBM Plex Sans Arabic for all interface text, Latin and Arabic;
      JetBrains Mono for code and numbers set as data. Each is followed by its size-adjusted local
@@ -87,10 +93,14 @@
   --ring: var(--color-accent);
   --radius: 0.5rem;
 
-  /* The scrolled header (.site-header below): the surface at 92%. Measured with the worst content
-     behind it, pure black or white and no blur, every header text pair still passes 4.5:1 in both
-     themes (lowest: accent on the light glass over black, 4.6). */
-  --header-glass: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  /* The header (.site-header below): the surface at 85% (92% in .dark). Measured with the worst
+     content behind it, pure black or white and no blur, every header text pair still passes 4.5:1
+     (lowest: muted on the light glass over black, 5.37). Dark stays at 92%: at 85% muted and accent
+     over white drop to 4.44 and 4.49. */
+  --header-glass: color-mix(in srgb, var(--color-surface) 85%, transparent);
+
+  /* The dot grid behind the landing hero (dot-grid utility below). */
+  --dot-color: color-mix(in srgb, var(--color-ink) 12%, transparent);
 }
 
 @theme inline {
@@ -269,7 +279,11 @@
   --color-social: #131314;
   --color-social-line: #8e918f;
   --color-social-ink: #e3e3e3;
+  --color-foot: #070a11;
+  --color-foot-line: #1e293b;
   --float-shadow: 0 8px 24px -6px rgb(0 0 0 / 0.5), 0 2px 6px -2px rgb(0 0 0 / 0.4);
+  --header-glass: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  --dot-color: color-mix(in srgb, var(--color-ink) 6%, transparent);
 }
 
 body {
@@ -428,42 +442,31 @@ body {
   outline-offset: 2px;
 }
 
-/* The sticky header: part of the page at the top (paper, no edge); once the page has scrolled
-   (data-scrolled, set by one IntersectionObserver in Layout) frosted glass with a 1 px edge. The
+/* The sticky header: the surface at 85% with a line-coloured bottom edge; once the page has scrolled
+   (data-scrolled, set by one IntersectionObserver in Layout) it also blurs what passes under it. The
    blur is small and only here and nowhere large. Solid surface when the browser has no
-   backdrop-filter or the visitor asks for less transparency or more contrast; no fade under reduced
-   motion. */
+   backdrop-filter or the visitor asks for less transparency or more contrast. */
 .site-header {
-  background-color: var(--color-paper);
-  border-color: transparent;
+  background-color: var(--header-glass);
+  border-color: var(--color-line);
 }
 
 .site-header[data-scrolled] {
-  background-color: var(--header-glass);
-  border-color: var(--color-line);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .site-header[data-scrolled] {
+  .site-header {
     background-color: var(--color-surface);
   }
 }
 
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .site-header[data-scrolled] {
+  .site-header {
     background-color: var(--color-surface);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .site-header {
-    transition:
-      background-color 200ms var(--ease-calm),
-      border-color 200ms var(--ease-calm);
   }
 }
 
@@ -482,8 +485,7 @@ html {
   }
 }
 
-/* The footer and the dark landing banner keep the footer accent for the ring in both themes. */
-footer :focus-visible,
+/* The dark landing banner keeps the footer accent for the ring in both themes. */
 .on-dark :focus-visible {
   outline-color: var(--color-footer-accent);
 }
@@ -496,6 +498,31 @@ footer :focus-visible,
   .max-w-prose {
     max-width: 52ch;
   }
+}
+
+/* The one page width: header, main and footer share it, so all three line up. Reading text keeps
+   max-w-prose inside it. */
+@utility site-container {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 80rem;
+  padding-inline: 1rem;
+
+  @media (width >= 40rem) {
+    padding-inline: 1.5rem;
+  }
+
+  @media (width >= 64rem) {
+    padding-inline: 2rem;
+  }
+}
+
+/* A static dot grid that fades out toward the bottom: only behind the landing hero, never behind
+   code, the editor or long text. Quieter in dark mode (--dot-color). */
+@utility dot-grid {
+  background-image: radial-gradient(var(--dot-color) 1px, transparent 1.2px);
+  background-size: 18px 18px;
+  mask-image: radial-gradient(ellipse 80% 100% at 50% 0%, #000 35%, transparent 80%);
 }
 
 /* The end edge of a sideways-scrolling drawing fades while more of it is hidden (useScrollCue).

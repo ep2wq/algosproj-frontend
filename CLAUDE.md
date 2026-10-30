@@ -39,8 +39,11 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   (`credentials: 'include'`, `X-XSRF-TOKEN`). No `dangerouslySetInnerHTML`.
 - Sound (README "Sound"): `src/sound.ts`, off by default, one AudioContext made only in a user gesture, tune the constants block at the top; never the only signal.
 - Themes (README "Themes"): dark by default (no OS following), toggle, `src/theme.ts` + inline
-  script in `index.html`. Tokens in `src/index.css` (footer and CTA banner use the `footer-*` tokens,
-  dark in both themes), other colors need `dark:`. Text 4.5:1, borders/shapes 3:1, both themes.
+  script in `index.html`. Tokens in `src/index.css` (light paper is cool gray #e8ebef; the footer
+  follows the theme with `foot`/`foot-line`; only the landing CTA banner uses `footer-*`, dark in both
+  themes), other colors need `dark:`. Text 4.5:1, borders/shapes 3:1, both themes.
+- Layout width: `site-container` utility (max 80rem) shared by header, main and footer; `dot-grid`
+  utility only behind the landing hero.
 - Touch targets: 44 px on phones and touch screens; a smaller size only with `sm:pointer-fine:` (a
   phone on its side is still touch). Text fields and selects get 44 px from a base rule in `index.css`.
 - Restyle (docs/ui-restyle.md outside the repo): radius 4/8 px, shadow only on floating things
@@ -113,14 +116,18 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Leaderboard table (page and landing tab, `leaderboardStyles.ts`): no inner scroll; names wrap anywhere, rank
   and points fixed width ("1,234,567"); points under the name below 24rem of table width, one column below
   14rem (container queries); the skeleton has a row per row asked for (50 / 10). Lesson code blocks are named regions.
-- Open: no social links (no real URLs yet).
+- Done (not committed): wide layout, regrouped header, theme-following footer with Learning tracks,
+  grayer light mode with the hero dot grid, stacked hero with large cells (`SearchCells` `large`).
+- Open: no social links (no real URLs yet). The `scroll-fade` utility's `:dir(rtl)` is compiled to
+  `:lang(ar)` selectors, so a `dir="ltr"` drawing in Arabic fades on the left (seen before this change).
 - Decisions: oxlint. Lint/build pass. A 401 while `signedIn` (not login/register/logout), or a
   403 with `reason` (except `email_unverified`), clears it; a 419 refreshes the CSRF cookie and retries once, a second 419 = ended; `/login` shows "session ended" or the ban. "(you)" is `is_you`.
   `user.role` only hides links and pages; the backend enforces it. Code blocks tabIndex 0.
-  `SiteMenu` (`Layout.tsx`, replaced `AccountMenu`): a "More" disclosure at every width (About, FAQ,
-  Contact; below `lg` also name and Log out; below `sm` also Admin or Log in), not role="menu". Footer
-  on every page. Legal texts are drafts needing review; the `CONTACT_EMAIL` mailbox must exist before launch.
+  Header (`Layout.tsx`): nav + `SiteMenu` ("More": About, FAQ, Contact; below `md` the "Menu" button
+  with the main links too), settings pill (theme, sound from `lg`, language), then Log in/Register or
+  `AccountMenu` (initial, name from `lg`, points, chevron; panel: name · points, Admin for staff, Log
+  out). Both disclosures, not role="menu" (`useDisclosure`). Footer on every page. Legal texts are drafts needing review; the `CONTACT_EMAIL` mailbox must exist before launch.
 - Gotchas: Monaco loads from jsDelivr at runtime. Vite must run on port 5173 (CORS and the backend's `SANCTUM_STATEFUL_DOMAINS`); `VITE_API_URL` uses the same host name as the page. One-line
-  lint disables: `react/only-export-components` (auth.tsx), `react/static-components`.
+  lint disables: `react/only-export-components` (auth.tsx, SearchCells.tsx), `react/static-components`.
   The global `:focus-visible` rule at the end of `src/index.css` is outside any `@layer`, so it beats
   utilities like `focus:outline-none`; use the `!` suffix to override.

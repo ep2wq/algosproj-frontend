@@ -21,6 +21,11 @@ import { useScrollCue } from '../visuals/useScrollCue'
 // fallbacks keep the same height, so nothing below moves when they arrive.
 const HeroSearch = lazy(() => import('../visuals/AutoSearchVisual').then((m) => ({ default: m.HeroSearch })))
 
+// The tallest the hero visual gets at each width, over every step in English and Arabic (measured;
+// the step text wraps more on a small phone), shared by HeroSearch and its placeholder, so nothing
+// moves when it arrives.
+const HERO_HEIGHT = 'min-h-[25rem] min-[24rem]:min-h-[21.5rem] sm:min-h-[17.75rem] md:min-h-[18.5rem] lg:min-h-[19rem] xl:min-h-[21rem]'
+
 const TAB_IDS = ['lessons', 'challenges', 'leaderboard']
 
 // The three parts of a lesson, in order, with their icons.
@@ -112,19 +117,21 @@ export default function LandingPage() {
   const firstLesson = modules?.find((module) => module.lessons.length > 0)?.lessons[0]
 
   const data = { modules, challenges, failure, retry }
-  // The tallest the hero visual gets (phone; from sm), so nothing moves when it arrives.
-  const heroPlaceholder = <CellLoader className="h-[28.5rem] rounded-lg border border-line bg-surface sm:h-[23.25rem]" />
+  const heroPlaceholder = <CellLoader className={HERO_HEIGHT} />
 
   return (
     <div>
       <PageMeta title={t('landing.metaTitle')} description={t('landing.metaDescription')} path="/" />
 
-      <section aria-labelledby="landing-title" className="grid grid-cols-1 items-start gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,32rem)]">
-        <div className="lg:pt-6">
-          <h1 id="landing-title" className="max-w-xl text-4xl font-bold tracking-tight sm:text-5xl">
+      {/* Stacked: the words at a reading width, then the visual across the page. isolate: the dot grid
+          (index.css) sits behind this section only. */}
+      <section aria-labelledby="landing-title" className="relative isolate">
+        <div aria-hidden="true" className="dot-grid pointer-events-none absolute inset-x-0 -top-8 bottom-0 -z-10" />
+        <div className="max-w-3xl lg:pt-6">
+          <h1 id="landing-title" className="text-4xl font-bold tracking-tight sm:text-5xl">
             {t('landing.title')}
           </h1>
-          <p className="mt-5 max-w-xl text-lg text-ink">
+          <p className="mt-5 max-w-prose text-lg text-ink">
             <TextWithCode text={t('landing.intro')} />
           </p>
           {/* Hidden, not removed, while /me answers: no logged-out/logged-in swap and no jump. */}
@@ -161,10 +168,10 @@ export default function LandingPage() {
               : ' '}
           </p>
         </div>
-        <div>
+        <div className="mt-10 rounded-lg border border-line bg-surface p-4 md:p-6">
           {/* A fact from the app itself (the lessons that ship a visualization), the same in the
               static HTML: not a live figure. */}
-          <p className="mb-3 inline-flex items-center gap-2 rounded border border-line bg-surface px-2.5 py-1 text-xs text-muted">
+          <p className="inline-flex items-center gap-2 text-xs text-muted">
             <span aria-hidden="true" className="size-1.5 rounded-full bg-accent" />
             <span>
               <Trans
@@ -181,7 +188,7 @@ export default function LandingPage() {
             heroPlaceholder
           ) : (
             <Suspense fallback={heroPlaceholder}>
-              <HeroSearch />
+              <HeroSearch className={HERO_HEIGHT} />
             </Suspense>
           )}
         </div>

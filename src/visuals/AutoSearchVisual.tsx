@@ -23,24 +23,27 @@ function useAutoSearch(array: number[], target: number) {
 const HERO_ARRAY = [3, 8, 15, 21, 27, 34, 42, 56, 63, 78]
 const HERO_TARGET = 42
 
-// The landing page's first screen: the real binary search lesson, in miniature. One frame around
-// the whole thing, as tall as LandingPage's placeholder; where it comes from sits at the foot, as a
-// 44 px link.
-export function HeroSearch() {
+// The landing page's first screen: the real binary search lesson, in miniature, across the page.
+// LandingPage draws the card around it; className gives this part the height of LandingPage's
+// placeholder. Where it comes from sits at the foot, as a 44 px link.
+export function HeroSearch({ className }: { className: string }) {
   const { t } = useTranslation('visuals')
   const { playback, current } = useAutoSearch(HERO_ARRAY, HERO_TARGET)
 
   return (
-    <div className="flex min-h-[28.5rem] flex-col rounded-lg border border-line bg-surface p-4 sm:min-h-[23.25rem]">
+    <div className={`flex flex-col ${className}`}>
       <SearchCells
         frame={current}
+        large
+        framed={false}
+        className="mt-3"
         regionLabel={t('binarySearch.region')}
         imageLabel={t('binarySearch.label', { values: current.array.join(', '), target: HERO_TARGET })}
       />
-      <p className="mt-3 min-h-16 rounded-lg bg-accent-soft px-3 py-2 text-sm">
+      <p className="mt-3 min-h-16 rounded-lg bg-accent-soft px-3 py-2 text-sm md:text-base">
         <TextWithCode text={current.description} />
       </p>
-      <PlaybackControls playback={playback} />
+      <PlaybackControls playback={playback} wide />
       <p className="mt-auto pt-1 text-sm text-muted">
         <TextWithCode text={t('landingSearch.from')} />{' '}
         <Link to="/lessons/binary-search" className="inline-flex min-h-11 items-center rounded text-accent underline underline-offset-2">

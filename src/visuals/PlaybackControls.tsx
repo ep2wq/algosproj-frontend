@@ -31,8 +31,9 @@ export function SpeedSelect({ playback }: { playback: Playback }) {
   )
 }
 
-// Play/Pause, Step back, Step forward, Reset and "Step 3 of 9", shared by every visualization.
-export default function PlaybackControls({ playback }: { playback: Playback }) {
+// Play/Pause, Step back, Step forward, Reset and "Step 3 of 9", shared by every visualization. wide
+// (the landing hero): from md the progress track fills the rest of the row instead of its own row.
+export default function PlaybackControls({ playback, wide = false }: { playback: Playback; wide?: boolean }) {
   const { t } = useTranslation('visuals')
   const { step, lastStep, playing, togglePlay, goTo } = playback
   return (
@@ -56,7 +57,7 @@ export default function PlaybackControls({ playback }: { playback: Playback }) {
       </button>
       <span className="text-sm text-muted tabular-nums">{t('common.stepOf', { step: Math.min(step, lastStep) + 1, count: lastStep + 1 })}</span>
       {/* How far through the steps, in reading direction. "Step 3 of 9" says the same in words. */}
-      <div aria-hidden="true" className="h-1 basis-full overflow-hidden rounded-full bg-line">
+      <div aria-hidden="true" className={`h-1 basis-full overflow-hidden rounded-full bg-line ${wide ? 'md:ms-2 md:min-w-24 md:flex-1 md:basis-auto' : ''}`}>
         <div
           className="h-full origin-left rounded-full bg-accent motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-calm rtl:origin-right"
           style={{ transform: `scaleX(${lastStep > 0 ? Math.min(step, lastStep) / lastStep : 1})` }}

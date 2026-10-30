@@ -31,7 +31,7 @@ export default function VerifyEmailNotice() {
 
   return (
     <div ref={ref} className="absolute inset-x-0 top-full border-b border-line bg-accent-soft text-sm text-ink">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 px-4 py-1 sm:pointer-fine:py-1.5">
+      <div className="site-container flex flex-wrap items-center gap-x-3 py-1 sm:pointer-fine:py-1.5">
         <p className="min-w-0 flex-[1_1_16rem] py-2 sm:pointer-fine:py-0">{t('verify.notice')}</p>
         <ResendVerification />
         <button

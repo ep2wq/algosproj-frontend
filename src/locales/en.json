@@ -12,6 +12,7 @@
     "logOut": "Log out",
     "register": "Register",
     "more": "More",
+    "menu": "Menu",
     "about": "About",
     "faq": "FAQ",
     "contact": "Contact",
@@ -23,6 +24,7 @@
     "page": "{{name}} · {{product}}"
   },
   "header": {
+    "settings": "Display settings",
     "points_one": "{{count}} point",
     "points_other": "{{count}} points"
   },
@@ -534,6 +536,7 @@
     "label": "Site",
     "mission": "Learn data structures and algorithms one step at a time, in English and Arabic, then write the code and let the tests check it.",
     "learn": "Learn",
+    "tracks": "Learning tracks",
     "site": "About the site",
     "legal": "Legal",
     "copyright": "© {{product}} {{year}}. All rights reserved."

@@ -5,7 +5,7 @@ import { binarySearchFrames } from './binarySearchFrames'
 import type { T } from './i18n'
 import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
-import SearchCells from './SearchCells'
+import SearchCells, { CELL_STYLES } from './SearchCells'
 
 const MAX_NUMBERS = 15
 
@@ -46,10 +46,10 @@ function parseTarget(text: string, t: T): number | string {
 }
 
 const LEGEND = [
-  { key: 'middle', style: 'border-warn bg-warn' },
-  { key: 'found', style: 'border-pass bg-pass' },
-  { key: 'possible', style: 'border-muted bg-surface' },
-  { key: 'ruledOut', style: 'border-line bg-paper' },
+  { key: 'middle', style: CELL_STYLES.middle },
+  { key: 'found', style: CELL_STYLES.found },
+  { key: 'possible', style: CELL_STYLES.possible },
+  { key: 'ruledOut', style: CELL_STYLES.ruledOut },
 ]
 
 export default function BinarySearchVisual() {

@@ -65,9 +65,8 @@ the server.
 
 ## Themes
 
-The theme button (sun and moon icon, a real `<button>`, 44 px) in the header switches between
-Light and Dark; its accessible name says what it will do ("Switch to dark theme"). Below `sm` it
-is a labelled item in the site menu. Dark is the default: until the button is clicked the app is
+The theme button (sun and moon icon, a real `<button>`, 44 px) in the header's settings pill switches
+between Light and Dark; its accessible name says what it will do ("Switch to dark theme"). Dark is the default: until the button is clicked the app is
 dark whatever the OS setting (there is no "follow the OS" option). After the first click the
 choice is stored under `theme` (`light` or `dark`) and wins from then on. Any other stored value,
 such as an old `system`, is ignored (dark).
@@ -77,12 +76,20 @@ such as an old `system`, is ignored (dark).
   script in `index.html` does the same before the first paint, so a light page never flashes
   dark; keep the two in step. The prerendered HTML is dark (`class="dark"` on `<html>` in
   `index.html`), and both set the single `theme-color` meta (the browser bar).
-- The sticky header is part of the page at the top and turns to frosted glass once the page has
-  scrolled (`.site-header` in `src/index.css`, one IntersectionObserver in `Layout.tsx`): the
-  surface at 92% (`--header-glass`, which keeps every header text pair at 4.5:1 even over black
-  or white with no blur) and a 14 px backdrop blur. A solid surface without `backdrop-filter`
-  support, under `prefers-reduced-transparency` or `prefers-contrast: more`; no fade under reduced
-  motion. Blur is used nowhere else.
+- The sticky header (`.site-header` in `src/index.css`) is the surface at 85% in light and 92% in
+  dark (`--header-glass`, which keeps every header text pair at 4.5:1 even over black or white with
+  no blur; at 85% dark muted text would drop to 4.44) with a `line` bottom edge. Once the page has
+  scrolled (one IntersectionObserver in `Layout.tsx`) it adds a 14 px backdrop blur. A solid
+  surface without `backdrop-filter` support, under `prefers-reduced-transparency` or
+  `prefers-contrast: more`. Blur is used nowhere else.
+- Light mode is a cool gray `paper` (#e8ebef) with white `surface` cards, header and inputs. The
+  footer follows the theme (`foot`, `foot-line`: light gray in light, near black in dark); the
+  `footer-*` tokens are only the landing CTA banner now, dark in both themes. The `dot-grid`
+  utility (a static dot grid, `--dot-color`: ink at 12%, 6% in dark, fading toward the bottom) is
+  only behind the landing hero, never behind code, the editor or long text.
+- Layout width: the `site-container` utility (`src/index.css`, max 80rem with 16/24/32 px side
+  padding) is shared by the header, `main`, the footer and the verify-email strip, so all line up.
+  Pages keep their own content widths inside it (`max-w-prose` for reading text).
 - Colors are tokens in `src/index.css` (`paper`, `surface`, `ink`, `muted`, `line`, `field`,
   `accent`, `accent-soft`, `pass`, `fail`, `warn`, `inverse`). `.dark` redefines them, so a
   token class such as `bg-surface` or `text-muted` is right in both themes with no `dark:`
@@ -177,10 +184,9 @@ table per sound. It exports `play(sound)`, `setSoundOn(on)` and `useSoundOn()`.
 - Hook-ins: `ProblemSolver.handleSubmit` plays pass, passPoints, fail or error when a result
   arrives; `usePlayback` plays step and finish when the step changes.
 - The toggle (`SoundToggle` in `src/components/Layout.tsx`) is a 44 px button with
-  `aria-pressed` and the name "Sound effects" (`sound.label`). From `lg` (1024 px) it sits next
-  to the theme and language buttons; below `lg` it is a labelled button in the footer. In the header it made the
-  logged-out Arabic header 3 rows at 360 and 375 px and the logged-in header 2 rows at 768 px;
-  placed like this, header heights are unchanged at every width measured (360 to 1024).
+  `aria-pressed` and the name "Sound effects" (`sound.label`). From `lg` (1024 px) it sits in the
+  settings pill next to the theme and language buttons; below `lg` it is a labelled button in the
+  footer (in the header it would make a 768 px header 2 rows).
 
 ## Languages (English and Arabic)
 
@@ -319,13 +325,18 @@ Visualizations are translated too; their drawings stay left to right.
   HTTP status codes that does not find 404, then the plain message).
   `Layout` starts with a "Skip to content" link (`nav.skipToContent`), visible only on keyboard
   focus, that jumps to `<main id="main">`.
-  The header has a "More" button (`SiteMenu` in `Layout.tsx`) at every width. It opens a panel
-  with About, FAQ and Contact. Below `lg` the panel also holds the full name (`dir="auto"`) and
-  Log out; below `sm` also Admin (staff only), or Log in for a visitor. It is a disclosure
-  (`aria-expanded`, `aria-controls`), not a `role="menu"`. Escape, a click outside or focus
-  leaving closes it, and a route change closes it. Every page ends with a `Footer` (links, the
-  copyright year, the sound switch below `lg`). Measured header height at 360, 375 and 414 px
-  (guest, user, admin, English and Arabic): 2 rows; from 768 px: 1 row; at 320 px English: still 3 rows.
+  The header (`Layout.tsx`) has three zones. Start: the logo, Lessons, Challenges, Leaderboard and
+  "More" (`SiteMenu`: About, FAQ, Contact); below `md` the three links move into it and it becomes
+  the "Menu" button. End: the settings pill (theme, sound from `lg`, language), a divider from `lg`,
+  then the account. A visitor gets Log in (outlined) and Register (the one filled button). A
+  logged-in user gets one button (`AccountMenu`): initial, name (from `lg`; below that only in its
+  accessible name), points (pulses when they go up) and a chevron; its panel shows "name · points",
+  Admin (staff only), Log out. Both panels are disclosures (`aria-expanded`, `aria-controls`), not
+  `role="menu"`: Escape (focus back to the button), a click outside, focus leaving or a route change
+  closes them. Every control is 44 px. Every page ends with a `Footer` (Learn, Learning tracks, About
+  the site, Legal, the copyright year, the sound switch below `lg`); the tracks link to `/lessons`,
+  which does not scroll to a `#track-` hash. Measured header height (guest, user, admin, English
+  and Arabic): 93 px (2 rows) at 320 and 390 px, 67 px (1 row) from 768 px.
 - `/challenges` every problem in one list: search by title, filters for difficulty, topic
   and (when logged in) solved status, all applied in the browser; "Showing X of Y" is
   announced with `aria-live`. Below `md` the rows become cards. `/challenges/:slug` solves one
