@@ -76,7 +76,7 @@ export default function SortingVisual() {
   }
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <div>
           <label htmlFor={`${id}-algorithm`} className="text-sm font-medium">

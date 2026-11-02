@@ -71,9 +71,21 @@
     "notFound": "This lesson doesn't exist.",
     "loadFailed": "Could not load the lesson.",
     "backToLessons": "Back to the lessons",
-    "allLessons": "All lessons",
     "visualization": "Visualization",
-    "loadingVisualization": "Loading visualization..."
+    "loadingVisualization": "Loading visualization...",
+    "breadcrumb": "Breadcrumb",
+    "rail": "On this page and nearby lessons",
+    "onThisPage": "On this page",
+    "nextLesson": "Next lesson",
+    "previousLesson": "Previous lesson",
+    "problemCount_one": "{{value}} problem",
+    "problemCount_other": "{{value}} problems",
+    "codeTabs": "Programming language",
+    "codeIn": "Code in {{language}}",
+    "copy": "Copy",
+    "copied": "Copied",
+    "example": "Example",
+    "keyIdea": "Key idea"
   },
   "challenges": {
     "title": "Challenges",
@@ -567,12 +579,17 @@
       "noneDone": "You haven't finished a lesson yet. The first one is ready when you are.",
       "summary_one": "You've finished {{done}} of {{total}} lesson ({{percent}}).",
       "summary_other": "You've finished {{done}} of {{total}} lessons ({{percent}}).",
-      "overall": "Progress through all lessons",
-      "nextUp": "Next lesson",
       "allDone": "You've finished every lesson.",
       "moduleDone_one": "{{done}} of {{total}} lesson done",
       "moduleDone_other": "{{done}} of {{total}} lessons done",
-      "moduleProgress": "Progress in {{module}}"
+      "moduleProgress": "Progress in {{module}}",
+      "start": "Start:",
+      "continue": "Continue:",
+      "trackMeta": "{{modules}} · {{lessons}}",
+      "upNextMeta": "{{meta}} · Up next",
+      "done": "Done",
+      "seeAll_one": "See the {{value}} module in {{track}}",
+      "seeAll_other": "See all {{value}} modules in {{track}}"
     },
     "challenges": {
       "signIn": "Log in to see which problems you've solved and the points you've earned.",
@@ -629,7 +646,12 @@
       "tabsLabel": "Programming language",
       "codeLabel": "Binary search in {{language}}",
       "runTitle": "Example run",
-      "note": "The search loop at the heart of the lesson's problem, and a fixed example of a graded run. Nothing is sent from this page: you write and submit the whole program on the lesson's page."
+      "note": "The search loop at the heart of the lesson's problem, and a fixed example of a graded run. Nothing is sent from this page: you write and submit the whole program on the lesson's page.",
+      "test": "Test {{number}}",
+      "hiddenTests_one": "{{value}} hidden test",
+      "hiddenTests_other": "{{value}} hidden tests",
+      "testsCount_one": "{{passed}} of {{value}} test",
+      "testsCount_other": "{{passed}} of {{value}} tests"
     },
     "ctaTitle": "Start learning for free",
     "startBody": "You can read every lesson and play every visualization without an account. Create one when you want your code graded."

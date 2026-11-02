@@ -66,7 +66,7 @@ export default function WarmupVisual() {
   }
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <div>
           <label htmlFor={`${id}-language`} className="text-sm font-medium">
@@ -108,7 +108,7 @@ export default function WarmupVisual() {
           <p className="text-sm font-medium">
             <TextWithCode text={t('warmup.program', { language: SOLUTIONS[language].label })} />
           </p>
-          <pre tabIndex={0} dir="ltr" className="mt-2 overflow-x-auto rounded bg-paper py-1 font-mono text-xs leading-5">
+          <pre tabIndex={0} dir="ltr" className="mt-2 overflow-x-auto rounded bg-code py-1 font-mono text-xs leading-5">
             {lines.map(([key, text], index) => (
               <code
                 key={index}

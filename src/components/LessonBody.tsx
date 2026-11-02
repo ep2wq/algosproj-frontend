@@ -1,6 +1,8 @@
+import { Lightbulb } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { parseLessonText, splitInlineCode, splitTerms } from '../lessonText'
+import { lessonItems, splitInlineCode, splitTerms } from '../lessonText'
+import CodeTabs from './CodeTabs'
 import Content from './Content'
 
 // The non-space characters at the start or end of text that touch a code part ("(", ").", "،",
@@ -45,7 +47,7 @@ export function TextWithCode({ text }: { text: string }) {
           key={index}
           dir="ltr"
           lang="en"
-          className="rounded border border-line bg-surface px-1 font-mono text-[0.9em] whitespace-break-spaces [box-decoration-break:clone]"
+          className="rounded border border-line bg-code px-1 font-mono text-[0.88em] whitespace-break-spaces [box-decoration-break:clone]"
         >
           {part.text}
         </code>,
@@ -84,27 +86,46 @@ function Terms({ text }: { text: string }) {
   )
 }
 
-// Renders lesson text as headings, lists, code blocks and paragraphs. Everything is a
-// React text node; the text is never treated as HTML. lang is the language of the text (see
-// Content); headings, paragraphs and lists follow its direction, code blocks are always LTR.
-export default function LessonBody({ text, lang }: { text: string; lang: string }) {
+// Renders lesson text as headings, lists, code blocks, callouts and paragraphs, in the reading type
+// scale (text-lesson-* in index.css). Everything is a React text node; the text is never treated as
+// HTML. lang is the language of the text (see Content); headings, paragraphs and lists follow its
+// direction, code blocks are always LTR. ~term~ and emphasised terms are ink and semibold.
+// lesson (the lesson page only): headings get a quiet two-digit number and an id (section-1...,
+// lessonText.ts lessonItems), the first paragraph is a lead, a run of language sections becomes one
+// tabbed code block, and the column width is left to the page.
+export default function LessonBody({ text, lang, lesson = false }: { text: string; lang: string; lesson?: boolean }) {
   const { t } = useTranslation()
+  const items = lessonItems(text, lesson)
+  const firstParagraph = items.findIndex((item) => item.type === 'paragraph')
   return (
-    <Content lang={lang} as="div" className="mt-4 max-w-prose leading-relaxed">
-      {parseLessonText(text).map((block, index) => {
-        switch (block.type) {
-          case 'heading':
+    <Content
+      lang={lang}
+      as="div"
+      className={`text-lesson-body text-ink [&_bdi]:font-semibold [&_bdi]:text-ink ${lesson ? '' : 'mt-4 max-w-prose'}`}
+    >
+      {items.map((item, index) => {
+        switch (item.type) {
+          case 'section':
             return (
-              <h2 key={index} className="mt-10 text-xl font-semibold tracking-tight">
-                <TextWithCode text={block.text} />
+              <h2 key={index} id={lesson ? item.id : undefined} className="text-lesson-heading mt-8 mb-3 first:mt-0">
+                {/* Western digits in both languages; the heading's name is the words alone. */}
+                {lesson && (
+                  <span aria-hidden="true" className="me-3 font-mono text-[0.8em] font-medium text-muted">
+                    {String(item.number).padStart(2, '0')}
+                  </span>
+                )}
+                <TextWithCode text={item.text} />
               </h2>
             )
+          case 'codeTabs':
+            return <CodeTabs key={index} tabs={item.tabs} />
           case 'list':
             return (
-              <ul key={index} className="mt-4 list-disc space-y-1.5 ps-5 marker:text-muted">
-                {block.items.map((item, itemIndex) => (
-                  <li key={itemIndex}>
-                    <TextWithCode text={item} />
+              <ul key={index} className="mt-4 space-y-2">
+                {item.items.map((entry, itemIndex) => (
+                  // A short muted dash as the marker, at the middle of the first line.
+                  <li key={itemIndex} className="relative ps-6 before:absolute before:start-1.5 before:top-[calc(0.5lh-1px)] before:h-0.5 before:w-2.5 before:rounded-sm before:bg-muted">
+                    <TextWithCode text={entry} />
                   </li>
                 ))}
               </ul>
@@ -120,15 +141,35 @@ export default function LessonBody({ text, lang }: { text: string; lang: string 
                 dir="ltr"
                 role="region"
                 aria-label={t('common.codeSnippet')}
-                className="mt-4 overflow-x-auto rounded-lg border border-line bg-surface px-4 py-3 font-mono text-sm leading-normal"
+                className="mt-5 overflow-x-auto rounded-lg border border-line bg-code px-5 py-4 font-mono text-[0.9375rem] leading-relaxed"
               >
-                <code lang="en">{block.text}</code>
+                <code lang="en">{item.text}</code>
               </pre>
+            )
+          case 'callout':
+            return item.kind === 'example' ? (
+              // An example: a warn-coloured edge at the start, rounded on the end side only.
+              <div key={index} className="mt-5 rounded-e-lg border-s-4 border-warn bg-surface px-4 py-3">
+                <p className="text-sm font-semibold text-warn">{t('lesson.example')}</p>
+                <p className="mt-1 whitespace-pre-wrap">
+                  <TextWithCode text={item.text} />
+                </p>
+              </div>
+            ) : (
+              <div key={index} className="mt-5 flex gap-3 rounded-lg border border-line bg-surface px-4 py-3">
+                <Lightbulb aria-hidden="true" className="mt-1 size-5 shrink-0 text-warn" strokeWidth={2} />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">{t('lesson.keyIdea')}</p>
+                  <p className="mt-1 whitespace-pre-wrap">
+                    <TextWithCode text={item.text} />
+                  </p>
+                </div>
+              </div>
             )
           case 'paragraph':
             return (
-              <p key={index} className="mt-4 whitespace-pre-wrap first:mt-0">
-                <TextWithCode text={block.text} />
+              <p key={index} className={`mt-4 whitespace-pre-wrap first:mt-0 ${lesson && index === firstParagraph ? 'text-lesson-lead' : ''}`}>
+                <TextWithCode text={item.text} />
               </p>
             )
         }

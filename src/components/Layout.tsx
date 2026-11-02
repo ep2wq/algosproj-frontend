@@ -2,6 +2,7 @@ import { DirectionProvider } from '@base-ui/react/direction-provider'
 import { Suspense, useEffect, useId, useRef, useState, type FocusEvent } from 'react'
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Languages } from 'lucide-react'
 import { useAuth } from '../auth'
 import type { User } from '../api'
 import { skipLink } from './buttonStyles'
@@ -20,8 +21,10 @@ const activeMark = 'text-ink font-medium underline decoration-accent decoration-
 const navLink = ({ isActive }: { isActive: boolean }) =>
   `inline-flex min-h-11 items-center rounded px-2 hover:text-ink lg:px-2.5 ${isActive ? activeMark : 'text-muted'}`
 
-// The buttons inside the settings pill (on paper): 44 px, each one rounded.
-const toggleClass = 'inline-flex min-h-11 min-w-11 items-center justify-center rounded px-2 text-muted hover:bg-surface hover:text-ink'
+// The header's ghost buttons (theme, sound, language, Log in): no box until hovered or focused by
+// keyboard, then the soft hover background and ink. 44 px; 36 px with a mouse from sm.
+const ghostButton =
+  'inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg text-muted hover:bg-hover hover:text-ink focus-visible:bg-hover focus-visible:text-ink sm:pointer-fine:min-h-9 sm:pointer-fine:min-w-9'
 
 // A disclosure panel's open state, not role="menu": Escape closes it and returns focus to its button,
 // a click outside or focus leaving the wrapper closes it.
@@ -70,7 +73,7 @@ function ThemeToggle() {
   const { dark } = useTheme()
 
   return (
-    <button type="button" onClick={toggleTheme} aria-label={dark ? t('theme.toLight') : t('theme.toDark')} className={toggleClass}>
+    <button type="button" onClick={toggleTheme} aria-label={dark ? t('theme.toLight') : t('theme.toDark')} className={ghostButton}>
       {dark ? (
         <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
           <circle cx="12" cy="12" r="4" />
@@ -86,7 +89,7 @@ function ThemeToggle() {
 }
 
 // Sound effects, off until switched on. A toggle button: the name stays the same and aria-pressed
-// says whether sound is on; the icon shows the current state. In the settings pill from lg up. Below
+// says whether sound is on; the icon shows the current state. In the header from lg up. Below
 // that the header has no room for it (a phone header would take 3 rows), so it is in the footer with
 // its name shown.
 function SoundToggle({ className, showLabel = false }: { className: string; showLabel?: boolean }) {
@@ -110,14 +113,15 @@ function SoundToggle({ className, showLabel = false }: { className: string; show
   )
 }
 
-// Shows the name of the other language, in that language. The hidden hint says what the button
-// does, in the current language, so the accessible name contains the visible label.
+// A language icon and the name of the other language, in that language. The hidden hint says what
+// the button does, in the current language, so the accessible name contains the visible label.
 function LanguageToggle() {
   const { t, i18n } = useTranslation()
   const arabic = i18n.language === 'ar'
 
   return (
-    <button type="button" onClick={() => setLanguage(arabic ? 'en' : 'ar')} className={toggleClass}>
+    <button type="button" onClick={() => setLanguage(arabic ? 'en' : 'ar')} className={`${ghostButton} px-2.5`}>
+      <Languages aria-hidden="true" className="size-4.5 shrink-0" strokeWidth={2} />
       <span lang={arabic ? 'en' : 'ar'}>{arabic ? 'English' : 'العربية'}</span>
       <span className="sr-only"> {t('language.hint')}</span>
     </button>
@@ -137,7 +141,7 @@ const MENU_PAGES = [
 ] as const
 
 const menuPanel = 'z-10 mt-1 rounded-lg border border-line bg-surface p-1 shadow-(--float-shadow)'
-const menuItem = 'flex min-h-11 w-full items-center rounded px-3 text-start text-muted hover:bg-accent-soft hover:text-ink'
+const menuItem = 'flex min-h-11 w-full items-center rounded px-3 text-start text-muted hover:bg-hover hover:text-ink'
 
 // The last item of the main navigation. From md: "More" with a chevron, holding About, FAQ and
 // Contact. Below md the main links leave the header and this becomes the "Menu" button (an icon),
@@ -186,7 +190,8 @@ function SiteMenu() {
   )
 }
 
-// The logged-in account: the initial, the name, the points and a chevron in one button. Below lg
+// The logged-in account: one pill (the only fully rounded control) with the initial, the name, the
+// points in accent and a chevron. Below lg
 // the name is only in the button's accessible name (a 768 px header has no room for it) and the
 // chevron goes below md. Its panel repeats name and points, then Admin (staff only) and Log out.
 function AccountMenu({ user, staff, bumps, onLogOut }: { user: User; staff: boolean; bumps: number; onLogOut: () => void }) {
@@ -210,9 +215,9 @@ function AccountMenu({ user, staff, bumps, onLogOut }: { user: User; staff: bool
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen(!open)}
-        className="group inline-flex min-h-11 items-center gap-2 rounded px-1.5 text-sm text-ink hover:bg-paper aria-expanded:bg-paper"
+        className="group inline-flex min-h-11 items-center gap-2 rounded-full border border-line ps-1 pe-3 text-sm text-ink hover:bg-hover focus-visible:bg-hover aria-expanded:bg-hover sm:pointer-fine:min-h-9 sm:pointer-fine:ps-0.5 sm:pointer-fine:pe-2.5"
       >
-        <span aria-hidden="true" className="inline-flex size-8 shrink-0 items-center justify-center rounded bg-accent-soft font-bold text-accent">
+        <span aria-hidden="true" className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-soft font-bold text-accent sm:pointer-fine:size-7">
           {Array.from(user.name.trim())[0]?.toLocaleUpperCase()}
         </span>
         <span dir="auto" className="max-w-40 truncate max-lg:sr-only">
@@ -222,7 +227,7 @@ function AccountMenu({ user, staff, bumps, onLogOut }: { user: User; staff: bool
             remounts it, which replays the motion-safe animation. */}
         <span
           key={bumps}
-          className={`inline-block rounded bg-accent-soft px-1.5 py-0.5 whitespace-nowrap text-accent tabular-nums ${bumps > 0 ? 'motion-safe:animate-bump' : ''}`}
+          className={`inline-block font-semibold whitespace-nowrap text-accent tabular-nums ${bumps > 0 ? 'motion-safe:animate-bump' : ''}`}
         >
           {points}
         </span>
@@ -323,14 +328,14 @@ export default function Layout() {
             <SiteMenu key={location.pathname} />
           </nav>
           <div className="flex-1" />
-          {/* The settings pill. Below md it has no border or inner padding (the buttons stay 44 px), so the
-              two-row phone header stays 93 px. */}
-          <div role="group" aria-label={t('header.settings')} className="flex items-center gap-0.5 rounded-lg bg-paper text-sm md:border md:border-line md:p-0.5">
+          {/* The settings: ghost buttons without a box around them (the buttons stay 44 px on touch, so the
+              two-row phone header stays 93 px), then one divider before the account. */}
+          <div role="group" aria-label={t('header.settings')} className="flex items-center gap-0.5 text-sm">
             <ThemeToggle />
-            <SoundToggle className={`${toggleClass.replace('inline-flex', 'hidden lg:inline-flex')} aria-pressed:text-accent`} />
+            <SoundToggle className={`${ghostButton.replace('inline-flex', 'hidden lg:inline-flex')} aria-pressed:text-accent`} />
             <LanguageToggle />
           </div>
-          <span aria-hidden="true" className="h-6 w-px bg-line max-lg:hidden" />
+          <span aria-hidden="true" className="h-6 w-px bg-line max-md:hidden" />
           {/* While /me answers, the visitor's buttons hold their place invisibly (most visits are
               visitors, and the static HTML is one): nothing moves when they appear. */}
           {user ? (
@@ -339,18 +344,18 @@ export default function Layout() {
             </div>
           ) : (
             <div className={`flex items-center gap-2 text-sm max-md:ms-auto ${loading ? 'invisible' : ''}`}>
-              {/* Log in outlined, Register the one filled button in the header; the current one is underlined. */}
+              {/* Log in a ghost button, Register the one filled button in the header; the current one is underlined. */}
               <NavLink
                 to="/login"
                 state={{ from: location }}
-                className="inline-flex min-h-11 items-center rounded border border-field bg-surface px-3 font-medium text-ink underline-offset-4 hover:border-muted aria-[current=page]:underline"
+                className="inline-flex min-h-11 items-center rounded-lg px-3 font-medium text-ink underline-offset-4 hover:bg-hover focus-visible:bg-hover aria-[current=page]:underline sm:pointer-fine:min-h-9"
               >
                 {t('nav.logIn')}
               </NavLink>
               <NavLink
                 to="/register"
                 state={{ from: location }}
-                className="inline-flex min-h-11 items-center rounded bg-accent px-3 font-medium text-inverse underline-offset-4 hover:bg-accent/90 aria-[current=page]:underline"
+                className="inline-flex min-h-11 items-center rounded-lg bg-accent px-3 font-medium text-inverse underline-offset-4 hover:bg-accent/90 aria-[current=page]:underline sm:pointer-fine:min-h-9"
               >
                 {t('nav.register')}
               </NavLink>
@@ -359,7 +364,7 @@ export default function Layout() {
         </div>
         <VerifyEmailNotice />
       </header>
-      <main id="main" tabIndex={-1} className="site-container flex-1 py-8">
+      <main id="main" tabIndex={-1} className="site-container flex-1 pt-[calc(2rem+var(--notice-h,0px))] pb-8">
         {/* Base UI (src/components/ui) reads the direction from here, not from dir: arrow keys follow
             the reading order. */}
         <DirectionProvider direction={i18n.dir()}>
@@ -386,8 +391,8 @@ const FOOTER_GROUPS = [
   ['footer.legal', [['/terms', 'nav.terms'], ['/privacy', 'nav.privacy'], ['/cookies', 'nav.cookies']]],
 ] as const
 
-// On every page, admin included, and in the static HTML. Follows the theme (foot tokens in
-// src/index.css): light gray in light mode, near black in dark. Ink headings, muted links that turn
+// On every page, admin included, and in the static HTML. The same surface as the header in both
+// themes (white in light, slate in dark) with a line on top. Ink headings, muted links that turn
 // ink with an underline on hover (the current page too), no accent text. Brand on top, then the four
 // link groups (2 x 2 from sm); from lg the brand at the start and the groups in four columns. Below
 // lg each group's links wrap in a row and are at least 44 x 44 px.
@@ -397,7 +402,7 @@ function Footer() {
     'inline-flex min-h-11 min-w-11 items-center rounded underline-offset-4 hover:text-ink hover:underline lg:pointer-fine:min-h-8 lg:pointer-fine:min-w-0'
 
   return (
-    <footer className="border-t border-foot-line bg-foot pb-(--cookie-h) text-sm text-muted">
+    <footer className="border-t border-line bg-surface pb-(--cookie-h) text-sm text-muted">
       <div className="site-container grid gap-x-8 gap-y-5 pt-6 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)]">
         <div>
           <p lang="en" className="font-bold text-ink">
@@ -434,7 +439,7 @@ function Footer() {
             </div>
           ))}
         </nav>
-        <div className="flex flex-wrap items-center justify-between gap-x-4 border-t border-foot-line py-1 lg:col-span-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 border-t border-line py-1 lg:col-span-2">
           <p className="py-2">{t('footer.copyright', { year: COPYRIGHT_YEAR })}</p>
           {/* Below lg the sound switch has no room in the header. */}
           <SoundToggle className="-ms-2 inline-flex min-h-11 items-center rounded px-2 hover:text-ink aria-pressed:text-ink lg:hidden" showLabel />

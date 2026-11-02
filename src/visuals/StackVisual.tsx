@@ -150,7 +150,7 @@ export default function StackVisual({ mode }: { mode: StackMode }) {
   const showAnswers = current.answers !== null
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -167,7 +167,7 @@ export default function StackVisual({ mode }: { mode: StackMode }) {
           <div
             role="img"
             aria-label={t(`stack.${mode}.itemsLabel`, { items: current.items.join(' ') || t('stack.none') })}
-            className="flex w-max gap-x-1.5"
+            className="mx-auto flex w-max gap-x-1.5"
           >
             {current.items.length === 0 && <p className="text-sm text-muted">{t('stack.noCharacters')}</p>}
             {current.items.map((item, index) => (

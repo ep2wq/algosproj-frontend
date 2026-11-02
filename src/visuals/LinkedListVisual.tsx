@@ -280,7 +280,7 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
     }`
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -293,7 +293,7 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
         ref={scrollRef}
         className={`mt-4 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
       >
-        <div role="img" aria-label={listLabel(current, t)} className="w-max">
+        <div role="img" aria-label={listLabel(current, t)} className="mx-auto w-max">
           <Diagram frame={current} />
         </div>
       </div>

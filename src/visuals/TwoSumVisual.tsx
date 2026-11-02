@@ -104,7 +104,7 @@ export default function TwoSumVisual() {
   const inputClass = `block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${inputError ? 'border-fail' : 'border-field hover:border-muted'}`
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -125,7 +125,7 @@ export default function TwoSumVisual() {
           ref={scrollRef}
           className={`min-w-0 flex-1 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
         >
-          <div role="img" aria-label={t('twoSum.label', { values: current.values.join(' ') })} className="flex w-max gap-x-1.5">
+          <div role="img" aria-label={t('twoSum.label', { values: current.values.join(' ') })} className="mx-auto flex w-max gap-x-1.5">
             {current.values.map((value, index) => (
               <div key={index} data-index={index} className="flex min-w-10 flex-col items-center">
                 <span className="h-4 text-xs font-semibold text-ink">{current.current === index ? 'i' : ''}</span>

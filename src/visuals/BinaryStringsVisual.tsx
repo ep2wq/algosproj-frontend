@@ -79,7 +79,7 @@ export default function BinaryStringsVisual() {
   const callStack = current.stack.map((call) => tree[call].label)
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>

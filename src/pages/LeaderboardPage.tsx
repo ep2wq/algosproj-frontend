@@ -53,7 +53,7 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="max-w-2xl">
+    <div className="mx-auto max-w-2xl">
       <title>{t('titles.page', { name: t('leaderboard.title') })}</title>
       <h1 className="text-3xl font-semibold tracking-tight">{t('leaderboard.title')}</h1>
       <p className="mt-2 text-muted">{t('leaderboard.intro')}</p>

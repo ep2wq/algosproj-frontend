@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build && vite build --ssr src/prerender.ts --outDir dist-ssr && node scripts/prerender.mjs",
-    "lint": "oxlint && npm run check:i18n --silent",
+    "lint": "oxlint && npm run check:i18n --silent && npm run check:samples --silent",
+    "check:samples": "node scripts/check-code-samples.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
     "preview": "vite preview"
   },

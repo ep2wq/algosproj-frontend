@@ -53,7 +53,7 @@ export default function CallTreeDiagram({ nodes, shown, markOf, label }: { nodes
       dir="ltr"
       className={`mt-3 overflow-x-auto rounded-lg border border-line bg-surface p-2${scrollMore ? ' scroll-fade' : ''}`}
     >
-      <div role="img" aria-label={label} className="w-max">
+      <div role="img" aria-label={label} className="mx-auto w-max">
         <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block" aria-hidden="true">
           {visible.map((node) => {
             if (node.parent === null) return null

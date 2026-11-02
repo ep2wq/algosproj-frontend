@@ -5,9 +5,9 @@ import { CrossIcon } from './Icons'
 import ResendVerification from './ResendVerification'
 
 // For a logged-in user whose email is not verified yet: a strip hanging below the sticky header.
-// It overlays the page instead of pushing it down, so nothing moves when /me answers. Dismissed
-// until the next page load (nothing is stored). Its height is added to scroll-padding-top
-// (--notice-h in index.css), so a focused element is never hidden under it.
+// Its height (--notice-h) is added to the top padding of <main> (Layout), so the top of every page
+// (a back link, a heading) sits below it, and to scroll-padding-top (index.css), so a focused or
+// linked element is never hidden under it. Dismissed until the next page load (nothing is stored).
 export default function VerifyEmailNotice() {
   const { t } = useTranslation()
   const { user } = useAuth()

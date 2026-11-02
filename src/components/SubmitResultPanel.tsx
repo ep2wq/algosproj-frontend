@@ -22,9 +22,9 @@ function Output({ label, value }: { label: string; value: string | null }) {
       <dt className="text-xs text-muted">{label}</dt>
       <dd>
         {value === null || value === '' ? (
-          <p className="mt-0.5 w-fit max-w-full rounded bg-paper px-2 py-1 text-sm text-muted">{t('result.empty')}</p>
+          <p className="mt-0.5 w-fit max-w-full rounded bg-code px-2 py-1 text-sm text-muted">{t('result.empty')}</p>
         ) : (
-          <pre dir="ltr" lang="en" className="mt-0.5 w-fit max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded bg-paper px-2 py-1 font-mono text-sm">
+          <pre dir="ltr" lang="en" className="mt-0.5 w-fit max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded bg-code px-2 py-1 font-mono text-sm">
             {value}
           </pre>
         )}
@@ -95,7 +95,7 @@ export default function SubmitResultPanel({
             </span>
           </Heading>
           {/* Not wrapped, so the ^ markers stay under the code they point at; focusable to scroll. */}
-          <pre tabIndex={0} dir="ltr" lang="en" className="mt-1 overflow-x-auto whitespace-pre rounded bg-paper p-3 font-mono text-sm text-ink">
+          <pre tabIndex={0} dir="ltr" lang="en" className="mt-1 overflow-x-auto whitespace-pre rounded bg-code p-3 font-mono text-sm text-ink">
             {result.compile_error}
           </pre>
         </div>

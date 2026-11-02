@@ -146,7 +146,7 @@ export default function AnagramVisual() {
     }`
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -159,7 +159,7 @@ export default function AnagramVisual() {
         ref={scrollRef}
         className={`mt-4 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
       >
-        <div role="img" aria-label={wordsLabel(current, tr)} className="flex w-max flex-col gap-2">
+        <div role="img" aria-label={wordsLabel(current, tr)} className="mx-auto flex w-max flex-col gap-2">
           <WordRow frame={current} word="s" />
           <WordRow frame={current} word="t" />
         </div>

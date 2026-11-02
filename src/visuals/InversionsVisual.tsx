@@ -85,7 +85,7 @@ function MergedRow({ frame }: { frame: InversionFrame }) {
       <div
         role="img"
         aria-label={t('inversions.mergedLabel', { list: frame.merged.join(' ') || t('inversions.nothingYetWord') })}
-        className="flex min-h-10 w-max gap-x-1.5"
+        className="mx-auto flex min-h-10 w-max gap-x-1.5"
       >
         {frame.merged.length === 0 && <p className="self-center text-sm text-muted">{t('inversions.nothingYet')}</p>}
         {frame.merged.map((value, index) => (
@@ -138,7 +138,7 @@ export default function InversionsVisual() {
   }
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -158,7 +158,7 @@ export default function InversionsVisual() {
               ? t('inversions.arrayMerging', { values: current.array.join(' ') || t('inversions.emptyWord'), from: current.range![0], to: current.range![1] - 1 })
               : t('inversions.arrayLabel', { values: current.array.join(' ') || t('inversions.emptyWord') })
           }
-          className="flex w-max gap-x-1.5"
+          className="mx-auto flex w-max gap-x-1.5"
         >
           {current.array.length === 0 && <p className="text-sm text-muted">{t('inversions.noNumbers')}</p>}
           {current.array.map((value, index) => (

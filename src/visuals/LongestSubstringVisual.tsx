@@ -106,7 +106,7 @@ export default function LongestSubstringVisual() {
   const describedBy = `${id}-hint${inputError ? ` ${id}-error` : ''}`
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -132,7 +132,7 @@ export default function LongestSubstringVisual() {
         ref={scrollRef}
         className={`mt-3 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
       >
-        <div role="img" aria-label={stringLabel(current, t)} className="w-max">
+        <div role="img" aria-label={stringLabel(current, t)} className="mx-auto w-max">
           {current.s === '' ? (
             <p className="text-sm text-muted">{t('longestSubstring.emptyLine')}</p>
           ) : (

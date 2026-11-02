@@ -7,6 +7,7 @@ import Content from '../components/Content'
 import EmptyState from '../components/EmptyState'
 import { CheckIcon } from '../components/Icons'
 import { LoadingRegion, SkeletonLines } from '../components/Loading'
+import { groupByTrack, trackName } from '../progress'
 
 const DIFFICULTIES = ['easy', 'medium', 'hard']
 
@@ -23,12 +24,6 @@ function DifficultyBars({ difficulty }: { difficulty: string }) {
       <span className="sr-only">{label}</span>
     </span>
   )
-}
-
-// "data-structures" -> "Data structures"
-function trackName(track: string): string {
-  const words = track.replace(/[-_]+/g, ' ').trim()
-  return words.charAt(0).toUpperCase() + words.slice(1)
 }
 
 export default function LessonsPage() {
@@ -79,11 +74,8 @@ export default function LessonsPage() {
     setReload((count) => count + 1)
   }
 
-  // Modules arrive in sort_order; group them by track, keeping that order.
-  const tracks = new Map<string, Module[]>()
-  for (const module of modules ?? []) {
-    tracks.set(module.track, [...(tracks.get(module.track) ?? []), module])
-  }
+  // Modules arrive in sort_order; grouped by track (known tracks first, then any new one).
+  const tracks = groupByTrack(modules ?? [])
 
   // Each lesson's problems from the Challenges list: the hardest difficulty, and solved when every
   // problem is (solved is only true for the logged-in user). Extra cues only: the list never waits for it.
@@ -144,7 +136,7 @@ export default function LessonsPage() {
       )}
       {modules !== null && modules.length === 0 && <EmptyState>{t('home.empty')}</EmptyState>}
 
-      {[...tracks].map(([track, trackModules]) => (
+      {tracks.map(([track, trackModules]) => (
         <section key={track} className="mt-12" aria-labelledby={`track-${track}`}>
           <div className="flex flex-wrap items-baseline gap-x-3 border-b border-line pb-2">
             <h2 id={`track-${track}`} className="text-2xl font-semibold tracking-tight">

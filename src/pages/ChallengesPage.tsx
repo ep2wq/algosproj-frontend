@@ -95,7 +95,7 @@ export default function ChallengesPage() {
   }
 
   return (
-    <div className="max-w-4xl">
+    <div className="mx-auto max-w-4xl">
       <title>{t('titles.page', { name: t('challenges.title') })}</title>
       <h1 className="text-3xl font-semibold tracking-tight">{t('challenges.title')}</h1>
       <p className="mt-2 text-muted">{t('challenges.intro')}</p>
@@ -285,7 +285,7 @@ export default function ChallengesPage() {
                   </thead>
                   <tbody className="divide-y divide-line">
                     {shown.map((challenge) => (
-                      <tr key={challenge.slug} className="hover:bg-paper">
+                      <tr key={challenge.slug} className="hover:bg-hover">
                         {user && (
                           <td className="px-4 py-2">
                             <SolvedMark solved={challenge.solved} />

@@ -123,10 +123,8 @@ export default function LandingPage() {
     <div>
       <PageMeta title={t('landing.metaTitle')} description={t('landing.metaDescription')} path="/" />
 
-      {/* Stacked: the words at a reading width, then the visual across the page. isolate: the dot grid
-          (index.css) sits behind this section only. */}
-      <section aria-labelledby="landing-title" className="relative isolate">
-        <div aria-hidden="true" className="dot-grid pointer-events-none absolute inset-x-0 -top-8 bottom-0 -z-10" />
+      {/* Stacked: the words at a reading width, then the visual across the page. */}
+      <section aria-labelledby="landing-title">
         <div className="max-w-3xl lg:pt-6">
           <h1 id="landing-title" className="text-4xl font-bold tracking-tight sm:text-5xl">
             {t('landing.title')}
@@ -267,22 +265,22 @@ export default function LandingPage() {
         <p className="mt-6 max-w-prose text-muted">{t('landing.bilingual')}</p>
       </section>
 
-      {/* Visitors only: a logged-in user has Continue learning at the top. Dark in both themes (the
-          footer's tokens), so the button is the one bright thing: emerald with a dark label, 7.8:1. */}
+      {/* Visitors only: a logged-in user has Continue learning at the top. Follows the theme (band in
+          index.css): a white card in light, near black in dark; the button is the one filled thing. */}
       {!loading && !user && (
         <section
           aria-labelledby="landing-start"
-          className="on-dark mt-20 grid items-end gap-x-10 gap-y-6 rounded-lg bg-footer px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[minmax(0,1fr)_auto]"
+          className="mt-20 grid items-end gap-x-10 gap-y-6 rounded-lg border border-line bg-band px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[minmax(0,1fr)_auto]"
         >
           <div>
-            <h2 id="landing-start" className="text-3xl font-bold tracking-tight text-footer-ink sm:text-4xl">
+            <h2 id="landing-start" className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">
               {t('landing.ctaTitle')}
             </h2>
-            <p className="mt-3 max-w-prose text-footer-muted">{t('landing.startBody')}</p>
+            <p className="mt-3 max-w-prose text-muted">{t('landing.startBody')}</p>
           </div>
           <Link
             to={firstLesson ? `/lessons/${firstLesson.slug}` : '/lessons'}
-            className="inline-flex min-h-12 items-center justify-center rounded bg-footer-accent px-6 font-semibold text-footer hover:bg-footer-accent/90 motion-safe:active:translate-y-px"
+            className="inline-flex min-h-12 items-center justify-center rounded bg-accent px-6 font-semibold text-inverse hover:bg-accent/90 motion-safe:active:translate-y-px"
           >
             {t('landing.startFirst')}
           </Link>

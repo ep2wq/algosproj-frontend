@@ -112,13 +112,13 @@ export default function ProblemSolver({
                 <div className="min-w-0">
                   <dt className="text-xs text-muted">{t('solver.input')}</dt>
                   <dd>
-                    <pre dir="ltr" lang="en" className="mt-1 w-fit max-w-full overflow-x-auto whitespace-pre-wrap rounded bg-paper px-2 py-1 font-mono text-sm">{testCase.input}</pre>
+                    <pre dir="ltr" lang="en" className="mt-1 w-fit max-w-full overflow-x-auto whitespace-pre-wrap rounded bg-code px-2 py-1 font-mono text-sm">{testCase.input}</pre>
                   </dd>
                 </div>
                 <div className="min-w-0">
                   <dt className="text-xs text-muted">{t('solver.expectedOutput')}</dt>
                   <dd>
-                    <pre dir="ltr" lang="en" className="mt-1 w-fit max-w-full overflow-x-auto whitespace-pre-wrap rounded bg-paper px-2 py-1 font-mono text-sm">{testCase.expected_output}</pre>
+                    <pre dir="ltr" lang="en" className="mt-1 w-fit max-w-full overflow-x-auto whitespace-pre-wrap rounded bg-code px-2 py-1 font-mono text-sm">{testCase.expected_output}</pre>
                   </dd>
                 </div>
               </dl>

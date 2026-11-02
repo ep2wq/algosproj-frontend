@@ -112,7 +112,7 @@ export default function SubarraySumVisual() {
   const sum = current.read !== null ? current.prefixes[current.read + 1] : current.output !== null ? current.prefixes[current.values.length] : 0
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -139,7 +139,7 @@ export default function SubarraySumVisual() {
         ref={scrollRef}
         className={`mt-3 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
       >
-        <div role="img" aria-label={diagramLabel(current, t)} className="flex w-max gap-1">
+        <div role="img" aria-label={diagramLabel(current, t)} className="mx-auto flex w-max gap-1">
           <div className="flex flex-col pe-1 text-xs text-muted">
             <span className="mt-4 flex h-10 items-center">{t('subarraySum.rowNumber')}</span>
             <span className="mt-1 flex h-10 items-center">sum</span>

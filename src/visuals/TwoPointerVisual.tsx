@@ -85,7 +85,7 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
   }
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -101,7 +101,7 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
         <div
           role="img"
           aria-label={t('twoPointer.label', { text: current.chars.join('') })}
-          className="flex w-max gap-x-1.5"
+          className="mx-auto flex w-max gap-x-1.5"
         >
           {current.chars.map((char, index) => (
             <div key={index} data-index={index} className="flex w-10 flex-col items-center">

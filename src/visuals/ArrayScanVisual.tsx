@@ -62,7 +62,7 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
   }
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -78,7 +78,7 @@ export default function ArrayScanVisual({ mode }: { mode: ScanMode }) {
         <div
           role="img"
           aria-label={mode === 'sum' ? t('arrayScan.labelSum', { values: current.array.join(', '), value: current.value }) : t('arrayScan.labelMax', { values: current.array.join(', '), value: current.value })}
-          className="flex w-max gap-x-1.5"
+          className="mx-auto flex w-max gap-x-1.5"
         >
           {current.array.map((value, index) => (
             <div key={index} data-index={index} className="flex w-10 flex-col items-center">

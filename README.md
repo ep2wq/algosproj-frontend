@@ -65,7 +65,7 @@ the server.
 
 ## Themes
 
-The theme button (sun and moon icon, a real `<button>`, 44 px) in the header's settings pill switches
+The theme button (sun and moon icon, a real `<button>`, 44 px) in the header's settings group switches
 between Light and Dark; its accessible name says what it will do ("Switch to dark theme"). Dark is the default: until the button is clicked the app is
 dark whatever the OS setting (there is no "follow the OS" option). After the first click the
 choice is stored under `theme` (`light` or `dark`) and wins from then on. Any other stored value,
@@ -76,17 +76,24 @@ such as an old `system`, is ignored (dark).
   script in `index.html` does the same before the first paint, so a light page never flashes
   dark; keep the two in step. The prerendered HTML is dark (`class="dark"` on `<html>` in
   `index.html`), and both set the single `theme-color` meta (the browser bar).
-- The sticky header (`.site-header` in `src/index.css`) is the surface at 85% in light and 92% in
-  dark (`--header-glass`, which keeps every header text pair at 4.5:1 even over black or white with
-  no blur; at 85% dark muted text would drop to 4.44) with a `line` bottom edge. Once the page has
-  scrolled (one IntersectionObserver in `Layout.tsx`) it adds a 14 px backdrop blur. A solid
-  surface without `backdrop-filter` support, under `prefers-reduced-transparency` or
+- The sticky header (`.site-header` in `src/index.css`) is the surface at 92% in both themes
+  (`--header-glass`; over the gray paper it reads as the same white as the footer, and every header
+  text pair stays at 4.5:1 even over black or white with no blur) with a `line` bottom edge. Once
+  the page has scrolled (one IntersectionObserver in `Layout.tsx`) it adds a 14 px backdrop blur. A
+  solid surface without `backdrop-filter` support, under `prefers-reduced-transparency` or
   `prefers-contrast: more`. Blur is used nowhere else.
-- Light mode is a cool gray `paper` (#e8ebef) with white `surface` cards, header and inputs. The
-  footer follows the theme (`foot`, `foot-line`: light gray in light, near black in dark); the
-  `footer-*` tokens are only the landing CTA banner now, dark in both themes. The `dot-grid`
-  utility (a static dot grid, `--dot-color`: ink at 12%, 6% in dark, fading toward the bottom) is
-  only behind the landing hero, never behind code, the editor or long text.
+- Light mode is a cool gray `paper` (#e8ebef) with white `surface` cards, header, footer and
+  inputs; the footer is `surface` with a `line` top edge in both themes. The page itself (body) has
+  a static 18 px dot grid from top to bottom (`--dot-color`: ink at 7% in both themes, so even text
+  sitting on a dot passes: light `fail` 4.57 is the lowest), not printed. Everything dense has a
+  solid background, so dots never show behind code, the editor, tables or inputs.
+- More tokens: `hover` (the soft background of a hovered or keyboard-focused ghost button, menu
+  item or table row), `code` (every code area: the landing sample, lesson code, examples and output
+  values; never `paper`, so code inside a white card does not melt into the page), `band` (the
+  landing CTA band: white with a line border in light, near black in dark) and the `syntax-*`
+  colours (keyword, function, number, string, comment, operator; each at least 4.5:1 on `code`;
+  never emerald or lime, which mean the accent and "passed"). Rule: nothing inside a card uses
+  `paper` as its background, except the visualizations' "ruled out" cell state.
 - Layout width: the `site-container` utility (`src/index.css`, max 80rem with 16/24/32 px side
   padding) is shared by the header, `main`, the footer and the verify-email strip, so all line up.
   Pages keep their own content widths inside it (`max-w-prose` for reading text).
@@ -185,7 +192,7 @@ table per sound. It exports `play(sound)`, `setSoundOn(on)` and `useSoundOn()`.
   arrives; `usePlayback` plays step and finish when the step changes.
 - The toggle (`SoundToggle` in `src/components/Layout.tsx`) is a 44 px button with
   `aria-pressed` and the name "Sound effects" (`sound.label`). From `lg` (1024 px) it sits in the
-  settings pill next to the theme and language buttons; below `lg` it is a labelled button in the
+  header's settings group next to the theme and language buttons; below `lg` it is a labelled button in the
   footer (in the header it would make a 768 px header 2 rows).
 
 ## Languages (English and Arabic)
@@ -327,10 +334,13 @@ Visualizations are translated too; their drawings stay left to right.
   focus, that jumps to `<main id="main">`.
   The header (`Layout.tsx`) has three zones. Start: the logo, Lessons, Challenges, Leaderboard and
   "More" (`SiteMenu`: About, FAQ, Contact); below `md` the three links move into it and it becomes
-  the "Menu" button. End: the settings pill (theme, sound from `lg`, language), a divider from `lg`,
-  then the account. A visitor gets Log in (outlined) and Register (the one filled button). A
-  logged-in user gets one button (`AccountMenu`): initial, name (from `lg`; below that only in its
-  accessible name), points (pulses when they go up) and a chevron; its panel shows "name · points",
+  the "Menu" button. End: the settings (theme and sound as icon-only ghost buttons, language as a
+  ghost button with an icon and the other language's name; no box around them), a divider from `md`,
+  then the account. Ghost buttons show the `hover` background and ink on hover and keyboard focus;
+  36 px with a mouse from `sm`, 44 px on touch. A visitor gets Log in (ghost) and Register (the one
+  filled button). A logged-in user gets one pill (`AccountMenu`, the only fully rounded control, with
+  a `line` border): initial, name (from `lg`; below that only in its accessible name), points in
+  accent (pulse when they go up) and a chevron; its panel shows "name · points",
   Admin (staff only), Log out. Both panels are disclosures (`aria-expanded`, `aria-controls`), not
   `role="menu"`: Escape (focus back to the button), a click outside, focus leaving or a route change
   closes them. Every control is 44 px. Every page ends with a `Footer` (Learn, Learning tracks, About
@@ -405,8 +415,27 @@ the problem heading) and the challenge page uses it directly; its `onPassed` cal
 the challenge page mark the problem solved without reloading.
 
 Lesson text is parsed by `src/lessonText.ts` (pure functions: headings `## `, `- ` lists,
-4-space-indented code blocks, paragraphs, then `` `inline code` `` and `~term~` markers) and rendered by `src/components/LessonBody.tsx`
-as plain React elements. The format is documented in the backend README.
+4-space-indented code blocks, `> ` example callouts, `>! ` key idea boxes, paragraphs, then
+`` `inline code` `` and `~term~` markers) and rendered by `src/components/LessonBody.tsx` as plain
+React elements, in the reading type scale (`text-lesson-*` utilities in `src/index.css`). The format
+is documented in the backend README (the two callout markers are new and not documented there yet).
+On the lesson page (`lesson` prop) `lessonItems` also numbers the `## ` headings (01, 02..., ids
+`section-1`...), makes the first paragraph a lead, and turns a run of sections headed `## Python`,
+`## Java`, `## JavaScript`, `## C++` (optionally `~`-marked, with extra heading words as a note) whose
+body is only one code block and at most one short one-line paragraph into one tabbed code block
+(`CodeTabs.tsx`: Python first, Copy button, static syntax colours from `src/syntax.ts`, which only
+splits text into spans and falls back to plain text unless the pieces join back to the exact code).
+Anything that does not match exactly renders as before. 35 of the 65 lessons get tabs, in both languages.
+
+The lesson page (`LessonPage.tsx`) is one centred column (68ch) below `xl`; from `xl` a grid with
+the text column and a sticky rail ("On this page": the numbered sections, the visualization and each
+problem, the one in view marked by one IntersectionObserver; then the next and previous lesson). The
+visualization and the problems span the whole container. It loads `/modules` for the breadcrumb
+(Lessons › module) and the next and previous lessons.
+
+The landing code sample is stored already split for colours (`BINARY_SEARCH_LINES` in
+`src/codeSamples.ts`); `scripts/check-code-samples.mjs` (part of `npm run lint`) fails if the pieces
+do not join back to `BINARY_SEARCH_SAMPLES`.
 
 ## Public pages
 

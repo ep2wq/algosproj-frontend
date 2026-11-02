@@ -143,7 +143,7 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
   const describedBy = `${id}-hint${inputError ? ` ${id}-error` : ''}`
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -162,9 +162,9 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
           aria-label={t('grid.region')}
           dir="ltr"
           ref={scrollRef}
-          className={`overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
+          className={`min-w-0 flex-1 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
         >
-          <div role="img" aria-label={gridLabel(mode, current, t)} className="w-max">
+          <div role="img" aria-label={gridLabel(mode, current, t)} className="mx-auto w-max">
             <div className="flex gap-0.5 ps-5">
               {Array.from({ length: cols }, (_, c) => (
                 <span key={c} className="w-8 text-center font-mono text-xs text-muted tabular-nums">

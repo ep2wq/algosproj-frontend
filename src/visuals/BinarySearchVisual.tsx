@@ -102,7 +102,7 @@ export default function BinarySearchVisual() {
   }
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
         <form onSubmit={handleTarget} noValidate>
           <label htmlFor={`${id}-target`} className="text-sm font-medium">

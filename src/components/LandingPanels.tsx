@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import { ApiError, getLeaderboard, getMyRank, type ChallengeSummary, type LeaderboardEntry, type LessonSummary, type Module, type MyRank } from '../api'
 import { useAuth } from '../auth'
 import { formatNumber, formatPercent } from '../i18n'
+import { groupByTrack, trackName } from '../progress'
+import { primaryButton } from './buttonStyles'
 import Content from './Content'
 import EmptyState from './EmptyState'
 import { CheckIcon } from './Icons'
@@ -16,7 +18,6 @@ import { Skeleton } from './ui/skeleton'
 // only once /me has answered and only for a logged-in user; a visitor never sees empty bars.
 
 const DIFFICULTIES = ['easy', 'medium', 'hard']
-const TRACKS = ['basics', 'data-structures', 'algorithms']
 
 type Data = {
   modules: Module[] | null
@@ -37,12 +38,13 @@ function LoadError({ failure, fallback, retry }: { failure: unknown; fallback: s
   )
 }
 
-// A labelled bar (Base UI, role="progressbar"); the percentage is also written next to it or in the
+// A labelled bar (Base UI, role="progressbar"); the count is also written next to it or in the
 // sentence above, so it never depends on the bar alone.
-function ProgressBar({ ratio, label }: { ratio: number; label: string }) {
+function ProgressBar({ ratio, label, className }: { ratio: number; label: string; className?: string }) {
   const { t, i18n } = useTranslation()
   return (
     <Progress
+      className={className}
       value={Math.round(ratio * 100)}
       aria-label={label}
       getAriaValueText={() => t('landing.progressValue', { percent: formatPercent(ratio, i18n.language) })}
@@ -50,16 +52,14 @@ function ProgressBar({ ratio, label }: { ratio: number; label: string }) {
   )
 }
 
-// The summary card above the lessons and challenges lists for a logged-in user: a sentence and a bar,
-// and on the lessons tab the box of the next lesson.
-function SummarySkeleton({ next = false }: { next?: boolean }) {
+// The summary card above the challenges list for a logged-in user: a sentence and a bar.
+function SummarySkeleton() {
   return (
     <div className="grid gap-4 rounded-lg border border-line bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
       <div>
         <SkeletonLines lines={1} className="w-64 max-w-full" />
         <Skeleton className="mt-2 h-1.5 max-w-md rounded-full" />
       </div>
-      {next && <div className="h-[4.375rem] w-40 rounded-lg border border-line" />}
     </div>
   )
 }
@@ -81,6 +81,26 @@ function SignInHint({ text }: { text: string }) {
   )
 }
 
+// The module grid: one row per track, as many columns of at least 13rem as fit, up to four (each
+// column at least a quarter of the row). Cards past the columns that fit are display:none
+// (container queries on the track), so the row never wraps and hidden cards leave the tab order.
+// The breakpoints are where 2, 3 and 4 columns of 13rem with 0.5rem gaps fit.
+const ROW_SIZE = 4
+const MODULE_GRID = 'grid grid-cols-[repeat(auto-fill,minmax(max(13rem,calc(25%-0.375rem)),1fr))] gap-2'
+const CARD_FITS = ['flex', 'hidden @min-[26.5rem]:flex', 'hidden @min-[40rem]:flex', 'hidden @min-[53.5rem]:flex']
+// "See all" for a track of 2, 3 or 4 modules goes away from the width where all of them show.
+const ALL_SHOWN_FROM: Record<number, string> = { 2: '@min-[26.5rem]:hidden', 3: '@min-[40rem]:hidden', 4: '@min-[53.5rem]:hidden' }
+const moduleCard = 'min-h-11 w-full flex-col justify-center rounded-lg border bg-surface px-3 py-2.5'
+
+// The modules a track's row shows, in course order: from the up-next module (or the track's first
+// unfinished one), wrapping round to the earlier ones; for a visitor, the first ones.
+function rowModules(trackModules: Module[], done: Set<string> | null, upNextId: string | null): Module[] {
+  let start = trackModules.findIndex((module) => module.id === upNextId)
+  if (start === -1 && done) start = trackModules.findIndex((module) => module.lessons.some((lesson) => !done.has(lesson.slug)))
+  if (start === -1) start = 0
+  return [...trackModules.slice(start), ...trackModules.slice(0, start)].slice(0, ROW_SIZE)
+}
+
 export function LessonsPanel({
   modules,
   failure,
@@ -93,8 +113,8 @@ export function LessonsPanel({
   const language = i18n.language
 
   if (failure !== null && modules === null) return <LoadError failure={failure} fallback={t('home.loadFailed')} retry={retry} />
-  // The first track with five module cards; most of a screen is held, so the sections below stay out
-  // of view and nothing visible moves when the list arrives.
+  // The first track with a row of module cards; most of a screen is held, so the sections below stay
+  // out of view and nothing visible moves when the list arrives.
   if (modules === null) {
     return (
       <div>
@@ -106,21 +126,19 @@ export function LessonsPanel({
               <SignInHint text={t('landing.lessons.signIn')} />
             </div>
           )}
-          {user && <SummarySkeleton next />}
-          <div className="mt-8">
+          {user && (
+            <div className="flex min-h-[3.75rem] items-center rounded-lg border border-line bg-surface px-4 py-2">
+              <SkeletonLines lines={1} className="w-64 max-w-full" />
+            </div>
+          )}
+          <div className="mt-8 @container">
             <p className="text-lg font-semibold">{t('home.tracks.basics')}</p>
-            <div className="mt-3 grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent lg:grid-cols-3">
-              {[0, 1, 2, 3, 4].map((index) => (
-                <div key={index} className="flex flex-col bg-surface px-4 py-3 sm:rounded-lg sm:border sm:border-line sm:py-4">
-                  <SkeletonLines lines={1} className={index % 2 ? 'w-32' : 'w-44'} />
-                  {user ? (
-                    <div className="mt-auto pt-2">
-                      <SkeletonLines lines={1} className="w-28 text-sm" />
-                      <Skeleton className="mt-1.5 h-1.5 rounded-full" />
-                    </div>
-                  ) : (
-                    <SkeletonLines lines={1} className="mt-1 w-20 text-sm" />
-                  )}
+            <SkeletonLines lines={1} className="w-40 text-sm" />
+            <div className={`mt-3 ${MODULE_GRID}`}>
+              {CARD_FITS.map((fits, index) => (
+                <div key={index} className={`${moduleCard} border-line ${fits}`}>
+                  <SkeletonLines lines={1} className={index % 2 ? 'w-32' : 'w-40'} />
+                  <SkeletonLines lines={1} className="mt-0.5 w-20 text-sm" />
                 </div>
               ))}
             </div>
@@ -133,101 +151,110 @@ export function LessonsPanel({
 
   const total = modules.reduce((sum, module) => sum + module.lessons.length, 0)
   const doneCount = done ? modules.reduce((sum, module) => sum + module.lessons.filter((lesson) => done.has(lesson.slug)).length, 0) : 0
+  // A visitor's "up next" is the first module with lessons; a user's is the one holding the next
+  // lesson (none until their progress has loaded, and none when every lesson is done).
+  const upNextId = user ? (done ? (next?.module.id ?? null) : null) : (modules.find((module) => module.lessons.length > 0)?.id ?? null)
+  const count = (value: number) => formatNumber(value, language)
 
   return (
     <div>
       {!loading && !user && <SignInHint text={t('landing.lessons.signIn')} />}
+      {/* One slim row: where the user stands, and the next lesson as the one filled button. */}
       {user && done && (
-        <div className="grid gap-4 rounded-lg border border-line bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-          <div>
-            <p className="font-medium">
-              {doneCount === 0
-                ? t('landing.lessons.noneDone')
-                : t('landing.lessons.summary', {
-                    count: total,
-                    done: formatNumber(doneCount, language),
-                    total: formatNumber(total, language),
-                    percent: formatPercent(doneCount / total, language),
-                  })}
-            </p>
-            <div className="mt-2 max-w-md">
-              <ProgressBar
-                ratio={total ? doneCount / total : 0}
-                label={t('landing.lessons.overall')}
-              />
-            </div>
-          </div>
+        <div className="flex min-h-[3.75rem] flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-line bg-surface px-4 py-2">
+          <p className="min-w-0 flex-[1_1_16rem]">
+            {doneCount === 0
+              ? t('landing.lessons.noneDone')
+              : t('landing.lessons.summary', { count: total, done: count(doneCount), total: count(total), percent: formatPercent(doneCount / total, language) })}
+          </p>
           {next ? (
-            <Link to={`/lessons/${next.lesson.slug}`} className="rounded-lg border border-accent bg-accent-soft px-4 py-3 hover:bg-accent-soft/60">
-              <span className="block text-sm text-muted">{t('landing.lessons.nextUp')}</span>
-              <span className="block font-semibold text-accent">
-                <Content lang="auto">{next.lesson.title}</Content>
-              </span>
+            <Link to={`/lessons/${next.lesson.slug}`} className={`${primaryButton} max-w-full gap-1 px-4 text-sm`}>
+              <span className="shrink-0">{doneCount === 0 ? t('landing.lessons.start') : t('landing.lessons.continue')}</span>
+              <Content lang="auto" className="truncate">
+                {next.lesson.title}
+              </Content>
             </Link>
           ) : (
-            <p className="text-pass">{t('landing.lessons.allDone')}</p>
+            <p className="font-medium text-pass">{t('landing.lessons.allDone')}</p>
           )}
         </div>
       )}
 
-      {TRACKS.filter((track) => modules.some((module) => module.track === track)).map((track) => (
-        <div key={track} className="mt-8">
-          <h3 className="text-lg font-semibold">{t(`home.tracks.${track}`)}</h3>
-          {/* One joined list on a phone, separate cards from sm. */}
-          <ul className="mt-3 grid overflow-hidden rounded-lg border border-line bg-line gap-px sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent lg:grid-cols-3">
-            {modules
-              .filter((module) => module.track === track)
-              .map((module) => {
+      {groupByTrack(modules).map(([track, trackModules]) => {
+        const lessons = trackModules.reduce((sum, module) => sum + module.lessons.length, 0)
+        const shown = rowModules(trackModules, done, upNextId)
+        const name = t(`home.tracks.${track}`, { defaultValue: trackName(track) })
+        return (
+          <section key={track} aria-labelledby={`landing-track-${track}`} className="mt-8 @container">
+            <h3 id={`landing-track-${track}`} className="text-lg font-semibold">
+              {name}
+            </h3>
+            <p className="text-sm text-muted">
+              {t('landing.lessons.trackMeta', {
+                modules: t('landing.moduleCount', { count: trackModules.length, value: count(trackModules.length) }),
+                lessons: t('landing.lessonCount', { count: lessons, value: count(lessons) }),
+              })}
+            </p>
+            <ul className={`mt-3 ${MODULE_GRID}`}>
+              {shown.map((module, index) => {
+                const lessonTotal = module.lessons.length
                 const moduleDone = done ? module.lessons.filter((lesson) => done.has(lesson.slug)).length : 0
-                const ratio = module.lessons.length ? moduleDone / module.lessons.length : 0
+                const finished = done !== null && lessonTotal > 0 && moduleDone === lessonTotal
+                const started = done !== null && moduleDone > 0 && !finished
+                const isNext = module.id === upNextId
                 const target = module.lessons.find((lesson) => !done?.has(lesson.slug)) ?? module.lessons[0]
-                const isNext = user !== null && next?.module.id === module.id
-                return (
-                  <li
-                    key={module.id}
-                    className={`flex flex-col bg-surface px-4 py-3 sm:rounded-lg sm:border sm:py-4 ${isNext ? 'inset-ring-2 inset-ring-accent sm:inset-ring-0 sm:border-accent' : 'sm:border-line'}`}
-                  >
-                    <h4 className="font-semibold">
-                      {target ? (
-                        <Link to={`/lessons/${target.slug}`} className="rounded text-accent hover:underline">
-                          <Content lang="auto">{module.title}</Content>
-                        </Link>
-                      ) : (
-                        <Content lang="auto">{module.title}</Content>
-                      )}
-                    </h4>
-                    {/* With progress shown, "2 of 4 lessons done" already gives the count. */}
-                    {!(user && done && module.lessons.length > 0) && (
-                      <p className="mt-1 text-sm text-muted">
-                        {t('home.lessonCount', { count: module.lessons.length, value: formatNumber(module.lessons.length, language) })}
-                      </p>
+                const lessonsText = t('home.lessonCount', { count: lessonTotal, value: count(lessonTotal) })
+                const progress = t('landing.lessons.moduleDone', { count: lessonTotal, done: count(moduleDone), total: count(lessonTotal) })
+                const meta = started ? progress : lessonsText
+                const body = (
+                  <>
+                    <span className="font-semibold text-ink">
+                      <Content lang="auto">{module.title}</Content>
+                    </span>
+                    {finished ? (
+                      <span className="mt-0.5 inline-flex items-center gap-1 text-sm text-muted">
+                        <CheckIcon className="size-4 shrink-0 text-pass" />
+                        {t('landing.lessons.done')}
+                      </span>
+                    ) : (
+                      <span className={`mt-0.5 text-sm ${isNext ? 'font-medium text-accent' : 'text-muted'}`}>
+                        {isNext ? t('landing.lessons.upNextMeta', { meta }) : meta}
+                      </span>
                     )}
-                    {user && done && module.lessons.length > 0 && (
-                      <div className="mt-auto pt-2">
-                        <div className="flex items-baseline justify-between gap-2 text-sm">
-                          <span className="text-muted">
-                            {t('landing.lessons.moduleDone', {
-                              count: module.lessons.length,
-                              done: formatNumber(moduleDone, language),
-                              total: formatNumber(module.lessons.length, language),
-                            })}
-                          </span>
-                          <span className="font-medium tabular-nums">{formatPercent(ratio, language)}</span>
-                        </div>
-                        <div className="mt-1.5">
-                          <ProgressBar
-                            ratio={ratio}
-                            label={t('landing.lessons.moduleProgress', { module: module.title })}
-                          />
-                        </div>
-                      </div>
+                    {started && (
+                      <ProgressBar
+                        ratio={moduleDone / lessonTotal}
+                        label={t('landing.lessons.moduleProgress', { module: module.title })}
+                        className="mt-1.5 [&_[data-slot=progress-track]]:h-[3px]"
+                      />
+                    )}
+                  </>
+                )
+                return (
+                  <li key={module.id} className={CARD_FITS[index]}>
+                    {target ? (
+                      <Link to={`/lessons/${target.slug}`} className={`${moduleCard} flex hover:bg-hover ${isNext ? 'border-accent' : 'border-line'}`}>
+                        {body}
+                      </Link>
+                    ) : (
+                      <div className={`${moduleCard} flex border-line`}>{body}</div>
                     )}
                   </li>
                 )
               })}
-          </ul>
-        </div>
-      ))}
+            </ul>
+            {/* Only while the track has modules the row does not show (more than four, or fewer
+                columns than modules at this width). /lessons does not scroll to a #track- anchor. */}
+            {trackModules.length > 1 && (
+              <p className={`mt-1 ${trackModules.length > shown.length ? '' : ALL_SHOWN_FROM[trackModules.length]}`}>
+                <Link to="/lessons" className="inline-flex min-h-11 items-center rounded text-sm text-accent underline underline-offset-2 sm:pointer-fine:min-h-8">
+                  {t('landing.lessons.seeAll', { count: trackModules.length, value: count(trackModules.length), track: name })}
+                </Link>
+              </p>
+            )}
+          </section>
+        )
+      })}
     </div>
   )
 }

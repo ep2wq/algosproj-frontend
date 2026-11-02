@@ -29,18 +29,30 @@
   --color-social-line: #747775;
   --color-social-ink: #1f1f1f;
 
-  /* The landing CTA banner is dark in both themes (.dark does not swap these). On footer (#070a11):
-     ink 18.93, muted 7.72, accent 7.81 (text and focus ring). */
-  --color-footer: #070a11;
-  --color-footer-line: #1e293b;
-  --color-footer-ink: #f8fafc;
-  --color-footer-muted: #94a3b8;
-  --color-footer-accent: #10b981;
+  /* The landing CTA band follows the theme: the surface (with a line border) in light, near black
+     in dark. Text is ink and muted, the button accent with inverse text. Dark: ink 18.93, muted
+     7.72, accent 7.81 (text and focus ring), inverse on accent 7.95. */
+  --color-band: #ffffff;
 
-  /* The site footer follows the theme (.dark swaps these): its background and top edge. Text is ink
-     and muted; light: ink 13.85, muted 5.88, accent focus ring 5.96; dark: as the banner above. */
-  --color-foot: #dfe3e8;
-  --color-foot-line: #cdd2d9;
+  /* Code areas (the landing sample, lesson code, examples and output values), never the paper, so
+     code inside a white card does not melt into the page. Every syntax token below and muted are at
+     least 4.5:1 on it, in both themes. */
+  --color-code: #f6f8fa;
+
+  /* Syntax colours (static, src/syntax.ts and codeSamples.ts). On code: keyword 6.67, function 5.57,
+     number 4.72, string 5.67, comment 5.11, operator 7.12. Never emerald or lime (the accent and
+     "passed"). */
+  --color-syntax-keyword: #6d28d9;
+  --color-syntax-function: #0369a1;
+  --color-syntax-number: #b45309;
+  --color-syntax-string: #be185d;
+  --color-syntax-comment: #5b6b80;
+  --color-syntax-operator: #475569;
+
+  /* The soft background of a hovered or keyboard-focused ghost button (header, account menu,
+     table rows): one step from the surface. Light: ink 16.30, muted 6.92, accent 7.01 on it;
+     dark: ink 13.98, muted 5.71, accent 5.77. */
+  --color-hover: #f1f5f9;
 
   /* Fonts (README "Languages"): IBM Plex Sans Arabic for all interface text, Latin and Arabic;
      JetBrains Mono for code and numbers set as data. Each is followed by its size-adjusted local
@@ -93,14 +105,15 @@
   --ring: var(--color-accent);
   --radius: 0.5rem;
 
-  /* The header (.site-header below): the surface at 85% (92% in .dark). Measured with the worst
-     content behind it, pure black or white and no blur, every header text pair still passes 4.5:1
-     (lowest: muted on the light glass over black, 5.37). Dark stays at 92%: at 85% muted and accent
-     over white drop to 4.44 and 4.49. */
-  --header-glass: color-mix(in srgb, var(--color-surface) 85%, transparent);
+  /* The header (.site-header below): the surface at 92% in both themes, so in light mode it reads
+     as the same white as the footer (over the gray paper it is #fdfdfd). Measured with the worst
+     content behind it, pure black or white and no blur, every header text pair still passes 4.5:1. */
+  --header-glass: color-mix(in srgb, var(--color-surface) 92%, transparent);
 
-  /* The dot grid behind the landing hero (dot-grid utility below). */
-  --dot-color: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  /* The dot grid on the page background (body below): ink at 7% in both themes. Measured with text
+     sitting on a dot (worst case), every text token on the page still passes: light fail 4.57,
+     pass 5.15, muted 5.51; dark muted 6.41, fail 5.94. At 10% light fail text would drop to 4.30. */
+  --dot-color: color-mix(in srgb, var(--color-ink) 7%, transparent);
 }
 
 @theme inline {
@@ -279,16 +292,34 @@
   --color-social: #131314;
   --color-social-line: #8e918f;
   --color-social-ink: #e3e3e3;
-  --color-foot: #070a11;
-  --color-foot-line: #1e293b;
+  --color-hover: #1e293b;
+  --color-band: #070a11;
+  /* On code (#0b0f19): keyword 10.37, function 11.49, number 13.28, string 10.56, comment 5.99,
+     operator 7.47, muted 7.47. */
+  --color-code: #0b0f19;
+  --color-syntax-keyword: #c4b5fd;
+  --color-syntax-function: #7dd3fc;
+  --color-syntax-number: #fcd34d;
+  --color-syntax-string: #f9a8d4;
+  --color-syntax-comment: #8391a7;
+  --color-syntax-operator: #94a3b8;
   --float-shadow: 0 8px 24px -6px rgb(0 0 0 / 0.5), 0 2px 6px -2px rgb(0 0 0 / 0.4);
-  --header-glass: color-mix(in srgb, var(--color-surface) 92%, transparent);
-  --dot-color: color-mix(in srgb, var(--color-ink) 6%, transparent);
 }
 
+/* The page: paper with a static dot grid (18 px), from the top of the page to the bottom whatever
+   its length. Header, footer, cards, code, the editor, tables and inputs have solid backgrounds, so
+   the dots only show on the open page. Not printed. */
 body {
-  background: var(--color-paper);
+  background-color: var(--color-paper);
+  background-image: radial-gradient(var(--dot-color) 1px, transparent 1.2px);
+  background-size: 18px 18px;
   color: var(--color-ink);
+}
+
+@media print {
+  body {
+    background-image: none;
+  }
 }
 
 /* The web fonts themselves are in src/fonts.css, loaded after the app's script (src/main.tsx). */
@@ -485,11 +516,6 @@ html {
   }
 }
 
-/* The dark landing banner keeps the footer accent for the ring in both themes. */
-.on-dark :focus-visible {
-  outline-color: var(--color-footer-accent);
-}
-
 /* Reading width of every max-w-prose text (lessons, problem statements, legal and info pages),
    replacing Tailwind's 65ch. Plex letters are narrow for the width of its "0", so 65ch held about
    85 characters per line in English and 95 in Arabic. Tailwind writes 65ch into the utility (no
@@ -517,12 +543,57 @@ html {
   }
 }
 
-/* A static dot grid that fades out toward the bottom: only behind the landing hero, never behind
-   code, the editor or long text. Quieter in dark mode (--dot-color). */
-@utility dot-grid {
-  background-image: radial-gradient(var(--dot-color) 1px, transparent 1.2px);
-  background-size: 18px 18px;
-  mask-image: radial-gradient(ellipse 80% 100% at 50% 0%, #000 35%, transparent 80%);
+/* The reading type scale (README "Themes"), used by LessonBody on lesson, About, FAQ, Contact and
+   legal pages, and by the lesson title. Arabic gets taller lines, in the same proportion as the base
+   rules above (1.75 against 1.5); an English passage inside an Arabic page keeps the English ones. The
+   letter spacing never reaches Arabic (the :lang(ar) rule above wins). */
+@utility text-lesson-title {
+  font-size: 1.75rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+
+  @media (width >= 40rem) {
+    font-size: 2.25rem;
+  }
+
+  &:lang(ar) {
+    line-height: 1.45;
+  }
+}
+
+@utility text-lesson-heading {
+  font-size: 1.375rem;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+
+  &:lang(ar) {
+    line-height: 1.6;
+  }
+}
+
+@utility text-lesson-lead {
+  font-size: 1.125rem;
+  line-height: 1.7;
+
+  &:lang(ar) {
+    line-height: 1.95;
+  }
+}
+
+@utility text-lesson-body {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+
+  &:lang(ar) {
+    line-height: 2;
+  }
+}
+
+/* The width of a lesson's text column: about 68 characters of the body size. */
+@utility max-w-lesson {
+  max-width: 68ch;
 }
 
 /* The end edge of a sideways-scrolling drawing fades while more of it is hidden (useScrollCue).

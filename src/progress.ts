@@ -19,3 +19,20 @@ export function nextLesson(modules: Module[], done: Set<string>): { module: Modu
   }
   return null
 }
+
+// The tracks in display order, taken from the modules themselves: the known ones first, then any
+// other track in the order its first module comes. Each keeps its modules in course order.
+const KNOWN_TRACKS = ['basics', 'data-structures', 'algorithms']
+
+export function groupByTrack(modules: Module[]): [string, Module[]][] {
+  const groups = new Map<string, Module[]>()
+  for (const module of modules) groups.set(module.track, [...(groups.get(module.track) ?? []), module])
+  const rank = (track: string) => (KNOWN_TRACKS.includes(track) ? KNOWN_TRACKS.indexOf(track) : KNOWN_TRACKS.length)
+  return [...groups].sort(([a], [b]) => rank(a) - rank(b))
+}
+
+// The name shown until home.tracks.<id> has a translation: "data-structures" -> "Data structures".
+export function trackName(track: string): string {
+  const words = track.replace(/[-_]+/g, ' ').trim()
+  return words.charAt(0).toUpperCase() + words.slice(1)
+}

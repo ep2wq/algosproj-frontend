@@ -209,7 +209,7 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
   const hasEdge = frames.some((frame) => frame.edge !== null)
 
   return (
-    <div className="mt-4 max-w-2xl">
+    <div className="mt-4 max-w-5xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -225,27 +225,29 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
         ))}
       </div>
 
-      <div
-        tabIndex={0}
-        role="region"
-        aria-label={t('tree.region')}
-        dir="ltr"
-        ref={scrollRef}
-        className={`relative mt-3 overflow-x-auto rounded-lg border border-line bg-surface p-2${scrollMore ? ' scroll-fade' : ''}`}
-      >
-        <div role="img" aria-label={treeLabel(current, mode, t)} className="w-max">
-          <Diagram frame={current} rows={rows} />
-        </div>
-        {current.root === null && (
-          <p aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-sm text-muted">
-            <TextWithCode text={t('tree.emptyTree')} />
-          </p>
-        )}
+      {/* From lg the stack sits beside the drawing instead of under it. */}
+      <div className="mt-3 lg:flex lg:items-start lg:gap-4">
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label={t('tree.region')}
+          dir="ltr"
+          ref={scrollRef}
+          className={`relative min-w-0 overflow-x-auto rounded-lg border border-line bg-surface lg:flex-1 p-2${scrollMore ? ' scroll-fade' : ''}`}
+        >
+          <div role="img" aria-label={treeLabel(current, mode, t)} className="mx-auto w-max">
+            <Diagram frame={current} rows={rows} />
+          </div>
+          {current.root === null && (
+            <p aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-sm text-muted">
+              <TextWithCode text={t('tree.emptyTree')} />
+            </p>
+          )}
       </div>
 
       {current.stack !== null && (
-        <>
-          <p className="mt-3 text-sm font-medium">
+        <div className="lg:w-56 lg:shrink-0">
+          <p className="mt-3 text-sm font-medium lg:mt-0">
             <TextWithCode text={t('tree.stackTitle')} />
           </p>
           <div
@@ -259,8 +261,9 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
               </span>
             ))}
           </div>
-        </>
-      )}
+        </div>
+        )}
+      </div>
 
       {(marks.size > 0 || hasEdge) && (
         <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
