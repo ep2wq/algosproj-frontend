@@ -367,6 +367,14 @@ body {
     text-align: inherit;
   }
 
+  /* A native select's open list (Chrome on Windows draws it from these, not from the select): the
+     surface with ink text in both themes, so options never come out light-on-white. */
+  option,
+  optgroup {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+  }
+
   /* A word longer than its line (a heading at 200% text size on a phone, a long email) breaks
      instead of pushing the page sideways. Only such words: the rest wrap as usual. */
   body {

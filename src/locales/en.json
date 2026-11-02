@@ -305,7 +305,27 @@
       "time": "Time",
       "ip": "IP",
       "noIp": "no IP",
-      "noBrowser": "no browser"
+      "noBrowser": "no browser",
+      "all": "All",
+      "clear": "Clear",
+      "filters": "Filters",
+      "clearSearch": "Clear search",
+      "date": "Date",
+      "results_one": "{{formatted}} result",
+      "results_other": "{{formatted}} results",
+      "pageOf": "Page {{page}} of {{pages}}",
+      "today": "Today",
+      "todayDate": "Today · {{date}}",
+      "yesterdayDate": "Yesterday · {{date}}",
+      "sinceDate": "From {{date}}",
+      "untilDate": "Until {{date}}",
+      "copyId": "Copy the full id {{id}}",
+      "copied": "Copied",
+      "unknown": "Unknown",
+      "changedTo": "changed to",
+      "utcDays": "Days in UTC",
+      "utc": "UTC",
+      "localTime": "Your local time: {{time}}"
     },
     "pagination": {
       "label": "Pages",
@@ -353,7 +373,7 @@
       "lessonNamed": "lesson {{title}}",
       "toNamed": "to {{title}}",
       "loadFailed": "Could not load the content.",
-      "title": "Admin: content",
+      "title": "Content",
       "intro": "Changes are saved to the database and show on the site at once.",
       "loading": "Loading content...",
       "addModule": "Add module",
@@ -363,7 +383,35 @@
       "addProblem": "Add problem",
       "standalone": "Standalone problems",
       "addStandalone": "Add standalone problem",
-      "standaloneIntro": "Problems without a lesson. They appear on Challenges only."
+      "standaloneIntro": "Problems without a lesson. They appear on Challenges only.",
+      "modules": "Modules",
+      "lessons": "Lessons",
+      "problems": "Problems",
+      "needAttention": "Need attention",
+      "stats": "Content summary",
+      "search": "Search by title or slug",
+      "needsAttention": "Needs attention",
+      "expandAll": "Expand all",
+      "collapseAll": "Collapse all",
+      "expand": "Show the contents of {{title}}",
+      "collapse": "Hide the contents of {{title}}",
+      "lessonCount_one": "{{count}} lesson",
+      "lessonCount_other": "{{count}} lessons",
+      "problemCount_one": "{{count}} problem",
+      "problemCount_other": "{{count}} problems",
+      "editModule": "Edit module {{title}}",
+      "editLesson": "Edit lesson {{title}}",
+      "editProblem": "Edit problem {{title}}",
+      "addLessonTo": "Add a lesson to {{title}}",
+      "addProblemTo": "Add a problem to {{title}}",
+      "noMatch": "Nothing matches these filters.",
+      "shown_one": "{{count}} row shown",
+      "shown_other": "{{count}} rows shown",
+      "flagNoArabicTitle": "No Arabic title",
+      "flagNoProblems": "No problems",
+      "flagVisual": "Visualization",
+      "warning": "Warning:",
+      "tree": "Modules, lessons and problems"
     },
     "module": {
       "notFound": "This module doesn't exist.",
@@ -436,7 +484,7 @@
     },
     "users": {
       "loadFailed": "Could not load the users.",
-      "title": "Admin: users",
+      "title": "Users",
       "search": "Search by name or email",
       "role": "Role",
       "allRoles": "All roles",
@@ -452,7 +500,9 @@
       "points": "Points",
       "solved": "Solved",
       "joined": "Joined",
-      "active": "Active"
+      "active": "Active",
+      "count_one": "{{formatted}} user",
+      "count_other": "{{formatted}} users"
     },
     "user": {
       "notFound": "This user doesn't exist.",
@@ -512,8 +562,8 @@
       "fieldChange": "{{field}}: {{old}} → {{new}}",
       "detail": "{{key}}: {{value}}",
       "loadFailed": "Could not load the audit log.",
-      "title": "Admin: audit log",
-      "intro": "Every change made by an admin or owner, newest first. Times are in your timezone; the date filters use UTC days.",
+      "title": "Audit log",
+      "intro": "Every change made by an admin or owner, newest first. Times, day headings and the date filters are in UTC; point at a time to see your local time.",
       "action": "Action",
       "allActions": "All actions",
       "actorFilter": "Actor (id, email or console)",
@@ -522,19 +572,53 @@
       "target": "{{type}} {{id}}: {{label}}",
       "actor": "Actor",
       "targetColumn": "Target",
-      "details": "Details"
+      "details": "Details",
+      "consoleActor": "Console",
+      "targetUser": "user",
+      "value": "value"
     },
     "activity": {
       "loadFailed": "Could not load the activity.",
-      "title": "Admin: activity",
-      "intro": "Registrations, logins, logouts and bans, newest first. The date filters use UTC days.",
+      "title": "Activity",
+      "intro": "Registrations, logins, logouts and bans, newest first. Times, day headings and the date filters are in UTC; point at a time to see your local time.",
       "event": "Event",
       "allEvents": "All events",
-      "userFilter": "User (id or email)",
+      "userFilter": "User id or email",
       "loading": "Loading activity...",
       "noMatch": "No activity matches these filters.",
       "user": "User",
       "browser": "Browser"
+    },
+    "auditActions": {
+      "module": {
+        "create": "Module created",
+        "update": "Module edited",
+        "delete": "Module deleted"
+      },
+      "lesson": {
+        "create": "Lesson created",
+        "update": "Lesson edited",
+        "delete": "Lesson deleted"
+      },
+      "problem": {
+        "create": "Problem created",
+        "update": "Problem edited",
+        "delete": "Problem deleted"
+      },
+      "test_case": {
+        "create": "Test case added",
+        "update": "Test case edited",
+        "delete": "Test case deleted"
+      },
+      "user": {
+        "ban": "Ban",
+        "unban": "Unban",
+        "logout_everywhere": "Logout everywhere",
+        "role_change": "Role change",
+        "points_adjust": "Points adjustment",
+        "reset_progress": "Progress reset",
+        "delete": "User deleted"
+      }
     }
   },
   "sound": {
@@ -809,5 +893,9 @@
     "text": "We only use the cookies and browser storage this site needs to work: to keep you logged in, protect forms and remember your settings. No tracking or ads.",
     "policy": "Cookie policy",
     "ok": "Got it"
+  },
+  "filters": {
+    "label": "Filters",
+    "clearSearch": "Clear search"
   }
 }

@@ -122,7 +122,18 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   grid (one row per track, `groupByTrack` in `progress.ts`), lesson page two columns from xl with rail,
   breadcrumb, meta chips, numbered sections, language code tabs (`CodeTabs.tsx`, `src/syntax.ts`),
   callouts (`> `, `>! `; not yet in the backend README), visuals widened to max-w-5xl with drawings
-  centred. Local test accounts `uitest-*@example.test` exist in the dev DB.
+  centred.
+- Done (not committed, 2026-11-02): admin + Challenges redesign. Admin area is English through its own
+  i18n instance (`AdminRoute`, also covers shared components like `DifficultyBadge`); underlined admin tabs,
+  titles without "Admin:". Shared `FilterBar.tsx` (search with 300 ms debounce, native select chips, Date
+  chip with From/To panel, Clear, result line) and `tableStyles.ts`; filters stay in the URL as before.
+  Content: stats, tree with expand/collapse, `?q=` / `?attention=1`, health flags (module without Arabic
+  title, lesson without problems, Visualization tag); a matching module or lesson shows all its children.
+  Activity and Audit log: rows grouped by UTC day, times in UTC (`UtcClock.tsx`, local time in the title).
+  Users: avatar, role badge, status dot. Challenges: FilterBar, solved check / empty circle. `option` and
+  `optgroup` get surface/ink in `index.css`, so native dropdowns read in dark mode.
+- Local dev DB accounts (to clean up): `uitest-owner` (owner), `uitest-admin` (admin), `uitest-partway`,
+  `uitest-new` (user), all `@example.test`. The audit log has two test role changes on `uitest-new`.
 - Open: no social links (no real URLs yet). The `scroll-fade` utility's `:dir(rtl)` is compiled to
   `:lang(ar)` selectors, so a `dir="ltr"` drawing in Arabic fades on the left (seen before this change).
 - Decisions: oxlint. Lint/build pass. A 401 while `signedIn` (not login/register/logout), or a

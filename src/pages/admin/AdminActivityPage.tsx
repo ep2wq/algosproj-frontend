@@ -1,20 +1,71 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { Ban, KeyRound, LogIn, LogOut, ShieldCheck, ShieldX, UserPlus, type LucideIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ApiError, getActivity, type ActivityEntry, type Page } from '../../api'
+import FilterBar from '../../components/FilterBar'
 import Pagination from '../../components/Pagination'
-import { controlClass, EVENTS, formatTime } from './format'
-import { alertClass, primaryButton, secondaryButton } from './styles'
+import { cardList, headRow, row, rowLink, table, tableCard, td, th, truncate } from '../../components/tableStyles'
+import { formatNumber } from '../../i18n'
+import { browserLabel, dateRangeSummary, EVENTS, groupByUtcDay } from './format'
+import UtcClock from './UtcClock'
+import { alertClass } from './styles'
 
 const EMPTY = { event: '', user: '', from: '', to: '', page: '' }
 
-function Who({ entry }: { entry: ActivityEntry }) {
-  // A failed login with an unknown email, or a deleted account, has no user to link to.
-  if (entry.user_id === null) return <span className="break-all">{entry.email}</span>
+// Each event as a chip with an icon and its word, never colour alone. Login sky, registration pass,
+// bans fail, the rest muted.
+const INFO = 'border-sky-700/40 bg-sky-500/10 text-sky-800 dark:border-sky-300/40 dark:text-sky-300'
+const PASS = 'border-pass/40 bg-pass/10 text-pass'
+const FAIL = 'border-fail/40 bg-fail/10 text-fail'
+const MUTED = 'border-line text-muted'
+const EVENT_STYLE: Record<string, [LucideIcon, string]> = {
+  login: [LogIn, INFO],
+  logout: [LogOut, MUTED],
+  register: [UserPlus, PASS],
+  banned_by_admin: [Ban, FAIL],
+  login_blocked_banned: [ShieldX, FAIL],
+  login_failed: [KeyRound, MUTED],
+  unbanned: [ShieldCheck, MUTED],
+}
+
+function EventChip({ event }: { event: string }) {
+  const { t } = useTranslation()
+  const [Icon, style] = EVENT_STYLE[event] ?? [KeyRound, MUTED]
   return (
-    <Link to={`/admin/users/${entry.user_id}`} className="break-all rounded text-accent hover:underline">
-      {entry.email}
+    <span className={`inline-flex max-w-full items-center gap-1 rounded border px-1.5 py-0.5 text-xs font-medium ${style}`}>
+      <Icon aria-hidden="true" className="size-3.5 shrink-0" />
+      <span className="truncate">{t(`admin.events.${event}`, { defaultValue: event })}</span>
+    </span>
+  )
+}
+
+function Who({ entry }: { entry: ActivityEntry }) {
+  const { t } = useTranslation()
+  const email = entry.email ?? t('admin.common.unknown')
+  // A failed login with an unknown email, or a deleted account, has no user to link to.
+  if (entry.user_id === null)
+    return (
+      <span title={email} className={`${truncate} text-ink`}>
+        {email}
+      </span>
+    )
+  return (
+    <Link to={`/admin/users/${entry.user_id}`} title={email} className={`${rowLink} ${truncate}`}>
+      {email}
     </Link>
+  )
+}
+
+// "Chrome 156 · Windows"; the whole user agent in the title and for screen readers.
+function Browser({ userAgent }: { userAgent: string | null }) {
+  const { t } = useTranslation()
+  if (userAgent === null) return <span className="text-muted">-</span>
+  return (
+    <span title={userAgent} className={`${truncate} text-muted`}>
+      <span aria-hidden="true">{browserLabel(userAgent) ?? t('admin.common.unknown')}</span>
+      <span className="sr-only">{userAgent}</span>
+    </span>
   )
 }
 
@@ -24,7 +75,6 @@ export default function AdminActivityPage() {
   const [params, setParams] = useSearchParams()
   const key = params.toString()
   const filters = { ...EMPTY, ...Object.fromEntries(params) }
-  const [form, setForm] = useState(filters)
   const [result, setResult] = useState<Page<ActivityEntry> | null>(null)
   const [error, setError] = useState('')
 
@@ -47,125 +97,148 @@ export default function AdminActivityPage() {
     setParams(Object.fromEntries(Object.entries(next).filter(([, value]) => value)))
   }
 
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    apply({ ...form, page: '' })
+  // A changed filter goes back to the first page, as the Filter button did.
+  function change(values: Partial<typeof filters>) {
+    apply({ ...filters, ...values, page: '' })
   }
+
+  const groups = result ? groupByUtcDay(result.data, t) : []
 
   return (
     <div className="max-w-5xl">
       <h1 className="text-3xl font-semibold tracking-tight">{t('admin.activity.title')}</h1>
       <p className="mt-2 text-muted">{t('admin.activity.intro')}</p>
 
-      <form onSubmit={handleSubmit} className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <label htmlFor="activity-event" className="text-sm font-medium">
-            {t('admin.activity.event')}
-          </label>
-          <select id="activity-event" value={form.event} onChange={(event) => setForm({ ...form, event: event.target.value })} className={controlClass}>
-            <option value="">{t('admin.activity.allEvents')}</option>
-            {EVENTS.map((value) => (
-              <option key={value} value={value}>
-                {t(`admin.events.${value}`)}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="activity-user" className="text-sm font-medium">
-            {t('admin.activity.userFilter')}
-          </label>
-          <input id="activity-user" type="text" value={form.user} onChange={(event) => setForm({ ...form, user: event.target.value })} className={controlClass} />
-        </div>
-        <div>
-          <label htmlFor="activity-from" className="text-sm font-medium">
-            {t('admin.common.from')}
-          </label>
-          <input id="activity-from" type="date" value={form.from} onChange={(event) => setForm({ ...form, from: event.target.value })} className={controlClass} />
-        </div>
-        <div>
-          <label htmlFor="activity-to" className="text-sm font-medium">
-            {t('admin.common.to')}
-          </label>
-          <input id="activity-to" type="date" value={form.to} onChange={(event) => setForm({ ...form, to: event.target.value })} className={controlClass} />
-        </div>
-        <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-4">
-          <button type="submit" className={primaryButton}>
-            {t('admin.common.filter')}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setForm(EMPTY)
-              apply(EMPTY)
-            }}
-            className={secondaryButton}
-          >
-            {t('admin.common.clearFilters')}
-          </button>
-        </div>
-      </form>
+      <FilterBar
+        label={t('admin.common.filters')}
+        search={{
+          id: 'activity-user',
+          label: t('admin.activity.userFilter'),
+          clearLabel: t('admin.common.clearSearch'),
+          value: filters.user,
+          onChange: (user) => change({ user }),
+        }}
+        selects={[
+          {
+            id: 'activity-event',
+            label: t('admin.activity.event'),
+            value: filters.event,
+            onChange: (event) => change({ event }),
+            options: [{ value: '', label: t('admin.common.all') }, ...EVENTS.map((value) => ({ value, label: t(`admin.events.${value}`) }))],
+          },
+        ]}
+        date={{
+          label: t('admin.common.date'),
+          fromLabel: t('admin.common.from'),
+          toLabel: t('admin.common.to'),
+          from: filters.from,
+          to: filters.to,
+          summary: dateRangeSummary(filters.from, filters.to, t),
+          onChange: (from, to) => change({ from, to }),
+        }}
+        active={Boolean(filters.user || filters.event || filters.from || filters.to)}
+        clearLabel={t('admin.common.clear')}
+        onClear={() => apply(EMPTY)}
+        meta={result ? t('admin.common.results', { count: result.total, formatted: formatNumber(result.total, 'en') }) : null}
+        metaEnd={result && result.last_page > 1 ? t('admin.common.pageOf', { page: result.current_page, pages: result.last_page }) : null}
+      />
 
       {error && (
-        <p role="alert" className={`mt-6 ${alertClass}`}>
+        <p role="alert" className={`mt-4 ${alertClass}`}>
           {error}
         </p>
       )}
-      {!error && result === null && <p className="mt-6 text-muted">{t('admin.activity.loading')}</p>}
+      {!error && result === null && <p className="mt-4 text-muted">{t('admin.activity.loading')}</p>}
       {result !== null && result.data.length === 0 && (
-        <p className="mt-6 rounded border border-line bg-surface px-4 py-6 text-center text-muted">{t('admin.activity.noMatch')}</p>
+        <p className="mt-4 rounded-lg border border-line bg-surface px-4 py-6 text-center text-muted">{t('admin.activity.noMatch')}</p>
       )}
 
       {result !== null && result.data.length > 0 && (
         <>
-          <ul className="mt-6 divide-y divide-line rounded border border-line bg-surface md:hidden">
-            {result.data.map((entry) => (
-              <li key={entry.id} className="px-4 py-3 text-sm">
-                <p className="font-medium">{t(`admin.events.${entry.event}`, { defaultValue: entry.event })}</p>
-                <p className="mt-1">
-                  <Who entry={entry} />
-                </p>
-                <p className="mt-1 break-all text-muted">
-                  {formatTime(entry.created_at)} · {entry.ip ?? t('admin.common.noIp')} · {entry.user_agent ?? t('admin.common.noBrowser')}
-                </p>
-              </li>
+          <div className={cardList}>
+            {groups.map((group) => (
+              <section key={group.day} aria-label={group.heading}>
+                <h2 className="bg-hover/60 px-4 py-1.5 text-xs font-medium text-muted">{group.heading}</h2>
+                <ul className="divide-y divide-line border-t border-line">
+                  {group.rows.map((entry) => (
+                    <li key={entry.id} className="space-y-1 px-4 py-3 text-sm">
+                      <div className="flex items-center justify-between gap-2">
+                        <EventChip event={entry.event} />
+                        <UtcClock iso={entry.created_at} />
+                      </div>
+                      <Who entry={entry} />
+                      <div className="flex min-w-0 items-center gap-2 text-xs">
+                        <span className="shrink-0 font-mono text-muted">{entry.ip ?? t('admin.common.noIp')}</span>
+                        <span aria-hidden="true" className="text-muted">·</span>
+                        <span className="min-w-0">
+                          <Browser userAgent={entry.user_agent} />
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             ))}
-          </ul>
+          </div>
 
-          <div className="mt-6 hidden overflow-x-auto rounded border border-line bg-surface md:block">
-            <table className="w-full text-start text-sm">
-              <thead className="border-b border-line text-muted">
+          <div className={tableCard}>
+            <table className={table}>
+              <colgroup>
+                <col className="w-28" />
+                <col className="w-52" />
+                <col />
+                <col className="w-36" />
+                <col className="w-48" />
+              </colgroup>
+              <thead className={headRow}>
                 <tr>
-                  <th scope="col" className="px-3 py-2 font-medium">
+                  <th scope="col" className={th}>
                     {t('admin.common.time')}
                   </th>
-                  <th scope="col" className="px-3 py-2 font-medium">
+                  <th scope="col" className={th}>
                     {t('admin.activity.event')}
                   </th>
-                  <th scope="col" className="px-3 py-2 font-medium">
+                  <th scope="col" className={th}>
                     {t('admin.activity.user')}
                   </th>
-                  <th scope="col" className="px-3 py-2 font-medium">
+                  <th scope="col" className={th}>
                     {t('admin.common.ip')}
                   </th>
-                  <th scope="col" className="px-3 py-2 font-medium">
+                  <th scope="col" className={th}>
                     {t('admin.activity.browser')}
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line align-top">
-                {result.data.map((entry) => (
-                  <tr key={entry.id}>
-                    <td className="px-3 py-2 whitespace-nowrap text-muted">{formatTime(entry.created_at)}</td>
-                    <td className="px-3 py-2">{t(`admin.events.${entry.event}`, { defaultValue: entry.event })}</td>
-                    <td className="px-3 py-2">
-                      <Who entry={entry} />
-                    </td>
-                    <td className="px-3 py-2 text-muted">{entry.ip ?? '-'}</td>
-                    <td className="break-all px-3 py-2 text-muted">{entry.user_agent ?? '-'}</td>
+              {groups.map((group) => (
+                <tbody key={group.day}>
+                  <tr className="border-b border-line bg-hover/40">
+                    <th scope="colgroup" colSpan={5} className="px-3 py-1.5 text-xs font-medium text-muted">
+                      {group.heading}
+                    </th>
                   </tr>
-                ))}
-              </tbody>
+                  {group.rows.map((entry) => (
+                    <tr key={entry.id} className={row}>
+                      <td className={td}>
+                        <UtcClock iso={entry.created_at} />
+                      </td>
+                      <td className={td}>
+                        <EventChip event={entry.event} />
+                      </td>
+                      <td className={td}>
+                        <Who entry={entry} />
+                      </td>
+                      <td className={`${td} font-mono text-xs text-muted`}>
+                        <span title={entry.ip ?? undefined} className={truncate}>
+                          {entry.ip ?? '-'}
+                        </span>
+                      </td>
+                      <td className={td}>
+                        <Browser userAgent={entry.user_agent} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              ))}
             </table>
           </div>
 
