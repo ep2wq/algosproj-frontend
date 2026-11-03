@@ -141,6 +141,11 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   core, editor worker, basic colouring for python/java/javascript/cpp) is lazy-loaded by `ProblemSolver`,
   which hands it to `loader.config`; a failed download leaves the loading line. No TypeScript/JSON/CSS/HTML
   language services: JavaScript lost type-aware suggestions (`Math.` members) and syntax-error squiggles.
+- Done (2026-11-03, security audit): `_headers` adds nosniff, Referrer-Policy, Permissions-Policy, X-Frame-Options,
+  HSTS and a CSP whose inline-script hashes (LF-normalized) and API origin (`API_ORIGIN` from `src/prerender.ts`)
+  are filled in by `scripts/prerender.mjs`; changing an inline script in `index.html` is fine, the build re-hashes it.
+  Styles need `'unsafe-inline'`. Cloudflare Rocket Loader must stay off. `main.tsx` reloads once (per 10 s) on
+  `vite:preloadError`. npm audit: dompurify 3.2.7 inside monaco-editor 0.55.1 is still bundled (fix needs 0.57).
 - Local dev DB accounts (to clean up): `uitest-owner` (owner), `uitest-admin` (admin), `uitest-partway`,
   `uitest-new` (user), all `@example.test`. The audit log has two test role changes on `uitest-new`.
 - Open: no social links (no real URLs yet). The `scroll-fade` utility's `:dir(rtl)` is compiled to
