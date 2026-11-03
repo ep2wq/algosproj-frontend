@@ -116,14 +116,14 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Leaderboard table (page and landing tab, `leaderboardStyles.ts`): no inner scroll; names wrap anywhere, rank
   and points fixed width ("1,234,567"); points under the name below 24rem of table width, one column below
   14rem (container queries); the skeleton has a row per row asked for (50 / 10). Lesson code blocks are named regions.
-- Done (not committed, 2026-11-02): header ghost buttons + account pill, header/footer `surface`,
+- Done (committed 2026-11-02): header ghost buttons + account pill, header/footer `surface`,
   page-wide dots, `code`/`hover`/`band`/`syntax-*` tokens, tab rows without a stray scrollbar, coloured
   landing code sample (`BINARY_SEARCH_LINES`, `check:samples` in lint), compact "What's inside" lessons
   grid (one row per track, `groupByTrack` in `progress.ts`), lesson page two columns from xl with rail,
   breadcrumb, meta chips, numbered sections, language code tabs (`CodeTabs.tsx`, `src/syntax.ts`),
   callouts (`> `, `>! `; not yet in the backend README), visuals widened to max-w-5xl with drawings
   centred.
-- Done (not committed, 2026-11-02): admin + Challenges redesign. Admin area is English through its own
+- Done (committed 2026-11-02): admin + Challenges redesign. Admin area is English through its own
   i18n instance (`AdminRoute`, also covers shared components like `DifficultyBadge`); underlined admin tabs,
   titles without "Admin:". Shared `FilterBar.tsx` (search with 300 ms debounce, native select chips, Date
   chip with From/To panel, Clear, result line) and `tableStyles.ts`; filters stay in the URL as before.
@@ -132,6 +132,15 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   Activity and Audit log: rows grouped by UTC day, times in UTC (`UtcClock.tsx`, local time in the title).
   Users: avatar, role badge, status dot. Challenges: FilterBar, solved check / empty circle. `option` and
   `optgroup` get surface/ink in `index.css`, so native dropdowns read in dark mode.
+- Done (2026-11-02): `public/_headers` (Cloudflare Pages): `/assets/*` and `/fonts/*` one-year immutable,
+  everything else `no-cache`; a changed font needs a new file name. Measured and rejected: font preload
+  (LCP en 956 -> 1208 ms, ar 1900 -> 2496 ms on the slow profile) and hover prefetch of route chunks (noise).
+  Numbers: docs/performance-frontend.md outside the repo.
+- Done (2026-11-03): Monaco comes from our own bundle, not jsDelivr: `monaco-editor` 0.55.1 pinned (the
+  version the CDN loader served; 0.56+ pull a dompurify with a critical advisory). `src/monaco.ts` (editor
+  core, editor worker, basic colouring for python/java/javascript/cpp) is lazy-loaded by `ProblemSolver`,
+  which hands it to `loader.config`; a failed download leaves the loading line. No TypeScript/JSON/CSS/HTML
+  language services: JavaScript lost type-aware suggestions (`Math.` members) and syntax-error squiggles.
 - Local dev DB accounts (to clean up): `uitest-owner` (owner), `uitest-admin` (admin), `uitest-partway`,
   `uitest-new` (user), all `@example.test`. The audit log has two test role changes on `uitest-new`.
 - Open: no social links (no real URLs yet). The `scroll-fade` utility's `:dir(rtl)` is compiled to
@@ -143,7 +152,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   with the main links too), settings ghost buttons (theme, sound from `lg`, language), then Log in/Register or
   `AccountMenu` (initial, name from `lg`, points, chevron; panel: name · points, Admin for staff, Log
   out). Both disclosures, not role="menu" (`useDisclosure`). Footer on every page. Legal texts are drafts needing review; the `CONTACT_EMAIL` mailbox must exist before launch.
-- Gotchas: Monaco loads from jsDelivr at runtime. Vite must run on port 5173 (CORS and the backend's `SANCTUM_STATEFUL_DOMAINS`); `VITE_API_URL` uses the same host name as the page. One-line
+- Gotchas: Vite must run on port 5173 (CORS and the backend's `SANCTUM_STATEFUL_DOMAINS`); `VITE_API_URL` uses the same host name as the page. One-line
   lint disables: `react/only-export-components` (auth.tsx, SearchCells.tsx), `react/static-components`.
   The global `:focus-visible` rule at the end of `src/index.css` is outside any `@layer`, so it beats
   utilities like `focus:outline-none`; use the `!` suffix to override. A class glued to a template
