@@ -1,5 +1,5 @@
-import Editor from '@monaco-editor/react'
-import { Fragment, useEffect, useRef, useState } from 'react'
+import MonacoEditor, { loader } from '@monaco-editor/react'
+import { Fragment, lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
 import { ApiError, LANGUAGES, submitSolution, type Language, type Problem, type SubmitResult, type User } from '../api'
@@ -16,6 +16,18 @@ import SubmitResultPanel from './SubmitResultPanel'
 // A description line that is only one of these labels is shown as a small heading (display only;
 // Arabic descriptions mark them as English terms).
 const STATEMENT_LABEL = /^(~(Input|Output|Constraints)~|Input|Output|Constraints)$/
+
+// Monaco is bundled with the app (src/monaco.ts) and loaded only when an editor shows; the editor
+// then uses it instead of fetching Monaco from a CDN. If the download fails the editor stays on its
+// loading line (as it did when the CDN failed) instead of the error taking down the whole page.
+const Editor = lazy(() =>
+  import('../monaco')
+    .then(({ monaco }) => {
+      loader.config({ monaco })
+      return { default: MonacoEditor }
+    })
+    .catch(() => new Promise<never>(() => {})),
+)
 
 // The statement, examples, editor and Submit for one problem. Shared by the lesson page
 // (inside ProblemCard) and the challenge page; each page renders its own title above it.
@@ -54,6 +66,8 @@ export default function ProblemSolver({
 
   const languageId = `language-${problem.id}`
   const hintId = `editor-hint-${problem.id}`
+  // While Monaco's code downloads (Suspense) and while it starts (the editor's own loading slot).
+  const editorLoading = <CellLoader label={t('solver.loadingEditor')} className="h-[280px] w-full" />
 
   async function handleSubmit() {
     setBusy(true)
@@ -153,31 +167,36 @@ export default function ProblemSolver({
         </div>
         {/* Code is always left to right, in both interface languages. */}
         <div dir="ltr">
-          <Editor
-            height="280px"
-            language={language}
-            // Changing the theme restyles the open editor; it is not remounted, so the code stays.
-            theme={dark ? 'vs-dark' : 'vs'}
-            value={code[language]}
-            onChange={(value) => setCode((current) => ({ ...current, [language]: value ?? '' }))}
-            // Screen readers read the Tab hint with the editor.
-            // Monaco measures the font once; measure again when JetBrains Mono has arrived.
-            onMount={(editor, monaco) => {
-              editor.getDomNode()?.querySelector('textarea, .native-edit-context')?.setAttribute('aria-describedby', hintId)
-              void document.fonts.load("14px 'JetBrains Mono'").then(() => monaco.editor.remeasureFonts())
-            }}
-            loading={<CellLoader label={t('solver.loadingEditor')} className="h-[280px] w-full" />}
-            options={{
-              ariaLabel: t('solver.editorLabel', { language: LANGUAGE_LABELS[language], title: problem.title }),
-              minimap: { enabled: false },
-              fontSize: 14,
-              // The --font-mono stack in src/index.css (Monaco can't read a CSS variable).
-              fontFamily: "'JetBrains Mono', 'Mono Fallback', 'IBM Plex Sans Arabic', monospace",
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-              tabSize: 4,
-            }}
-          />
+          <Suspense fallback={editorLoading}>
+            <Editor
+              height="280px"
+              language={language}
+              // Changing the theme restyles the open editor; it is not remounted, so the code stays.
+              theme={dark ? 'vs-dark' : 'vs'}
+              value={code[language]}
+              onChange={(value) => setCode((current) => ({ ...current, [language]: value ?? '' }))}
+              // Screen readers read the Tab hint with the editor.
+              // Monaco measures the font once; measure again when JetBrains Mono has arrived.
+              // The bundled Monaco sometimes skips the first paint of the scrollbar's overview ruler (its
+              // border and cursor mark); one full render draws it as the CDN build did.
+              onMount={(editor, monaco) => {
+                editor.getDomNode()?.querySelector('textarea, .native-edit-context')?.setAttribute('aria-describedby', hintId)
+                void document.fonts.load("14px 'JetBrains Mono'").then(() => monaco.editor.remeasureFonts())
+                requestAnimationFrame(() => editor.render(true))
+              }}
+              loading={editorLoading}
+              options={{
+                ariaLabel: t('solver.editorLabel', { language: LANGUAGE_LABELS[language], title: problem.title }),
+                minimap: { enabled: false },
+                fontSize: 14,
+                // The --font-mono stack in src/index.css (Monaco can't read a CSS variable).
+                fontFamily: "'JetBrains Mono', 'Mono Fallback', 'IBM Plex Sans Arabic', monospace",
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                tabSize: 4,
+              }}
+            />
+          </Suspense>
         </div>
       </div>
       {language === 'java' && (
