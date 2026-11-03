@@ -105,6 +105,8 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Done: cookie notice (`CookieNotice.tsx`, in `Layout`): informational, "Got it" only, fixed at the bottom, shown after the
   first paint (not prerendered); "Got it" stores `LEGAL_UPDATED` under `cookie-notice` (listed on /cookies), so changing
   `LEGAL_UPDATED` (always together with the backend's `terms_version`) shows it again. `--cookie-h` pads the footer and scroll-padding-bottom.
+- Done: the landing hero shows one of 5 lesson visuals, picked at random once per page view (`src/visuals/heroPool.ts`,
+  `demo` prop on the lesson visual); every entry must fit `HERO_HEIGHT` in `LandingPage.tsx`.
 - The landing code sample is only the search loop (`codeSamples.ts`), never a whole graded solution.
 - Done (polish): AlgosLab favicon (`favicon.svg`, `.ico`, apple touch icon) and share image `og.png` with
   `og:image` tags (README "Icons"); reading width 52ch (about 65 characters English, 75 Arabic); Arabic
