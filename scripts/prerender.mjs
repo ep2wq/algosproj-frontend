@@ -4,6 +4,7 @@
 // src/main.tsx removes before the app renders), and fills <div id="root">. Writes dist/index.html
 // (the landing page, also the fallback for every other address), dist/<page>.html, robots.txt and
 // sitemap.xml. The browser does not hydrate this HTML: the app renders afresh and replaces it.
+import { createHash } from 'node:crypto'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -24,10 +25,22 @@ function check(name, text) {
 
 // The client build folder: dist, or the folder given as the first argument (a build elsewhere).
 const dist = process.argv[2] ? pathToFileURL(`${resolve(process.argv[2])}/`) : new URL('../dist/', import.meta.url)
-const { render, ROUTES, SITE_URL } = await import(new URL('../dist-ssr/prerender.js', import.meta.url))
+const { render, ROUTES, SITE_URL, API_ORIGIN } = await import(new URL('../dist-ssr/prerender.js', import.meta.url))
 const template = readFileSync(new URL('index.html', dist), 'utf8')
 const ROOT = '<div id="root"></div>'
 if (!template.includes(ROOT)) throw new Error(`dist/index.html has no ${ROOT}`)
+
+// The Content-Security-Policy in _headers (public/_headers says why): every page is this template, so
+// the hashes of its inline scripts (those without attributes) cover them all. The browser hashes the
+// text after the HTML parser turned CRLF and CR into LF, so the same happens here (a Windows checkout).
+const hashes = [...template.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(
+  ([, code]) => `'sha256-${createHash('sha256').update(code.replace(/\r\n?/g, '\n')).digest('base64')}'`,
+)
+const headers = readFileSync(new URL('_headers', dist), 'utf8')
+if (!hashes.length || !headers.includes('%INLINE_SCRIPT_HASHES%') || !headers.includes('%API_ORIGIN%')) {
+  throw new Error('prerender: _headers or index.html is missing what the Content-Security-Policy needs')
+}
+writeFileSync(new URL('_headers', dist), headers.replace('%INLINE_SCRIPT_HASHES%', hashes.join(' ')).replace('%API_ORIGIN%', API_ORIGIN))
 
 for (const route of ROUTES) {
   const html = render(route)

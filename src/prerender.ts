@@ -10,6 +10,9 @@ import './i18n'
 
 export { SITE_URL } from './site'
 
+// The API's origin, for the Content-Security-Policy's connect-src (public/_headers). Same fallback as src/api.ts.
+export const API_ORIGIN = new URL(import.meta.env.VITE_API_URL || 'http://localhost:8000').origin
+
 // The public pages: prerendered and listed in sitemap.xml. Everything else is the single-page app.
 export const ROUTES = ['/', '/about', '/faq', '/contact', '/terms', '/privacy', '/cookies']
 
