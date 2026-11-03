@@ -1,7 +1,8 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextWithCode } from '../components/LessonBody'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import PlaybackControls, { buttonClass, demoCaptionClass, SpeedSelect } from './PlaybackControls'
+import { CELL_SIZES } from './SearchCells'
 import { palindromeFrames, reverseFrames, type PointerFrame, type PointerMode } from './twoPointerFrames'
 import { usePlayback } from './usePlayback'
 import { useCentreCells, useScrollCue } from './useScrollCue'
@@ -53,17 +54,19 @@ function pointerLabels(frame: PointerFrame, index: number) {
   return labels.join(' ')
 }
 
-// Two pointers moving inward from both ends: reversing text, or checking a palindrome.
-export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
+// Two pointers moving inward from both ends: reversing text, or checking a palindrome. demo (the
+// landing page's card): this text, playing once by itself and silently, without the inputs and legend.
+export default function TwoPointerVisual({ mode, demo }: { mode: PointerMode; demo?: string }) {
   const { t } = useTranslation('visuals')
   const id = useId()
   const config = MODES[mode]
-  const [text, setText] = useState(() => randomSample(config.samples))
+  const [text, setText] = useState(() => demo ?? randomSample(config.samples))
   const [customText, setCustomText] = useState('')
   const [inputError, setInputError] = useState('')
 
   const frames = useMemo(() => config.frames(text, t), [config, text, t])
-  const playback = usePlayback(frames.length)
+  const size = CELL_SIZES[demo === undefined ? 'normal' : 'large']
+  const playback = usePlayback(frames.length, { silent: demo !== undefined, autoplay: demo !== undefined })
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
   const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
@@ -85,10 +88,12 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
   }
 
   return (
-    <div className="mt-4 max-w-5xl">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <SpeedSelect playback={playback} />
-      </div>
+    <div className={demo === undefined ? 'mt-4 max-w-5xl' : undefined}>
+      {demo === undefined && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <SpeedSelect playback={playback} />
+        </div>
+      )}
 
       <div
         tabIndex={0}
@@ -96,97 +101,105 @@ export default function TwoPointerVisual({ mode }: { mode: PointerMode }) {
         aria-label={t('twoPointer.region')}
         dir="ltr"
         ref={scrollRef}
-        className={`mt-4 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
+        className={`${demo === undefined ? 'mt-4 overflow-x-auto rounded-lg border border-line bg-surface p-3' : 'mt-3 overflow-x-auto rounded py-1'}${scrollMore ? ' scroll-fade' : ''}`}
       >
         <div
           role="img"
           aria-label={t('twoPointer.label', { text: current.chars.join('') })}
-          className="mx-auto flex w-max gap-x-1.5"
+          className={`mx-auto flex w-max ${size.gap}`}
         >
           {current.chars.map((char, index) => (
-            <div key={index} data-index={index} className="flex w-10 flex-col items-center">
-              <span className="h-4 text-xs font-semibold text-ink">{pointerLabels(current, index)}</span>
+            <div key={index} data-index={index} className={`flex ${size.width} flex-col items-center`}>
+              <span className={`h-4 ${size.small} font-semibold text-ink ${size.pointer}`}>{pointerLabels(current, index)}</span>
               <span
-                className={`mt-0.5 flex size-10 items-center justify-center rounded border-2 font-mono font-medium motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${cellStyle(mode, current, index)}`}
+                className={`mt-0.5 flex ${size.box} items-center justify-center rounded border-2 font-mono font-medium motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${cellStyle(mode, current, index)}`}
               >
                 {char === ' ' ? '␣' : char}
               </span>
-              <span className="mt-0.5 font-mono text-xs text-muted tabular-nums">{index}</span>
+              <span className={`mt-0.5 font-mono ${size.small} text-muted tabular-nums`}>{index}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-        {config.legend.map(({ key, style }) => (
-          <li key={key} className="flex items-center gap-1.5">
-            <span className={`inline-block size-3 rounded-sm border ${style}`} aria-hidden="true" />
-            {t(`twoPointer.legend.${key}`)}
+      {demo === undefined && (
+        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+          {config.legend.map(({ key, style }) => (
+            <li key={key} className="flex items-center gap-1.5">
+              <span className={`inline-block size-3 rounded-sm border ${style}`} aria-hidden="true" />
+              {t(`twoPointer.legend.${key}`)}
+            </li>
+          ))}
+          <li>
+            <TextWithCode text={mode === 'reverse' ? t('twoPointer.pointersSpace') : t('twoPointer.pointers')} />
           </li>
-        ))}
-        <li>
-          <TextWithCode text={mode === 'reverse' ? t('twoPointer.pointersSpace') : t('twoPointer.pointers')} />
-        </li>
-      </ul>
+        </ul>
+      )}
 
-      {current.result && (
+      {/* A demo leaves the result to the last step's text, as the landing card has no room for both. */}
+      {current.result && demo === undefined && (
         <p className="mt-3 inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold">
           <TextWithCode text={current.result} />
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
+      <p
+        aria-live={demo === undefined ? 'polite' : undefined}
+        className={demo === undefined ? 'mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm' : demoCaptionClass}
+      >
         <TextWithCode text={current.description} />
       </p>
 
-      <PlaybackControls playback={playback} />
+      <PlaybackControls playback={playback} wide={demo !== undefined} />
 
-      <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
-        <button type="button" onClick={() => restart(randomSample(config.samples, text))} className={buttonClass}>
-          {t(`twoPointer.${mode}.randomLabel`)}
-        </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <label htmlFor={`${id}-text`} className="block text-sm font-medium">
-            {t(`twoPointer.${mode}.inputLabel`)}
-          </label>
-          <div className="mt-1 flex flex-col gap-2 sm:flex-row">
-            <input
-              id={`${id}-text`}
-              type="text"
-              autoComplete="off"
-              spellCheck={false}
-              dir="ltr"
-              value={customText}
-              onChange={(event) => setCustomText(event.target.value)}
-              placeholder={t(`twoPointer.${mode}.placeholder`)}
-              aria-invalid={Boolean(inputError)}
-              aria-describedby={`${id}-text-hint${inputError ? ` ${id}-text-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
-                inputError ? 'border-fail' : 'border-field hover:border-muted'
-              }`}
-            />
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThis')}
-            </button>
-          </div>
-          <p id={`${id}-text-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={t(`twoPointer.${mode}.hint`, { max: MAX_LENGTH })} />
-          </p>
-          {inputError && (
-            <p id={`${id}-text-error`} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError} />
+      {demo === undefined && (
+        <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
+          <button type="button" onClick={() => restart(randomSample(config.samples, text))} className={buttonClass}>
+            {t(`twoPointer.${mode}.randomLabel`)}
+          </button>
+          <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
+            <label htmlFor={`${id}-text`} className="block text-sm font-medium">
+              {t(`twoPointer.${mode}.inputLabel`)}
+            </label>
+            <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+              <input
+                id={`${id}-text`}
+                type="text"
+                autoComplete="off"
+                spellCheck={false}
+                dir="ltr"
+                value={customText}
+                onChange={(event) => setCustomText(event.target.value)}
+                placeholder={t(`twoPointer.${mode}.placeholder`)}
+                aria-invalid={Boolean(inputError)}
+                aria-describedby={`${id}-text-hint${inputError ? ` ${id}-text-error` : ''}`}
+                className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
+                  inputError ? 'border-fail' : 'border-field hover:border-muted'
+                }`}
+              />
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThis')}
+              </button>
+            </div>
+            <p id={`${id}-text-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={t(`twoPointer.${mode}.hint`, { max: MAX_LENGTH })} />
             </p>
-          )}
-        </form>
-      </div>
+            {inputError && (
+              <p id={`${id}-text-error`} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError} />
+              </p>
+            )}
+          </form>
+        </div>
+      )}
     </div>
   )
 }
 
-export function ReverseVisual() {
-  return <TwoPointerVisual mode="reverse" />
+export function ReverseVisual({ demo }: { demo?: string }) {
+  return <TwoPointerVisual mode="reverse" demo={demo} />
 }
 
-export function PalindromeVisual() {
-  return <TwoPointerVisual mode="palindrome" />
+export function PalindromeVisual({ demo }: { demo?: string }) {
+  return <TwoPointerVisual mode="palindrome" demo={demo} />
 }

@@ -443,8 +443,9 @@ The pages a visitor sees before logging in: `/` (landing), `/about`, `/faq`, `/c
 `/terms`, `/privacy` and `/cookies`. Decisions, the privacy facts behind the legal texts and the
 header and footer measurements are in `../docs/ui-public-pages.md` (outside this repo).
 
-- **Landing** (`src/pages/LandingPage.tsx`): the hero (`HeroSearch`, the binary search lesson
-  playing once, silent), the counts, then the tabs. `src/components/ui/tabs.tsx` (Base UI) is the WAI-ARIA
+- **Landing** (`src/pages/LandingPage.tsx`): the hero (one lesson visual picked at random per page
+  view from `src/visuals/heroPool.ts`, playing once, silent, with a fixed demo input; only its code
+  is loaded; every entry fits the card's reserved height), the counts, then the tabs. `src/components/ui/tabs.tsx` (Base UI) is the WAI-ARIA
   tabs pattern; `?tab=challenges` or `?tab=leaderboard` is a deep link (Lessons is the default).
   `LandingPage` loads `getModules()` (again when the language changes) and `getChallenges()` (again
   on log in or out) and passes them to the panels in `src/components/LandingPanels.tsx`; the

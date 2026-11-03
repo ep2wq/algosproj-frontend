@@ -9,6 +9,10 @@ type Playback = ReturnType<typeof usePlayback>
 export const buttonClass =
   'inline-flex min-h-11 items-center justify-center rounded border border-field bg-surface px-3 text-sm hover:border-muted aria-disabled:cursor-not-allowed aria-disabled:opacity-60 sm:pointer-fine:min-h-9'
 
+// The step text of a visual on the landing page's card (a demo): taller and, from md, larger than in a
+// lesson, and not a live region (it plays by itself and would talk over the page).
+export const demoCaptionClass = 'mt-3 min-h-16 rounded-lg bg-accent-soft px-3 py-2 text-sm md:text-base'
+
 export function SpeedSelect({ playback }: { playback: Playback }) {
   const { t } = useTranslation('visuals')
   const id = useId()

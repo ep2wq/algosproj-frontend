@@ -1,10 +1,9 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 import { TextWithCode } from '../components/LessonBody'
 import { binarySearchFrames } from './binarySearchFrames'
 import './i18n'
-import PlaybackControls, { buttonClass } from './PlaybackControls'
+import PlaybackControls, { buttonClass, demoCaptionClass } from './PlaybackControls'
 import SearchCells from './SearchCells'
 import { usePlayback } from './usePlayback'
 
@@ -20,36 +19,26 @@ function useAutoSearch(array: number[], target: number) {
   return { frames, playback, current: frames[Math.min(playback.step, playback.lastStep)] }
 }
 
-const HERO_ARRAY = [3, 8, 15, 21, 27, 34, 42, 56, 63, 78]
-const HERO_TARGET = 42
-
-// The landing page's first screen: the real binary search lesson, in miniature, across the page.
-// LandingPage draws the card around it; className gives this part the height of LandingPage's
-// placeholder. Where it comes from sits at the foot, as a 44 px link.
-export function HeroSearch({ className }: { className: string }) {
+// The binary search entry of the landing page's card (heroPool.ts): the real lesson, in miniature,
+// across the page. LandingPage draws the card, its height and the line naming the lesson.
+export function HeroSearch({ demo }: { demo: { array: number[]; target: number } }) {
   const { t } = useTranslation('visuals')
-  const { playback, current } = useAutoSearch(HERO_ARRAY, HERO_TARGET)
+  const { playback, current } = useAutoSearch(demo.array, demo.target)
 
   return (
-    <div className={`flex flex-col ${className}`}>
+    <div>
       <SearchCells
         frame={current}
         large
         framed={false}
         className="mt-3"
         regionLabel={t('binarySearch.region')}
-        imageLabel={t('binarySearch.label', { values: current.array.join(', '), target: HERO_TARGET })}
+        imageLabel={t('binarySearch.label', { values: current.array.join(', '), target: demo.target })}
       />
-      <p className="mt-3 min-h-16 rounded-lg bg-accent-soft px-3 py-2 text-sm md:text-base">
+      <p className={demoCaptionClass}>
         <TextWithCode text={current.description} />
       </p>
       <PlaybackControls playback={playback} wide />
-      <p className="mt-auto pt-1 text-sm text-muted">
-        <TextWithCode text={t('landingSearch.from')} />{' '}
-        <Link to="/lessons/binary-search" className="inline-flex min-h-11 items-center rounded text-accent underline underline-offset-2">
-          {t('landingSearch.open')}
-        </Link>
-      </p>
     </div>
   )
 }

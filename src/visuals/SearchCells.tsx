@@ -11,6 +11,21 @@ export const CELL_STYLES = {
   ruledOut: 'border-line bg-paper',
 }
 
+// The size of a row of value cells: normal in a lesson; large on the landing page's card, from md, so a
+// short row uses the width of the page. Shared with the other visuals' demos (heroPool.ts), so every
+// visual on the card has the same scale.
+// oxlint-disable-next-line react/only-export-components
+export const CELL_SIZES = {
+  normal: { gap: 'gap-x-1.5', width: 'w-10', box: 'size-10', small: 'text-xs', pointer: '' },
+  large: {
+    gap: 'gap-x-1.5 md:gap-x-3',
+    width: 'w-10 md:w-14 lg:w-16 xl:w-24',
+    box: 'size-10 md:size-14 md:text-lg lg:size-16 lg:text-xl xl:size-24 xl:text-2xl',
+    small: 'text-xs md:text-sm',
+    pointer: 'md:h-5 md:gap-1.5',
+  },
+}
+
 function inRange(frame: SearchFrame, index: number) {
   return frame.possible !== null && index >= frame.possible[0] && index <= frame.possible[1]
 }
@@ -61,9 +76,7 @@ export default function SearchCells({
 
   useCentreCells(scrollRef, focusIndex, focusIndex, frame.array)
 
-  const width = large ? 'w-10 md:w-14 lg:w-16 xl:w-24' : 'w-10'
-  const box = large ? 'size-10 md:size-14 md:text-lg lg:size-16 lg:text-xl xl:size-24 xl:text-2xl' : 'size-10'
-  const small = large ? 'text-xs md:text-sm' : 'text-xs'
+  const { gap, width, box, small, pointer } = CELL_SIZES[large ? 'large' : 'normal']
 
   return (
     <div
@@ -74,11 +87,11 @@ export default function SearchCells({
       ref={scrollRef}
       className={`${className} overflow-x-auto${framed ? ' rounded-lg border border-line bg-surface p-3' : ' rounded py-1'}${scrollMore ? ' scroll-fade' : ''}`}
     >
-      <div role="img" aria-label={imageLabel} className={`mx-auto flex w-max ${large ? 'gap-x-1.5 md:gap-x-3' : 'gap-x-1.5'}`}>
+      <div role="img" aria-label={imageLabel} className={`mx-auto flex w-max ${gap}`}>
         {frame.array.map((value, index) => (
           <div key={index} data-index={index} className={`flex flex-col items-center ${width}`}>
             {/* Pointers on one cell each get their own label, spaced apart (L M H, not "LMH"). */}
-            <span className={`flex h-4 gap-1 font-semibold text-ink ${small} ${large ? 'md:h-5 md:gap-1.5' : ''}`}>
+            <span className={`flex h-4 gap-1 font-semibold text-ink ${small} ${pointer}`}>
               {pointerLabels(frame, index).map((label) => (
                 <span key={label}>{label}</span>
               ))}

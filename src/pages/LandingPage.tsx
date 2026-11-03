@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { Box, SquareCode, StepForward } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -15,15 +15,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { formatNumber } from '../i18n'
 import { lessonsDone, nextLesson } from '../progress'
 import { VISUALS } from '../visuals'
+import { HERO_POOL } from '../visuals/heroPool'
 import { useScrollCue } from '../visuals/useScrollCue'
 
-// Lazy, like every visualization: the first screen does not wait for the visuals strings. The
-// fallbacks keep the same height, so nothing below moves when they arrive.
-const HeroSearch = lazy(() => import('../visuals/AutoSearchVisual').then((m) => ({ default: m.HeroSearch })))
-
-// The tallest the hero visual gets at each width, over every step in English and Arabic (measured;
-// the step text wraps more on a small phone), shared by HeroSearch and its placeholder, so nothing
-// moves when it arrives.
+// The tallest the hero visual gets at each width, over every step and every visual of HERO_POOL in
+// English and Arabic (measured; the step text wraps more on a small phone), shared by the visual and
+// its placeholder, so nothing moves when it arrives.
 const HERO_HEIGHT = 'min-h-[25rem] min-[24rem]:min-h-[21.5rem] sm:min-h-[17.75rem] md:min-h-[18.5rem] lg:min-h-[19rem] xl:min-h-[21rem]'
 
 const TAB_IDS = ['lessons', 'challenges', 'leaderboard']
@@ -43,6 +40,9 @@ export default function LandingPage() {
   // Who the list was loaded for: solved belongs to that user only.
   const [loaded, setLoaded] = useState<{ userId: string | null; list: ChallengeSummary[] } | null>(null)
   const [failure, setFailure] = useState<unknown>(null)
+  // One visual of the pool per page view: picked once, so a re-render, the language or the theme
+  // never swaps it. Only its code is loaded (lazy, like every visualization).
+  const [hero] = useState(() => HERO_POOL[Math.floor(Math.random() * HERO_POOL.length)])
   const [reload, setReload] = useState(0)
 
   const requested = params.get('tab') ?? ''
@@ -186,7 +186,16 @@ export default function LandingPage() {
             heroPlaceholder
           ) : (
             <Suspense fallback={heroPlaceholder}>
-              <HeroSearch className={HERO_HEIGHT} />
+              <div className={`flex flex-col ${HERO_HEIGHT}`}>
+                <hero.Visual demo={hero.demo} />
+                {/* Where it comes from sits at the foot, as a 44 px link. */}
+                <p className="mt-auto pt-1 text-sm text-muted">
+                  <TextWithCode text={t(`landing.visualFrom.${hero.slug}`)} />{' '}
+                  <Link to={`/lessons/${hero.slug}`} className="inline-flex min-h-11 items-center rounded text-accent underline underline-offset-2">
+                    {t('landing.openLesson')}
+                  </Link>
+                </p>
+              </div>
             </Suspense>
           )}
         </div>
