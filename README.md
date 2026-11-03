@@ -36,8 +36,8 @@ The backend only allows CORS requests from its `FRONTEND_URL` (default
 or login answers 419. Use the same host name for the page and the API (`localhost` for both,
 not `127.0.0.1`), because the session cookie belongs to a host name.
 
-The editor loads Monaco from the jsDelivr CDN at runtime (the `@monaco-editor/react`
-default), so the lesson page needs internet access.
+Monaco is bundled with the app (`src/monaco.ts`), so the editor needs no internet access
+and no CDN.
 
 Other commands:
 
