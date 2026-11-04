@@ -335,13 +335,8 @@
     "visualBadge_few": "<num>{{value}}</num> دروس فيها تمثيل مرئي تتنقّل بين خطواته",
     "visualBadge_many": "<num>{{value}}</num> درسًا فيها تمثيل مرئي تتنقّل بين خطواته",
     "visualBadge_other": "<num>{{value}}</num> درس فيها تمثيل مرئي تتنقّل بين خطواته",
-    "visualFrom": {
-      "binary-search": "من درس الـ~binary search~.",
-      "check-for-a-palindrome": "من درس التحقق من الـ~palindrome~.",
-      "reverse-a-string": "من درس عكس الـ~string~.",
-      "sum-of-an-array": "من درس مجموع عناصر الـ~array~.",
-      "maximum-of-an-array": "من درس أكبر عنصر في الـ~array~."
-    },
+    "visualFromLesson": "الدرس: {{lesson}}.",
+    "visualFromAny": "من أحد الدروس.",
     "openLesson": "افتح الدرس",
     "insideTitle": "ماذا يوجد في الموقع",
     "insideIntro": "المنهج كاملًا، والمسائل ونقاطها، ومن يتصدر الآن.",

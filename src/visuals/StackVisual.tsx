@@ -2,7 +2,7 @@ import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextWithCode } from '../components/LessonBody'
 import type { T } from './i18n'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import PlaybackControls, { buttonClass, demoCaptionClass, SpeedSelect } from './PlaybackControls'
 import { bracketFrames, nextGreaterFrames, postfixError, postfixFrames, type StackFrame, type StackMode } from './stackFrames'
 import { usePlayback } from './usePlayback'
 import { useCentreCells, useScrollCue } from './useScrollCue'
@@ -110,11 +110,13 @@ function stackLabel(frame: StackFrame, t: T) {
 }
 
 // One stack, three algorithms: balanced brackets, postfix evaluation, next greater element.
-export default function StackVisual({ mode }: { mode: StackMode }) {
+// demo (the landing page's card): this input, playing once by itself and silently, without the
+// inputs, legend and result.
+export default function StackVisual({ mode, demo }: { mode: StackMode; demo?: string }) {
   const { t } = useTranslation('visuals')
   const id = useId()
   const config = MODES[mode]
-  const [source, setSource] = useState(() => config.random(t))
+  const [source, setSource] = useState(() => demo ?? config.random(t))
   const [customText, setCustomText] = useState('')
   const [inputError, setInputError] = useState('')
 
@@ -123,7 +125,7 @@ export default function StackVisual({ mode }: { mode: StackMode }) {
     const parsed = config.parse(source, t)
     return 'frames' in parsed ? parsed.frames : []
   }, [config, source, t])
-  const playback = usePlayback(frames.length)
+  const playback = usePlayback(frames.length, { silent: demo !== undefined, autoplay: demo !== undefined })
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
   const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
@@ -150,19 +152,21 @@ export default function StackVisual({ mode }: { mode: StackMode }) {
   const showAnswers = current.answers !== null
 
   return (
-    <div className="mt-4 max-w-5xl">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <SpeedSelect playback={playback} />
-      </div>
+    <div className={demo === undefined ? 'mt-4 max-w-5xl' : undefined}>
+      {demo === undefined && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <SpeedSelect playback={playback} />
+        </div>
+      )}
 
-      <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start">
+      <div className={demo === undefined ? 'mt-4 flex flex-col gap-4 sm:flex-row sm:items-start' : 'mt-3 flex items-start gap-3'}>
         <div
           tabIndex={0}
           role="region"
           aria-label={t(`stack.${mode}.region`)}
           dir="ltr"
           ref={scrollRef}
-          className={`min-w-0 flex-1 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
+          className={`min-w-0 flex-1 overflow-x-auto ${demo === undefined ? 'rounded-lg border border-line bg-surface p-3' : 'rounded py-1'}${scrollMore ? ' scroll-fade' : ''}`}
         >
           <div
             role="img"
@@ -197,7 +201,7 @@ export default function StackVisual({ mode }: { mode: StackMode }) {
           </div>
         </div>
 
-        <div className="sm:w-32">
+        <div className={demo === undefined ? 'sm:w-32' : 'w-20 shrink-0'}>
           <p className="text-sm font-medium">
             <TextWithCode text={t('stack.stackTitle')} />
           </p>
@@ -221,80 +225,87 @@ export default function StackVisual({ mode }: { mode: StackMode }) {
         </div>
       </div>
 
-      <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-        <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border border-warn bg-warn" aria-hidden="true" />
-          {t('stack.legendReading')}
-        </li>
-        <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border border-muted/40 bg-paper" aria-hidden="true" />
-          {t('stack.legendRead')}
-        </li>
-        {showAnswers && (
-          <li className="flex items-center gap-1.5">
-            <span className="inline-block size-3 rounded-sm border border-pass bg-pass" aria-hidden="true" />
-            {t('stack.legendAnswer')}
-          </li>
-        )}
-        <li>{t('common.smallPositions')}</li>
-      </ul>
+      {/* A demo leaves the result to the step text, as the landing card has no room for it. */}
+      {demo === undefined && (
+        <>
+          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block size-3 rounded-sm border border-warn bg-warn" aria-hidden="true" />
+              {t('stack.legendReading')}
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="inline-block size-3 rounded-sm border border-muted/40 bg-paper" aria-hidden="true" />
+              {t('stack.legendRead')}
+            </li>
+            {showAnswers && (
+              <li className="flex items-center gap-1.5">
+                <span className="inline-block size-3 rounded-sm border border-pass bg-pass" aria-hidden="true" />
+                {t('stack.legendAnswer')}
+              </li>
+            )}
+            <li>{t('common.smallPositions')}</li>
+          </ul>
 
-      {current.result && (
-        <p className={`mt-3 inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold ${current.failed ? 'text-fail' : 'text-ink'}`}>
-          <TextWithCode text={current.result} />
-        </p>
+          {current.result && (
+            <p className={`mt-3 inline-block rounded-lg border border-line bg-surface px-3 py-2 font-semibold ${current.failed ? 'text-fail' : 'text-ink'}`}>
+              <TextWithCode text={current.result} />
+            </p>
+          )}
+        </>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
+      <p aria-live={demo === undefined ? 'polite' : undefined} className={demo === undefined ? 'mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm' : demoCaptionClass}>
         <TextWithCode text={current.description} />
       </p>
 
-      <PlaybackControls playback={playback} />
+      <PlaybackControls playback={playback} wide={demo !== undefined} />
 
-      <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
-        <button type="button" onClick={() => restart(config.random(t))} className={buttonClass}>
-          {t('common.newRandomExample')}
-        </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <label htmlFor={`${id}-input`} className="block text-sm font-medium">
-            {t(`stack.${mode}.inputLabel`)}
-          </label>
-          <div className="mt-1 flex flex-col gap-2 sm:flex-row">
-            <input
-              id={`${id}-input`}
-              type="text"
-              autoComplete="off"
-              spellCheck={false}
-              dir="ltr"
-              value={customText}
-              onChange={(event) => setCustomText(event.target.value)}
-              placeholder={t(`stack.${mode}.placeholder`)}
-              aria-invalid={Boolean(inputError)}
-              aria-describedby={`${id}-input-hint${inputError ? ` ${id}-input-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${
-                inputError ? 'border-fail' : 'border-field hover:border-muted'
-              }`}
-            />
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThis')}
-            </button>
-          </div>
-          <p id={`${id}-input-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={t(`stack.${mode}.hint`)} />
-          </p>
-          {inputError && (
-            <p id={`${id}-input-error`} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError} />
+      {demo === undefined && (
+        <div className="mt-5 flex flex-wrap items-start gap-x-4 gap-y-3 border-t border-line pt-4">
+          <button type="button" onClick={() => restart(config.random(t))} className={buttonClass}>
+            {t('common.newRandomExample')}
+          </button>
+          <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
+            <label htmlFor={`${id}-input`} className="block text-sm font-medium">
+              {t(`stack.${mode}.inputLabel`)}
+            </label>
+            <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+              <input
+                id={`${id}-input`}
+                type="text"
+                autoComplete="off"
+                spellCheck={false}
+                dir="ltr"
+                value={customText}
+                onChange={(event) => setCustomText(event.target.value)}
+                placeholder={t(`stack.${mode}.placeholder`)}
+                aria-invalid={Boolean(inputError)}
+                aria-describedby={`${id}-input-hint${inputError ? ` ${id}-input-error` : ''}`}
+                className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${
+                  inputError ? 'border-fail' : 'border-field hover:border-muted'
+                }`}
+              />
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThis')}
+              </button>
+            </div>
+            <p id={`${id}-input-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={t(`stack.${mode}.hint`)} />
             </p>
-          )}
-        </form>
-      </div>
+            {inputError && (
+              <p id={`${id}-input-error`} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError} />
+              </p>
+            )}
+          </form>
+        </div>
+      )}
     </div>
   )
 }
 
-export function BracketsVisual() {
-  return <StackVisual mode="brackets" />
+export function BracketsVisual({ demo }: { demo?: string }) {
+  return <StackVisual mode="brackets" demo={demo} />
 }
 
 export function PostfixVisual() {

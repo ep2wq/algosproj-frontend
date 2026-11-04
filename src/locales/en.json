@@ -650,13 +650,8 @@
     "counts": "So far: {{modules}}, {{lessons}} and {{problems}}.",
     "visualBadge_one": "<num>{{value}}</num> lesson has a visualization you can step through",
     "visualBadge_other": "<num>{{value}}</num> lessons have a visualization you can step through",
-    "visualFrom": {
-      "binary-search": "From the binary search lesson.",
-      "check-for-a-palindrome": "From the palindrome lesson.",
-      "reverse-a-string": "From the string reversal lesson.",
-      "sum-of-an-array": "From the array sum lesson.",
-      "maximum-of-an-array": "From the array maximum lesson."
-    },
+    "visualFromLesson": "Lesson: {{lesson}}.",
+    "visualFromAny": "From a lesson.",
     "openLesson": "Open the lesson",
     "moduleCount_one": "{{value}} module",
     "moduleCount_other": "{{value}} modules",

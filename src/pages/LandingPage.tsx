@@ -115,6 +115,10 @@ export default function LandingPage() {
   const next = modules ? nextLesson(modules, done ?? new Set()) : null
   const lessonCount = modules?.reduce((sum, module) => sum + module.lessons.length, 0) ?? 0
   const firstLesson = modules?.find((module) => module.lessons.length > 0)?.lessons[0]
+  // The hero's lesson title in the app language (modules load again when it changes); until they
+  // arrive, or if they fail, the line under the hero names no lesson. The isolates keep a title in the
+  // other script (Arabic pages show some titles in English) from reordering the sentence around it.
+  const heroTitle = modules?.flatMap((module) => module.lessons).find((lesson) => lesson.slug === hero.slug)?.title
 
   const data = { modules, challenges, failure, retry }
   const heroPlaceholder = <CellLoader className={HERO_HEIGHT} />
@@ -190,7 +194,7 @@ export default function LandingPage() {
                 <hero.Visual demo={hero.demo} />
                 {/* Where it comes from sits at the foot, as a 44 px link. */}
                 <p className="mt-auto pt-1 text-sm text-muted">
-                  <TextWithCode text={t(`landing.visualFrom.${hero.slug}`)} />{' '}
+                  {heroTitle ? t('landing.visualFromLesson', { lesson: `\u2068${heroTitle}\u2069` }) : t('landing.visualFromAny')}{' '}
                   <Link to={`/lessons/${hero.slug}`} className="inline-flex min-h-11 items-center rounded text-accent underline underline-offset-2">
                     {t('landing.openLesson')}
                   </Link>

@@ -3,7 +3,8 @@ import { lazy, type ComponentType, type LazyExoticComponent } from 'react'
 // The visuals the landing page's card picks from, one at random per page view. Each is the lesson's
 // own visual with a fixed demo input, playing once by itself; only the chosen one's code is loaded.
 // Every one fits the card's height in LandingPage (HERO_HEIGHT) at every width, in English and
-// Arabic, at every step: check that before adding one. The line under it is landing.visualFrom.<slug>.
+// Arabic, at every step: check that before adding one. The line under it names the lesson by the
+// title in the loaded modules (landing.visualFromLesson).
 type Demo = LazyExoticComponent<ComponentType<{ demo: unknown }>>
 
 function entry<D>(slug: string, demo: D, load: () => Promise<{ default: ComponentType<{ demo: D }> }>) {
@@ -16,4 +17,6 @@ export const HERO_POOL = [
   entry('reverse-a-string', 'hello', () => import('./TwoPointerVisual').then((m) => ({ default: m.ReverseVisual }))),
   entry('sum-of-an-array', [3, 8, 2, 6, 4], () => import('./ArrayScanVisual').then((m) => ({ default: m.SumVisual }))),
   entry('maximum-of-an-array', [4, 9, 2, 7, 5], () => import('./ArrayScanVisual').then((m) => ({ default: m.MaxVisual }))),
+  entry('balanced-brackets', '()[]', () => import('./StackVisual').then((m) => ({ default: m.BracketsVisual }))),
+  entry('sort-an-array', { algorithm: 'insertion' as const, array: [4, 1, 3, 2] }, () => import('./SortingVisual')),
 ]
