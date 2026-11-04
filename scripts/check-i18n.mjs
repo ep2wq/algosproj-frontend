@@ -1,9 +1,11 @@
 // Checks the translation files; prints nothing and exits 0 when they are fine (npm run check:i18n).
 // - en.json and ar.json have the same keys, except admin.*, which ar.json leaves out (the admin
-//   area is English); visuals.en.json and visuals.ar.json have the same keys.
+//   area is English); visuals.en.json and visuals.ar.json have the same keys, and so do
+//   visuals-dp.en.json and visuals-dp.ar.json (the dp namespace of the DP visuals).
 // - A count key has _one and _other in English and all six Arabic forms.
 // - Every key the code uses with t('...') exists in English (files under src/visuals use the
-//   visuals namespace). ${...} in a t(`...`) key matches any part of a key.
+//   visuals namespace; src/visuals/dp* and Dp* files use dp, falling back to visuals).
+//   ${...} in a t(`...`) key matches any part of a key.
 // - No English string has a ~ (the ~term~ marker is for Arabic only), except the admin hint
 //   that explains the marker.
 import { readdirSync, readFileSync, statSync } from 'node:fs'
@@ -58,8 +60,10 @@ function compare(enName, arName, skip) {
 const isAdmin = (key) => key === 'admin' || key.startsWith('admin.')
 const main = compare('en.json', 'ar.json', (key) => isAdmin(key))
 const visuals = compare('visuals.en.json', 'visuals.ar.json', () => false)
+const dp = compare('visuals-dp.en.json', 'visuals-dp.ar.json', () => false)
+const dpOrVisuals = new Map([...visuals, ...dp])
 
-for (const [name, flat] of [['en.json', flatten(load('en.json'))], ['visuals.en.json', flatten(load('visuals.en.json'))]]) {
+for (const [name, flat] of [['en.json', flatten(load('en.json'))], ['visuals.en.json', flatten(load('visuals.en.json'))], ['visuals-dp.en.json', flatten(load('visuals-dp.en.json'))]]) {
   for (const [key, value] of flat) {
     if (typeof value === 'string' && value.includes('~') && !TILDE_ALLOWED.has(key)) errors.push(`${name}: ${key} has a ~`)
   }
@@ -74,7 +78,8 @@ function files(dir) {
 
 const src = new URL('../src', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
 for (const file of files(src)) {
-  const keys = file.replace(/\\/g, '/').includes('/src/visuals/') ? visuals : main
+  const unix = file.replace(/\\/g, '/')
+  const keys = /\/src\/visuals\/dp[^/]*$/i.test(unix) ? dpOrVisuals : unix.includes('/src/visuals/') ? visuals : main
   const text = readFileSync(file, 'utf8')
   for (const [, quote, key] of text.matchAll(/\bt\(\s*(['"`])([^'"`]+)\1/g)) {
     const escape = (part) => part.replace(/[.*+?^$()[\]{}|\\]/g, '\\$&')

@@ -29,4 +29,7 @@ export const VISUALS = new Map<string, LazyExoticComponent<ComponentType>>([
   ['sort-an-array', lazy(() => import('./SortingVisual'))],
   ['binary-search', lazy(() => import('./BinarySearchVisual'))],
   ['count-inversions', lazy(() => import('./InversionsVisual'))],
+  ['climbing-stairs', lazy(() => import('./DpRowVisual').then((m) => ({ default: m.StairsVisual })))],
+  ['coin-change', lazy(() => import('./DpRowVisual').then((m) => ({ default: m.CoinChangeVisual })))],
+  ['house-robber', lazy(() => import('./DpRowVisual').then((m) => ({ default: m.HouseRobberVisual })))],
 ])

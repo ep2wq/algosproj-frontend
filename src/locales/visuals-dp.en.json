@@ -1,0 +1,55 @@
+{
+  "dpRow": {
+    "region": "DP table, scrolls sideways when wider than the screen",
+    "labelRow": "{{name}} for {{index}} = 0 to {{last}}: {{cells}}.",
+    "labelHouses": "House values, houses 1 to {{n}}: {{values}}.",
+    "labelCoins": "Coins: {{coins}}.",
+    "labelTrying": "Trying coin {{coin}}.",
+    "labelCurrent": "Computing {{cell}}; it reads {{reads}}.",
+    "labelCurrentAlone": "Computing {{cell}}.",
+    "labelAnswer": "Answer: {{cell}} = {{value}}.",
+    "empty": "empty",
+    "infLabel": "INF (not made yet)",
+    "coinsTitle": "Coins",
+    "legendCurrent": "Being computed",
+    "legendRead": "Dashed border: a cell it reads",
+    "legendAnswer": "The answer",
+    "legendEmpty": "Not computed yet",
+    "legendIndex": "Small numbers below: {{index}}.",
+    "legendHouses": "Above: the value of each house, v[i - 1] above best[i].",
+    "legendInf": "INF = amount + 1, more than any answer: the amount is not made yet.",
+    "done": "The answer is {{cell}} = {{value}}. Print {{value}}.",
+    "stairs": {
+      "start": "ways[i] is the number of ways to reach step i. Base cases: ways[0] = ways[1] = 1.",
+      "step": "The last move to step {{i}} was 1 step, from {{a}}, or 2 steps, from {{b}}: {{formula}}.",
+      "inputLabel": "Your own n",
+      "placeholder": "e.g. 6",
+      "hint": "A whole number from 1 to {{max}}, so the row fits. (The problem allows n up to 90.)"
+    },
+    "house": {
+      "start": "best[i] is the largest total using only the first i houses. Base cases: best[0] = 0 and best[1] = {{first}}, the first house.",
+      "take": "House {{i}} ({{v}}): skip it, {{skip}}, or take it, {{take}}. Taking it is larger: {{result}}.",
+      "skip": "House {{i}} ({{v}}): skip it, {{skip}}, or take it, {{take}}. Skipping it is larger: {{result}}.",
+      "tie": "House {{i}} ({{v}}): skip it, {{skip}}, or take it, {{take}}. Both are equal: {{result}}.",
+      "inputLabel": "Your own house values",
+      "placeholder": "e.g. 5 1 1 5",
+      "hint": "1 to {{max}} whole numbers from 0 to 99, separated by spaces or commas. (The problem allows up to 1000 houses.)",
+      "invalid": "Use whole numbers from 0 to 99, separated by spaces or commas."
+    },
+    "coins": {
+      "start": "best[x] is the fewest coins making amount x. best[0] = 0; every other amount starts at INF = {{inf}} (amount + 1), more than any answer.",
+      "better": "Amount {{x}}, coin {{c}}: {{expr}}, smaller than the best so far, {{old}}: {{result}}.",
+      "notBetter": "Amount {{x}}, coin {{c}}: {{expr}}, not smaller than the best so far, {{old}}: best[{{x}}] stays {{old}}.",
+      "fromInf": "Amount {{x}}, coin {{c}}: best[{{r}}] is INF, so amount {{r}} cannot be made and this coin cannot finish {{x}}: best[{{x}}] stays {{old}}.",
+      "noCoin": "Amount {{x}}: no coin is at most {{x}}, so best[{{x}}] stays INF.",
+      "none": "best[{{x}}] is still INF: amount {{x}} cannot be made. Print -1.",
+      "coinsLabel": "Coin values",
+      "amountLabel": "Amount",
+      "coinsPlaceholder": "e.g. 1 3 4",
+      "amountPlaceholder": "e.g. 6",
+      "hint": "1 to {{maxCoins}} different coin values from 1 to {{maxValue}}, and an amount from 0 to {{maxAmount}}, so the row fits. (The problem allows amounts up to 10000.)",
+      "coinsInvalid": "Use 1 to {{maxCoins}} different whole numbers from 1 to {{maxValue}}, separated by spaces or commas.",
+      "amountInvalid": "The amount must be a whole number from 0 to {{max}}."
+    }
+  }
+}

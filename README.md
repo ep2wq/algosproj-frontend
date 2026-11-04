@@ -225,6 +225,12 @@ Visualizations are translated too; their drawings stay left to right.
   (`sumFrames(array, t)`), so they stay pure (same input and language, same frames) and
   each sentence stays next to the logic that picks it. Components pass
   `useTranslation('visuals').t` and recompute the frames when the language changes.
+- **DP visuals' strings:** `src/locales/visuals-dp.en.json` and `visuals-dp.ar.json` are a
+  separate namespace, `dp`, registered by `src/visuals/dpI18n.ts` and loaded only with the DP
+  visuals (in the shared `visuals` files they would add about 2 kB gzip to every visual page,
+  the landing page included). The DP components use `useTranslation(DP_NS, { nsMode:
+  'fallback' })`, so `common.*` keys still come from `visuals`; `check:i18n` checks the pair
+  like the others.
 - **Arabic text with English terms:** visual step text, hints, errors and labels are shown
   through `TextWithCode`, the lesson renderer: `~term~` for an English term and `` `code` ``
   for values, expressions and identifiers, as in the lessons. Negative numbers and
@@ -568,10 +574,10 @@ To enable Arabic for admin (not done): remove the `lang="en" dir="ltr"` wrapper 
 ## Visualizations
 
 `src/visuals/index.ts` maps a lesson slug to a lazy-loaded component, shown between the
-lesson text and the problems. 27 of the 65 lessons have one; the Programming basics, Core
+lesson text and the problems. 30 of the 65 lessons have one; the Programming basics, Core
 programming, Object-oriented programming, Algorithm basics, Heaps and priority queues, Greedy
-algorithms, Dynamic programming basics, Dynamic programming: tables, Tries and union-find and
-Bit manipulation and math lessons (38 in all) have none yet:
+algorithms, Dynamic programming: tables, Tries and union-find and Bit manipulation and math
+lessons, and longest-increasing-subsequence (35 in all) have none yet:
 
 - `warm-up`: read, compute, print for "Double the number": standard input, the program
   (Python, Java, JavaScript or C++, current line highlighted) and standard output
@@ -615,6 +621,12 @@ Bit manipulation and math lessons (38 in all) have none yet:
 - `n-queens`: the board with the queens, the squares they attack, the square being tried
   and the queen removed on a backtrack, a row-by-row trail of the columns tried, and the
   solutions found; n from 4 to 5 (`QueensVisual.tsx`, `queensFrames.ts`).
+- `climbing-stairs`, `house-robber`, `coin-change`: a one-row DP table filled left to right in
+  each lesson's notation (`ways[i]`; `best[i]` over the first i houses with the values above;
+  `best[x]` with `INF = amount + 1`, amounts outer and coins inner), the cell being computed,
+  the cells it reads (dashed) and the answer; n up to 15, up to 10 houses of 0 to 99, up to 4
+  coins of 1 to 12 and an amount up to 12 (`DpRowVisual.tsx` with a `mode` prop,
+  `dpRowFrames.ts`).
 
 Each visualization's steps come from a pure function that takes the translate function as
 its last argument (README "Languages"). The player components share
@@ -647,6 +659,11 @@ Frame design decisions:
   ties are taken from the left, and every frame's array is a permutation of the input.
 - Warm-up: the code shown per language lives in `warmupFrames.ts` and was run in the
   sandbox; the prompt option adds a print line and ends with a failed verdict.
+- DP rows: coin change has one step per coin c <= x (larger coins are skipped, as the
+  lesson's `if c <= x`) and one step for an amount no coin fits; an unreachable amount ends
+  with best[amount] still INF and prints -1. House robber names take, skip or equal per house.
+  The DP visuals' step text is not announced while playing (`aria-live` off), only when
+  paused or stopped.
 
 ## Docker
 
