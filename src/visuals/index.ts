@@ -32,4 +32,8 @@ export const VISUALS = new Map<string, LazyExoticComponent<ComponentType>>([
   ['climbing-stairs', lazy(() => import('./DpRowVisual').then((m) => ({ default: m.StairsVisual })))],
   ['coin-change', lazy(() => import('./DpRowVisual').then((m) => ({ default: m.CoinChangeVisual })))],
   ['house-robber', lazy(() => import('./DpRowVisual').then((m) => ({ default: m.HouseRobberVisual })))],
+  ['grid-paths', lazy(() => import('./DpTableVisual').then((m) => ({ default: m.GridPathsVisual })))],
+  ['knapsack', lazy(() => import('./DpTableVisual').then((m) => ({ default: m.KnapsackVisual })))],
+  ['longest-common-subsequence', lazy(() => import('./DpTableVisual').then((m) => ({ default: m.LcsVisual })))],
+  ['edit-distance', lazy(() => import('./DpTableVisual').then((m) => ({ default: m.EditDistanceVisual })))],
 ])

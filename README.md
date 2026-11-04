@@ -574,10 +574,10 @@ To enable Arabic for admin (not done): remove the `lang="en" dir="ltr"` wrapper 
 ## Visualizations
 
 `src/visuals/index.ts` maps a lesson slug to a lazy-loaded component, shown between the
-lesson text and the problems. 30 of the 65 lessons have one; the Programming basics, Core
+lesson text and the problems. 34 of the 65 lessons have one; the Programming basics, Core
 programming, Object-oriented programming, Algorithm basics, Heaps and priority queues, Greedy
-algorithms, Dynamic programming: tables, Tries and union-find and Bit manipulation and math
-lessons, and longest-increasing-subsequence (35 in all) have none yet:
+algorithms, Tries and union-find and Bit manipulation and math lessons, and
+longest-increasing-subsequence (31 in all) have none yet:
 
 - `warm-up`: read, compute, print for "Double the number": standard input, the program
   (Python, Java, JavaScript or C++, current line highlighted) and standard output
@@ -627,6 +627,13 @@ lessons, and longest-increasing-subsequence (35 in all) have none yet:
   the cells it reads (dashed) and the answer; n up to 15, up to 10 houses of 0 to 99, up to 4
   coins of 1 to 12 and an amount up to 12 (`DpRowVisual.tsx` with a `mode` prop,
   `dpRowFrames.ts`).
+- `grid-paths`, `knapsack`, `longest-common-subsequence`, `edit-distance`: a 2D DP table
+  filled row by row in each lesson's notation (`p` with its extra row and column of zeros and
+  `p[0][1] = 1`; `best(i, w)` over items A, B, C, ...; `L[i][j]`; `D[i][j]`), the cell being
+  computed, the cells it reads (dashed) and the answer; LCS and edit distance then trace the
+  path back one cell per step, building the common subsequence or the list of operations.
+  Up to 6 by 6 grid cells, up to 4 items with weights and a capacity up to 8, strings of up
+  to 6 letters (`DpTableVisual.tsx` with a `mode` prop, `dpTableFrames.ts`).
 
 Each visualization's steps come from a pure function that takes the translate function as
 its last argument (README "Languages"). The player components share
@@ -664,6 +671,11 @@ Frame design decisions:
   with best[amount] still INF and prints -1. House robber names take, skip or equal per house.
   The DP visuals' step text is not announced while playing (`aria-live` off), only when
   paused or stopped.
+- DP tables: knapsack draws the lesson's example table `[i][w]` (one row per item), not the
+  one-row downward loop of its code. The LCS traceback goes diagonally on equal letters, else
+  to the larger neighbour (up on a tie), and stops on row 0 or column 0; the edit distance
+  traceback prefers the diagonal (keep or replace), then up (delete), then left (insert), and
+  ends at `D[0][0]`.
 
 ## Docker
 

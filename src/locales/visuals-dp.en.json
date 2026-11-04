@@ -1,24 +1,26 @@
 {
-  "dpRow": {
+  "shared": {
     "region": "DP table, scrolls sideways when wider than the screen",
+    "done": "The answer is {{cell}} = {{value}}. Print {{value}}.",
+    "empty": "empty",
+    "labelCurrent": "Computing {{cell}}; it reads {{reads}}.",
+    "labelCurrentAlone": "Computing {{cell}}.",
+    "labelAnswer": "Answer: {{cell}} = {{value}}.",
+    "legendCurrent": "Being computed",
+    "legendRead": "Dashed border: a cell it reads",
+    "legendAnswer": "The answer",
+    "legendEmpty": "Not computed yet"
+  },
+  "dpRow": {
     "labelRow": "{{name}} for {{index}} = 0 to {{last}}: {{cells}}.",
     "labelHouses": "House values, houses 1 to {{n}}: {{values}}.",
     "labelCoins": "Coins: {{coins}}.",
     "labelTrying": "Trying coin {{coin}}.",
-    "labelCurrent": "Computing {{cell}}; it reads {{reads}}.",
-    "labelCurrentAlone": "Computing {{cell}}.",
-    "labelAnswer": "Answer: {{cell}} = {{value}}.",
-    "empty": "empty",
     "infLabel": "INF (not made yet)",
     "coinsTitle": "Coins",
-    "legendCurrent": "Being computed",
-    "legendRead": "Dashed border: a cell it reads",
-    "legendAnswer": "The answer",
-    "legendEmpty": "Not computed yet",
     "legendIndex": "Small numbers below: {{index}}.",
     "legendHouses": "Above: the value of each house, v[i - 1] above best[i].",
     "legendInf": "INF = amount + 1, more than any answer: the amount is not made yet.",
-    "done": "The answer is {{cell}} = {{value}}. Print {{value}}.",
     "stairs": {
       "start": "ways[i] is the number of ways to reach step i. Base cases: ways[0] = ways[1] = 1.",
       "step": "The last move to step {{i}} was 1 step, from {{a}}, or 2 steps, from {{b}}: {{formula}}.",
@@ -50,6 +52,77 @@
       "hint": "1 to {{maxCoins}} different coin values from 1 to {{maxValue}}, and an amount from 0 to {{maxAmount}}, so the row fits. (The problem allows amounts up to 10000.)",
       "coinsInvalid": "Use 1 to {{maxCoins}} different whole numbers from 1 to {{maxValue}}, separated by spaces or commas.",
       "amountInvalid": "The amount must be a whole number from 0 to {{max}}."
+    }
+  },
+  "dpTable": {
+    "labelColumns": "Columns: {{heads}}.",
+    "labelRow": "Row {{row}} ({{head}}): {{cells}}.",
+    "labelBack": "Tracing back at {{cell}}; path so far: {{path}}.",
+    "cellBlocked": "0 (blocked)",
+    "legendPath": "•: on the path traced back from the answer",
+    "legendBlocked": "#: a blocked cell, 0",
+    "legendGrid": "Small numbers outside: i and j. Row 0 and column 0 are the extra zeros; p[0][1] = 1.",
+    "legendKnapsack": "Columns: the capacity w. Rows: the items as (weight, value); row 0 has none.",
+    "legendStrings": "Rows: the letters of A; columns: the letters of B; - is row 0 or column 0.",
+    "foundLcs": "Subsequence so far:",
+    "foundEdit": "Operations so far:",
+    "none": "none",
+    "grid": {
+      "start": "The table has an extra row and column of zeros, and p[0][1] = 1 seeds the start. A cell is entered from above or from the left: p[i][j] = p[i - 1][j] + p[i][j - 1]; a blocked cell has 0.",
+      "step": "From above plus from the left: {{formula}}.",
+      "blocked": "{{cell}} is blocked (#), so it has 0.",
+      "inputLabel": "Your own grid",
+      "placeholder": "e.g. ... .#. ...",
+      "hint": "1 to {{max}} rows of 1 to {{max}} characters, each . (free) or # (blocked), separated by spaces or commas. Start at the top-left, goal at the bottom-right. (The problem allows up to 30 by 30.)",
+      "onlyDots": "Use only . and # in each row, and separate rows with spaces or commas."
+    },
+    "knapsack": {
+      "start": "best(i, w) is the best value using only the first i items with capacity w. Row 0 has no items: 0 everywhere.",
+      "noFit": "Item {{item}} does not fit in w = {{w}}: leave it out, {{result}}.",
+      "take": "Item {{item}}, w = {{w}}: without it {{without}}, with it {{with}}. Take it: {{result}}.",
+      "skip": "Item {{item}}, w = {{w}}: without it {{without}}, with it {{with}}. Leave it out: {{result}}.",
+      "tie": "Item {{item}}, w = {{w}}: without it {{without}}, with it {{with}}. Both are equal: {{result}}.",
+      "itemsLabel": "Items (weight value)",
+      "itemsPlaceholder": "e.g. 1 15, 3 20, 4 30",
+      "capacityLabel": "Capacity W",
+      "capacityPlaceholder": "e.g. 4",
+      "hint": "1 to {{maxItems}} items separated by commas, each a weight from 1 to {{max}} and a value from 0 to 99 separated by a space, and a capacity from 1 to {{max}}. (The problem allows 100 items and a capacity of 10000.)",
+      "itemsInvalid": "Use 1 to {{maxItems}} items separated by commas, each a weight from 1 to {{max}} and a value from 0 to 99, for example 1 15, 3 20.",
+      "capacityInvalid": "The capacity must be a whole number from 1 to {{max}}."
+    },
+    "strings": {
+      "aLabel": "String A",
+      "bLabel": "String B",
+      "aPlaceholder": "e.g. abcde",
+      "bPlaceholder": "e.g. ace",
+      "hint": "0 to {{max}} letters a to z in each, as in the problem (either may be empty). (The problem allows {{limit}} letters.)",
+      "invalid": "Use only the letters a to z, at most {{max}} in each string."
+    },
+    "lcs": {
+      "start": "L[i][j] is the LCS length of the first i letters of A and the first j of B. Row 0 and column 0 are 0.",
+      "equal": "{{letter}} = {{letter}}: equal letters extend the diagonal: {{formula}}.",
+      "differ": "{{x}} ≠ {{y}}: take the larger of up and left: {{formula}}.",
+      "answer": "{{cell}} = {{value}} is the LCS length. Now trace back from it to find the letters.",
+      "backEqual": "At {{cell}}: equal letters, so {{letter}} is in the subsequence. Go diagonally to {{next}}.",
+      "backUp": "At {{cell}}: {{x}} ≠ {{y}}, and up ({{up}}) is at least left ({{left}}). Go up to {{next}}.",
+      "backLeft": "At {{cell}}: {{x}} ≠ {{y}}, and left ({{left}}) is larger than up ({{up}}). Go left to {{next}}.",
+      "end": "{{cell}} is on row 0 or column 0, so the trace ends. The common subsequence is {{found}}, of length {{value}}. Print {{value}}.",
+      "endEmpty": "{{cell}} is on row 0 or column 0, so the trace ends. The common subsequence is empty. Print 0."
+    },
+    "edit": {
+      "start": "D[i][j] is the fewest operations turning the first i letters of A into the first j of B. Row 0 and column 0 are the base cases: i deletes or j inserts.",
+      "equal": "{{x}} = {{y}}: the diagonal is free. Diagonal {{diag}}, up (delete) {{up}}, left (insert) {{left}}: {{result}}.",
+      "differ": "{{x}} ≠ {{y}}: diagonal (replace) {{diag}}, up (delete) {{up}}, left (insert) {{left}}: {{result}}.",
+      "answer": "{{cell}} = {{value}} is the edit distance. Now trace back from it to find the operations.",
+      "backKeep": "At {{cell}}: {{x}} = {{y}}, keep it (free). Go diagonally to {{next}}.",
+      "backReplace": "At {{cell}}: replace {{x}} with {{y}}. Go diagonally to {{next}}.",
+      "backDelete": "At {{cell}}: delete {{x}}. Go up to {{next}}.",
+      "backInsert": "At {{cell}}: insert {{y}}. Go left to {{next}}.",
+      "opReplace": "replace {{x}} with {{y}}",
+      "opDelete": "delete {{x}}",
+      "opInsert": "insert {{y}}",
+      "end": "The trace has reached D[0][0]. The operations: {{ops}}. Print {{value}}.",
+      "endNone": "The trace has reached D[0][0] with no operation: A and B are equal. Print 0."
     }
   }
 }

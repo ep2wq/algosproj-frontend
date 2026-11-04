@@ -90,7 +90,7 @@ function rowLabel(input: RowInput, frame: DpRowFrame, t: DpT) {
   const [name, index] = NAMES[input.mode]
   const inf = input.mode === 'coins' ? input.amount + 1 : Infinity
   const cell = (i: number) => `${name}[${i}]`
-  const cells = frame.cells.map((value) => (value === null ? t('dpRow.empty') : value >= inf ? t('dpRow.infLabel') : String(value)))
+  const cells = frame.cells.map((value) => (value === null ? t('shared.empty') : value >= inf ? t('dpRow.infLabel') : String(value)))
   const parts = []
   if (input.mode === 'house') parts.push(t('dpRow.labelHouses', { n: input.values.length, values: input.values.join(t('common.listSeparator')) }))
   if (input.mode === 'coins') {
@@ -99,9 +99,9 @@ function rowLabel(input: RowInput, frame: DpRowFrame, t: DpT) {
   }
   parts.push(t('dpRow.labelRow', { name, index, last: frame.cells.length - 1, cells: cells.join(t('common.listSeparator')) }))
   if (frame.current !== null) {
-    parts.push(frame.reads.length > 0 ? t('dpRow.labelCurrent', { cell: cell(frame.current), reads: joinAnd(t, frame.reads.map(cell)) }) : t('dpRow.labelCurrentAlone', { cell: cell(frame.current) }))
+    parts.push(frame.reads.length > 0 ? t('shared.labelCurrent', { cell: cell(frame.current), reads: joinAnd(t, frame.reads.map(cell)) }) : t('shared.labelCurrentAlone', { cell: cell(frame.current) }))
   }
-  if (frame.done) parts.push(t('dpRow.labelAnswer', { cell: cell(frame.cells.length - 1), value: cells[cells.length - 1] }))
+  if (frame.done) parts.push(t('shared.labelAnswer', { cell: cell(frame.cells.length - 1), value: cells[cells.length - 1] }))
   return parts.join(' ')
 }
 
@@ -169,7 +169,7 @@ export default function DpRowVisual({ mode }: { mode: DpRowMode }) {
       <div
         tabIndex={0}
         role="region"
-        aria-label={t('dpRow.region')}
+        aria-label={t('shared.region')}
         dir="ltr"
         ref={scrollRef}
         className={`mt-4 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
@@ -207,19 +207,19 @@ export default function DpRowVisual({ mode }: { mode: DpRowMode }) {
       <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <li className="flex items-center gap-1.5">
           <span className="inline-block h-3.5 w-5 rounded border-2 border-warn bg-warn" aria-hidden="true" />
-          {t('dpRow.legendCurrent')}
+          {t('shared.legendCurrent')}
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block h-3.5 w-5 rounded border-2 border-dashed border-accent bg-surface" aria-hidden="true" />
-          {t('dpRow.legendRead')}
+          {t('shared.legendRead')}
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block h-3.5 w-5 rounded border-2 border-pass bg-pass" aria-hidden="true" />
-          {t('dpRow.legendAnswer')}
+          {t('shared.legendAnswer')}
         </li>
         <li className="flex items-center gap-1.5">
           <span className="inline-block h-3.5 w-5 rounded border-2 border-line bg-paper" aria-hidden="true" />
-          {t('dpRow.legendEmpty')}
+          {t('shared.legendEmpty')}
         </li>
         <li>
           <TextWithCode text={t('dpRow.legendIndex', { index })} />

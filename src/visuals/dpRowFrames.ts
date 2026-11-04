@@ -43,7 +43,7 @@ export function stairsFrames(n: number, t: DpT): DpRowFrame[] {
     const formula = `ways[${i}] = ways[${i - 1}] + ways[${i - 2}] = ${a} + ${b} = ${a + b}`
     frames.push(frame({ current: i, reads: [i - 1, i - 2], description: t('dpRow.stairs.step', { i, a: i - 1, b: i - 2, formula }) }))
   }
-  frames.push(frame({ done: true, output: String(cells[n]), description: t('dpRow.done', { cell: `ways[${n}]`, value: cells[n] }) }))
+  frames.push(frame({ done: true, output: String(cells[n]), description: t('shared.done', { cell: `ways[${n}]`, value: cells[n] }) }))
   return frames
 }
 
@@ -77,7 +77,7 @@ export function houseFrames(v: number[], t: DpT): DpRowFrame[] {
       }),
     )
   }
-  frames.push(frame({ done: true, output: String(cells[n]), description: t('dpRow.done', { cell: `best[${n}]`, value: cells[n] }) }))
+  frames.push(frame({ done: true, output: String(cells[n]), description: t('shared.done', { cell: `best[${n}]`, value: cells[n] }) }))
   return frames
 }
 
@@ -119,7 +119,7 @@ export function coinFrames({ amount, coins }: { amount: number; coins: number[] 
   const answer = cells[amount] as number
   frames.push(
     answer < inf
-      ? frame({ done: true, output: String(answer), description: t('dpRow.done', { cell: `best[${amount}]`, value: answer }) })
+      ? frame({ done: true, output: String(answer), description: t('shared.done', { cell: `best[${amount}]`, value: answer }) })
       : frame({ done: true, output: '-1', description: t('dpRow.coins.none', { x: amount }) }),
   )
   return frames
