@@ -7,8 +7,8 @@ type AuthContextValue = {
   user: User | null
   // True while /me tells who is logged in (by the session cookie) on startup.
   loading: boolean
-  login: (email: string, password: string, remember: boolean) => Promise<void>
-  register: (name: string, email: string, password: string) => Promise<void>
+  login: (email: string, password: string, remember: boolean, honeypot?: string) => Promise<void>
+  register: (name: string, email: string, password: string, honeypot?: string) => Promise<void>
   // Finishes a Google or GitHub sign-up (/auth/complete).
   completeSignIn: (name: string) => Promise<void>
   logout: () => Promise<void>
@@ -46,13 +46,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false))
   }, [])
 
-  const login = useCallback(async (email: string, password: string, remember: boolean) => {
-    const result = await api.login(email, password, remember)
+  const login = useCallback(async (email: string, password: string, remember: boolean, honeypot = '') => {
+    const result = await api.login(email, password, remember, honeypot)
     setUser(result.user)
   }, [])
 
-  const register = useCallback(async (name: string, email: string, password: string) => {
-    const result = await api.register(name, email, password)
+  const register = useCallback(async (name: string, email: string, password: string, honeypot = '') => {
+    const result = await api.register(name, email, password, honeypot)
     setUser(result.user)
   }, [])
 

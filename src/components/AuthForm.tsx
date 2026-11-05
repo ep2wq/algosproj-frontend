@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'rea
 import { flushSync } from 'react-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import { Label } from '@/components/ui/label'
+import { HONEYPOT_FIELD } from '../api'
 import SocialSignIn from './SocialSignIn'
 
 type AuthFormProps = {
@@ -10,7 +11,8 @@ type AuthFormProps = {
   busyLabel: string
   busy: boolean
   error: ReactNode
-  onSubmit: () => void
+  // Gets the hidden field's value ('' for a person) when the form has one.
+  onSubmit: (honeypot: string) => void
   footer: ReactNode
   children: ReactNode
   // A server error on accepted_terms (register only). Shown with our own message.
@@ -19,6 +21,8 @@ type AuthFormProps = {
   terms?: boolean
   // "Continue with Google / GitHub" under the form (login, register); gated by the Terms box too.
   social?: boolean
+  // The hidden bot trap (login, register, forgot password).
+  honeypot?: boolean
 }
 
 // Opens in a new tab, so a half-filled form is not lost; screen readers are told.
@@ -33,10 +37,11 @@ function NewTabLink({ href, children }: { href: string; children?: ReactNode }) 
 }
 
 // Shared frame for the login, register, forgot password and reset password pages.
-export default function AuthForm({ title, submitLabel, busyLabel, busy, error, onSubmit, footer, children, termsErrors, terms = true, social = false }: AuthFormProps) {
+export default function AuthForm({ title, submitLabel, busyLabel, busy, error, onSubmit, footer, children, termsErrors, terms = true, social = false, honeypot = false }: AuthFormProps) {
   const { t } = useTranslation()
   const formRef = useRef<HTMLFormElement>(null)
   const termsRef = useRef<HTMLInputElement>(null)
+  const honeypotRef = useRef<HTMLInputElement>(null)
   // Accepting the Terms and Privacy policy. Starts unchecked on every visit and is never stored.
   const [accepted, setAccepted] = useState(false)
   const [termsMissing, setTermsMissing] = useState(false)
@@ -62,7 +67,7 @@ export default function AuthForm({ title, submitLabel, busyLabel, busy, error, o
       refuseWithoutTerms()
       return
     }
-    onSubmit()
+    onSubmit(honeypotRef.current?.value ?? '')
   }
 
   return (
@@ -70,6 +75,13 @@ export default function AuthForm({ title, submitLabel, busyLabel, busy, error, o
       <title>{t('titles.page', { name: title })}</title>
       <h1 className="text-2xl font-semibold">{title}</h1>
       <form ref={formRef} onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
+        {/* The bot trap: off-screen (first, so the space between the fields is unchanged), hidden
+            from screen readers, out of the tab order, no label, a name browsers do not autofill. */}
+        {honeypot && (
+          <div aria-hidden="true" className="absolute -start-[10000px] top-0 size-px overflow-hidden">
+            <input ref={honeypotRef} type="text" name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" defaultValue="" />
+          </div>
+        )}
         {children}
         {terms && (
           <div>

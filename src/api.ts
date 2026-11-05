@@ -401,18 +401,27 @@ async function request<T>(method: string, path: string, body?: unknown, retried 
   throw new ApiError(response.status, serverMessage || statusMessages[response.status] || t('errors.status', { status: response.status }))
 }
 
+// The hidden field of login, register and forgot password (AuthForm `honeypot`; backend README
+// "Security events and IP bans"). People never see or fill it; a bot that fills it gets an ordinary
+// failure. Sent only when filled, so a person's request is unchanged.
+export const HONEYPOT_FIELD = 'form_extra'
+
+function trap(honeypot: string) {
+  return honeypot ? { [HONEYPOT_FIELD]: honeypot } : {}
+}
+
 // Login and register start a session (the server sets the cookie); the response has only the user.
 // Register is only called once the Terms and Privacy box is checked (AuthForm); the server records it.
-export async function register(name: string, email: string, password: string) {
+export async function register(name: string, email: string, password: string, honeypot = '') {
   await refreshCsrfCookie()
-  const result = await request<AuthResponse>('POST', '/register', { name, email, password, accepted_terms: true })
+  const result = await request<AuthResponse>('POST', '/register', { name, email, password, accepted_terms: true, ...trap(honeypot) })
   signedIn = true
   return result
 }
 
-export async function login(email: string, password: string, remember: boolean) {
+export async function login(email: string, password: string, remember: boolean, honeypot = '') {
   await refreshCsrfCookie()
-  const result = await request<AuthResponse>('POST', '/login', { email, password, remember })
+  const result = await request<AuthResponse>('POST', '/login', { email, password, remember, ...trap(honeypot) })
   signedIn = true
   return result
 }
@@ -457,9 +466,9 @@ export function resendVerification() {
   return request<{ message: string }>('POST', '/email/verification-notification')
 }
 
-export async function forgotPassword(email: string) {
+export async function forgotPassword(email: string, honeypot = '') {
   await refreshCsrfCookie()
-  return request<{ message: string }>('POST', '/forgot-password', { email })
+  return request<{ message: string }>('POST', '/forgot-password', { email, ...trap(honeypot) })
 }
 
 export async function resetPassword(token: string, email: string, password: string, passwordConfirmation: string) {

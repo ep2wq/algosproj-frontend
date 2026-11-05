@@ -21,12 +21,12 @@ export default function ForgotPasswordPage() {
     if (sent) sentRef.current?.focus()
   }, [sent])
 
-  async function handleSubmit() {
+  async function handleSubmit(honeypot: string) {
     setBusy(true)
     setError('')
     setFieldErrors({})
     try {
-      await forgotPassword(email)
+      await forgotPassword(email, honeypot)
       setSent(true)
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) {
@@ -72,6 +72,7 @@ export default function ForgotPasswordPage() {
         busy={busy}
         error={error}
         onSubmit={handleSubmit}
+        honeypot
         terms={false}
         footer={backToLogin}
       >

@@ -50,13 +50,13 @@ export default function LoginPage() {
     if (location.search) navigate({ search: '' }, { replace: true, state: location.state })
   }, [location.search, location.state, navigate])
 
-  async function handleSubmit() {
+  async function handleSubmit(honeypot: string) {
     setBusy(true)
     setError('')
     setSocialError(null)
     setFieldErrors({})
     try {
-      await login(email, password, remember)
+      await login(email, password, remember, honeypot)
       navigate(redirectTarget(location.state), { replace: true })
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) {
@@ -78,6 +78,7 @@ export default function LoginPage() {
       busy={busy}
       error={error || (socialError !== null && t(`auth.socialErrors.${socialError}`))}
       onSubmit={handleSubmit}
+      honeypot
       social
       footer={
         <>

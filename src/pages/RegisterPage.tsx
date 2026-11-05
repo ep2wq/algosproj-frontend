@@ -19,12 +19,12 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
 
-  async function handleSubmit() {
+  async function handleSubmit(honeypot: string) {
     setBusy(true)
     setError('')
     setFieldErrors({})
     try {
-      await register(name, email, password)
+      await register(name, email, password, honeypot)
       navigate(redirectTarget(location.state), { replace: true })
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) {
@@ -44,6 +44,7 @@ export default function RegisterPage() {
       busy={busy}
       error={error}
       onSubmit={handleSubmit}
+      honeypot
       termsErrors={fieldErrors.accepted_terms}
       social
       footer={
