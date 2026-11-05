@@ -506,8 +506,11 @@ Ids from the API are UUID strings (`string` in the `api.ts` types and endpoint p
 admin `:id`, `?module=<id>` and `?lesson=<id>` below are UUIDs. Never parse an id as a number or
 sort by it.
 
-A tab row at the top of every admin page links Content and Users, plus Audit log and
-Activity for owners.
+A tab row at the top of every admin page links Content and Users, plus Audit log,
+Activity and Security for owners (`src/pages/admin/AdminNav.tsx`, in the admin chunk). Security has
+a red badge with the number of unseen security events (99+ above 99; screen readers hear
+"Security, 5 unseen events"); it is loaded when the admin area opens, then every 60 seconds while
+the browser tab is visible, and at once after the Security page marks events as seen.
 
 - `/admin` lists every module with its lessons and their problems, then the standalone
   problems, with Edit and Add links.
@@ -536,6 +539,20 @@ Activity for owners.
 - `/admin/audit-log` and `/admin/activity` (owners only, `OwnerRoute`; admins get "Page not
   found"): filters for action or event, actor or user (id or email), and a UTC date range;
   50 per page; audit details are shown as lines such as `title: Old → New`.
+- `/admin/security` (owners only): requests that tried something forbidden (backend README
+  "Security events and IP bans"). Events tab: filters for IP, type and seen/unseen in the address,
+  50 per page grouped by UTC day, newest first, a table from `md` and cards below; Details shows the
+  browser, first seen, route and the matched rule/field/value; Mark as seen, Mark all as seen, and
+  Ban IP, which opens a native `<dialog>` (`showModal`: focus inside, Escape closes, focus goes back)
+  with a shared-network warning, the duration (1 hour, 24 hours, 7 days, permanent) and a note; the
+  server's 422 shows inside it. Banned IPs tab (`?tab=bans`): since, expires, note, who banned it,
+  blocked requests, Unban with a confirmation. After an action that may remove its button, focus
+  moves to the result line.
+
+Bot trap: login, register and forgot password have an off-screen text field `form_extra` (`AuthForm`
+`honeypot` prop: hidden from screen readers, out of the tab order, `autocomplete="off"`). People
+leave it empty and the request does not include it; a bot that fills it gets an ordinary failure from
+the server.
 
 Banned accounts: login shows "This account is banned. Reason: ..." from the 403. A request
 while signed in that gets that 403 is handled like a 401: the signed-in state is cleared and

@@ -153,6 +153,12 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   are filled in by `scripts/prerender.mjs`; changing an inline script in `index.html` is fine, the build re-hashes it.
   Styles need `'unsafe-inline'`. Cloudflare Rocket Loader must stay off. `main.tsx` reloads once (per 10 s) on
   `vite:preloadError`. npm audit: dompurify 3.2.7 inside monaco-editor 0.55.1 is still bundled (fix needs 0.57).
+- Done (2026-11-05): owner-only Security page `/admin/security` (`AdminSecurityPage.tsx`: Events and Banned IPs
+  tabs, `?tab=bans`, filters in the URL, cards below md, ban dialog = native `<dialog>` `showModal`, not Base UI: Base UI's
+  dialog re-split the shared chunks and added a request to the landing page). Admin tabs moved to the admin chunk
+  (`AdminNav.tsx`, lazy in `AdminRoute`) with the unseen badge (polls `/admin/security/summary` every 60 s while the tab is
+  visible; `SECURITY_CHANGED` window event after mark seen). Honeypot `form_extra` in `AuthForm` (`honeypot` prop: login,
+  register, forgot password), sent only when filled. Strings in `admin.security.*`, en only.
 - Local dev DB accounts (to clean up): `uitest-owner` (owner), `uitest-admin` (admin), `uitest-partway`,
   `uitest-new` (user), all `@example.test`. The audit log has two test role changes on `uitest-new`.
 - Open: no social links (no real URLs yet). The `scroll-fade` utility's `:dir(rtl)` is compiled to
