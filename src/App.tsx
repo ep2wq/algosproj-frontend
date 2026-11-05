@@ -33,6 +33,7 @@ const AdminContentPage = lazy(() => admin().then((m) => ({ default: m.AdminConte
 const AdminLessonPage = lazy(() => admin().then((m) => ({ default: m.AdminLessonPage })))
 const AdminModulePage = lazy(() => admin().then((m) => ({ default: m.AdminModulePage })))
 const AdminProblemPage = lazy(() => admin().then((m) => ({ default: m.AdminProblemPage })))
+const AdminSecurityPage = lazy(() => admin().then((m) => ({ default: m.AdminSecurityPage })))
 const AdminUserPage = lazy(() => admin().then((m) => ({ default: m.AdminUserPage })))
 const AdminUsersPage = lazy(() => admin().then((m) => ({ default: m.AdminUsersPage })))
 
@@ -99,6 +100,7 @@ function App() {
           <Route element={<OwnerRoute />}>
             <Route path="audit-log" element={<AdminAuditLogPage />} />
             <Route path="activity" element={<AdminActivityPage />} />
+            <Route path="security" element={<AdminSecurityPage />} />
           </Route>
         </Route>
         {/* Every other address, unknown /admin paths too: the 404 page in the interface language. */}

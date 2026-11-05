@@ -20,6 +20,7 @@ const ACTIONS = [
   'test_case.create', 'test_case.update', 'test_case.delete',
   'user.ban', 'user.unban', 'user.logout_everywhere', 'user.role_change',
   'user.points_adjust', 'user.reset_progress', 'user.delete',
+  'security.ban', 'security.unban', 'security.event_seen', 'security.events_seen',
 ]
 
 // Cells start at the top: details can run to several lines.

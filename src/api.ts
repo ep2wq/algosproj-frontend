@@ -630,3 +630,74 @@ export function getAuditLog(filters: AuditFilters) {
 export function getActivity(filters: ActivityFilters) {
   return request<Page<ActivityEntry>>('GET', `/admin/activity${query(filters)}`)
 }
+
+// Security events and IP bans, owner only (backend README "Security events and IP bans"). An event
+// adds up repeats from one IP within 10 minutes (count). detail holds only the route, the rule that
+// matched, field names and at most 200 characters of a flagged value.
+export type SecurityEventType =
+  | 'forbidden_admin_route'
+  | 'unauthenticated_admin_route'
+  | 'honeypot_filled'
+  | 'decoy_url'
+  | 'suspicious_input'
+  | 'rate_limited'
+  | 'csrf_mismatch'
+export type SecurityEvent = {
+  id: string
+  type: SecurityEventType
+  ip: string
+  user_agent: string | null
+  method: string
+  path: string
+  user_id: string | null
+  user: { id: string; name: string; email: string } | null
+  detail: { route?: string; rule?: string; fields?: string[]; value?: string; required?: string } | null
+  count: number
+  first_seen_at: string
+  last_seen_at: string
+  seen_at: string | null
+  // The event's IP has a ban in force.
+  ip_banned: boolean
+}
+export type SecurityEventFilters = { type?: string; status?: string; ip?: string; page?: string }
+export type BanDuration = '1h' | '24h' | '7d' | 'permanent'
+export type BannedIp = {
+  id: string
+  ip: string
+  expires_at: string | null
+  note: string | null
+  banned_by: string | null
+  banned_by_user: { id: string; name: string; email: string } | null
+  blocked_count: number
+  last_blocked_at: string | null
+  created_at: string
+  active: boolean
+}
+
+export function getSecuritySummary() {
+  return request<{ unseen: number }>('GET', '/admin/security/summary')
+}
+
+export function getSecurityEvents(filters: SecurityEventFilters) {
+  return request<Page<SecurityEvent>>('GET', `/admin/security/events${query(filters)}`)
+}
+
+export function markSecurityEventSeen(id: string) {
+  return request<{ id: string; seen_at: string }>('POST', `/admin/security/events/${id}/seen`)
+}
+
+export function markAllSecurityEventsSeen() {
+  return request<{ updated: number }>('POST', '/admin/security/events/seen')
+}
+
+export function getBannedIps(page?: string) {
+  return request<Page<BannedIp>>('GET', `/admin/security/bans${query({ page })}`)
+}
+
+export function banIp(ip: string, duration: BanDuration, note: string) {
+  return request<BannedIp>('POST', '/admin/security/bans', { ip, duration, note: note || null })
+}
+
+export function unbanIp(id: string) {
+  return request<null>('DELETE', `/admin/security/bans/${id}`)
+}

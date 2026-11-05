@@ -1,14 +1,13 @@
+import { lazy } from 'react'
 import type { i18n as I18n } from 'i18next'
 import { I18nextProvider, useTranslation } from 'react-i18next'
-import { NavLink, Outlet } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { CellLoader } from './Loading'
 import NotFoundPage from '../pages/NotFoundPage'
 
-// Underline tabs like the site nav: the current one ink with an accent bar under the word (not
-// colour alone), the others muted.
-const tabClass = ({ isActive }: { isActive: boolean }) =>
-  `inline-flex min-h-11 items-center rounded px-2 hover:text-ink ${isActive ? 'font-medium text-ink underline decoration-accent decoration-2 underline-offset-[6px]' : 'text-muted'}`
+// The tabs come with the admin chunk (the same one as the pages), so they show together with the page.
+const AdminNav = lazy(() => import('../pages/admin').then((m) => ({ default: m.AdminNav })))
 
 // The admin area's own i18next instance, fixed to English: it shares the strings of the app's
 // instance but never follows its language, so shared components under it (DifficultyBadge, Field,
@@ -35,24 +34,7 @@ export default function AdminRoute() {
     <I18nextProvider i18n={en}>
       <div lang="en" dir="ltr">
         <title>{t('admin.pageTitle')}</title>
-        <nav aria-label={t('admin.nav.label')} className="mb-6 flex flex-wrap gap-x-2 border-b border-line pb-1">
-          <NavLink to="/admin" end className={tabClass}>
-            {t('admin.nav.content')}
-          </NavLink>
-          <NavLink to="/admin/users" className={tabClass}>
-            {t('admin.nav.users')}
-          </NavLink>
-          {user.role === 'owner' && (
-            <>
-              <NavLink to="/admin/audit-log" className={tabClass}>
-                {t('admin.nav.auditLog')}
-              </NavLink>
-              <NavLink to="/admin/activity" className={tabClass}>
-                {t('admin.nav.activity')}
-              </NavLink>
-            </>
-          )}
-        </nav>
+        <AdminNav />
         <Outlet />
       </div>
     </I18nextProvider>
