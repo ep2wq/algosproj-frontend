@@ -159,6 +159,9 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   (`AdminNav.tsx`, lazy in `AdminRoute`) with the unseen badge (polls `/admin/security/summary` every 60 s while the tab is
   visible; `SECURITY_CHANGED` window event after mark seen). Honeypot `form_extra` in `AuthForm` (`honeypot` prop: login,
   register, forgot password), sent only when filled. Strings in `admin.security.*`, en only.
+- Checked (2026-11-05, page weight): the UI has no raster images (visuals are HTML/inline SVG, no canvas); the only
+  `<img>` is the 20 px Google SVG on login/register (first screen, eager, has width/height). `og.png` (42 KB) and
+  `apple-touch-icon.png` stay PNG (social sites and iOS). Nothing converted to WebP. Weight is JS/fonts (Monaco).
 - Local dev DB accounts (to clean up): `uitest-owner` (owner), `uitest-admin` (admin), `uitest-partway`,
   `uitest-new` (user), all `@example.test`. The audit log has two test role changes on `uitest-new`.
 - Open: no social links (no real URLs yet). The `scroll-fade` utility's `:dir(rtl)` is compiled to
