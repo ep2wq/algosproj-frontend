@@ -1,3 +1,4 @@
+import { recordFailedRequest } from './capture'
 import i18n from './i18n'
 
 const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '')
@@ -268,6 +269,8 @@ export class ApiError extends Error {
   banReason?: string
   // A 403 because the email is not verified yet (submit). The user stays logged in.
   emailUnverified: boolean
+  // The API path without the query, set by request() (for a bug report from an error screen).
+  path?: string
 
   constructor(status: number, message: string, fieldErrors: Record<string, string[]> = {}, banReason?: string, emailUnverified = false) {
     super(message)
@@ -316,13 +319,29 @@ function query(params: Record<string, string | undefined>): string {
   return text ? `?${text}` : ''
 }
 
-async function request<T>(method: string, path: string, body?: unknown, retried = false): Promise<T> {
+// Every failed call also goes into the bug report buffer (capture.ts): method, path without the
+// query, status and message; never a body, header or cookie.
+async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  try {
+    return await send<T>(method, path, body)
+  } catch (error) {
+    if (error instanceof ApiError) {
+      error.path = path.split(/[?#]/)[0]
+      recordFailedRequest(method, path, error.status, error.message, error.banReason ? 'banned' : error.emailUnverified ? 'email_unverified' : undefined)
+    }
+    throw error
+  }
+}
+
+// A FormData body (the bug report) is sent as multipart, anything else as JSON.
+async function send<T>(method: string, path: string, body?: unknown, retried = false): Promise<T> {
   // The admin area is English only (its responses hold both languages anyway). Elsewhere the
   // app language picks the course text language. "ar" and "en" are CORS-safelisted values, so
   // the header adds no preflight request.
   const admin = path.startsWith('/admin')
   const headers: Record<string, string> = { Accept: 'application/json', 'Accept-Language': admin ? 'en' : i18n.language }
-  if (body !== undefined) headers['Content-Type'] = 'application/json'
+  const form = body instanceof FormData
+  if (body !== undefined && !form) headers['Content-Type'] = 'application/json'
   const xsrf = method === 'GET' ? null : xsrfToken()
   if (xsrf) headers['X-XSRF-TOKEN'] = xsrf
 
@@ -336,7 +355,7 @@ async function request<T>(method: string, path: string, body?: unknown, retried 
     response = await fetch(`${BASE_URL}/api${path}`, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : form ? body : JSON.stringify(body),
       // Sends the session cookie to the API (another origin: same site, another port or subdomain).
       credentials: 'include',
     })
@@ -355,7 +374,7 @@ async function request<T>(method: string, path: string, body?: unknown, retried 
   if (response.status === 419) {
     if (!retried) {
       await refreshCsrfCookie()
-      return request<T>(method, path, body, true)
+      return send<T>(method, path, body, true)
     }
     if (signedIn) {
       signedIn = false
@@ -700,4 +719,87 @@ export function banIp(ip: string, duration: BanDuration, note: string) {
 
 export function unbanIp(id: string) {
   return request<null>('DELETE', `/admin/security/bans/${id}`)
+}
+
+// Bug reports (backend README "Bug reports"). The report itself is multipart: JSON parts as text,
+// the screenshot as a file. The included flags say which optional parts the user kept.
+export type BugReportIncluded = { account: boolean; diagnostics: boolean; screenshot: boolean; problem: boolean }
+export type BugReportErrorContext = { status?: number; path?: string; code?: string; message?: string }
+export type BugReportProblem = {
+  slug: string | null
+  language: string
+  code: string
+  result?: { status: string; passed_count: number; total_count: number; message?: string }
+}
+export type BugReportStatus = 'new' | 'in_progress' | 'fixed' | 'wont_fix'
+export const BUG_REPORT_STATUSES: BugReportStatus[] = ['new', 'in_progress', 'fixed', 'wont_fix']
+
+export function sendBugReport(form: FormData) {
+  return request<{ id: string }>('POST', '/bug-reports', form)
+}
+
+export type BugReportRow = {
+  id: string
+  user_id: string | null
+  contact_email: string | null
+  description: string
+  status: BugReportStatus
+  page_path: string
+  seen_at: string | null
+  created_at: string
+  has_screenshot: boolean
+  user: { id: string; name: string; email: string; role: Role } | null
+}
+export type BugReport = BugReportRow & {
+  admin_note: string | null
+  page_title: string | null
+  app_version: string | null
+  language: string | null
+  theme: string | null
+  user_agent: string | null
+  viewport: string | null
+  timezone: string | null
+  error_context: BugReportErrorContext | null
+  failed_requests: { method?: string; path?: string; status?: number; time?: string; code?: string; message?: string }[] | null
+  console_errors: { message?: string; time?: string }[] | null
+  problem_context: Partial<BugReportProblem> | null
+  included: Partial<BugReportIncluded>
+  status_changed_at: string | null
+  handled_by: string | null
+  handler: { id: string; name: string; email: string } | null
+  updated_at: string
+}
+export type BugReportFilters = { status?: string; seen?: string; search?: string; screenshot?: string; page?: string }
+
+export function getBugReportSummary() {
+  return request<{ unseen: number }>('GET', '/admin/bug-reports/summary')
+}
+
+export function getBugReports(filters: BugReportFilters) {
+  return request<Page<BugReportRow>>('GET', `/admin/bug-reports${query(filters)}`)
+}
+
+export function getBugReport(id: string) {
+  return request<BugReport>('GET', `/admin/bug-reports/${id}`)
+}
+
+export function updateBugReport(id: string, changes: { status?: BugReportStatus; admin_note?: string | null }) {
+  return request<BugReport>('PATCH', `/admin/bug-reports/${id}`, changes)
+}
+
+export function deleteBugReport(id: string) {
+  return request<null>('DELETE', `/admin/bug-reports/${id}`)
+}
+
+// The screenshot through the owner's session, as a blob for an object URL (never a public URL).
+export async function getBugReportScreenshot(id: string): Promise<Blob> {
+  const t = i18n.getFixedT('en')
+  let response: Response
+  try {
+    response = await fetch(`${BASE_URL}/api/admin/bug-reports/${id}/screenshot`, { credentials: 'include', headers: { Accept: 'image/*', 'Accept-Language': 'en' } })
+  } catch {
+    throw new ApiError(0, t('errors.network'))
+  }
+  if (!response.ok) throw new ApiError(response.status, t('errors.status', { status: response.status }))
+  return response.blob()
 }
