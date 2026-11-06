@@ -15,7 +15,7 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 
 - React 19, TypeScript, Vite, Tailwind v4 (no `tailwind.config`), react-router-dom, Monaco,
   i18next + react-i18next. Fonts: IBM Plex Sans Arabic (UI, Arabic) and JetBrains Mono (code, numbers),
-  self-hosted woff2 in `public/fonts` (OFL), `src/fonts.css` loaded after render from `main.tsx`. Base UI (`@base-ui/react`), class-variance-authority, clsx, tailwind-merge and lucide-react for shadcn/ui. No other runtime deps.
+  self-hosted woff2 in `public/fonts` (OFL), `src/fonts.css` loaded after render from `main.tsx`. Base UI (`@base-ui/react`), class-variance-authority, clsx, tailwind-merge and lucide-react for shadcn/ui. `html-to-image` 1.11.13 (bug report screenshot, dynamic import only). No other runtime deps.
 - shadcn/ui (Base UI) is the standard for new UI: `src/components/ui/*`, `cn` in `src/lib/utils.ts`,
   `components.json` (hand-written, rtl true), `@/` alias in `tsconfig.json`, `tsconfig.app.json`, `vite.config.ts`.
   Add with `npx shadcn@latest add <name>`, then map to our tokens (docs/ui-shadcn.md outside the repo).
@@ -162,6 +162,13 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - Checked (2026-11-05, page weight): the UI has no raster images (visuals are HTML/inline SVG, no canvas); the only
   `<img>` is the 20 px Google SVG on login/register (first screen, eager, has width/height). `og.png` (42 KB) and
   `apple-touch-icon.png` stay PNG (social sites and iOS). Nothing converted to WebP. Weight is JS/fonts (Monaco).
+- Done (2026-11-07): bug reports (README "Bug reports"). "Report a bug" at the bottom of the More menu, "Report this
+  problem" on page/block load errors, the 404, the render error boundary (`ErrorBoundary` in `main.tsx`) and a failed
+  submit; native `<dialog>` lists every part sent, optional parts ticked by default. `capture.ts` keeps the last 10
+  failed API calls and console errors in memory. Dialog (`bugReport` namespace, `bug-report.*.json`) and screenshot
+  (`screenshot.ts`, html-to-image, `includeStyleProperties` without custom properties: Monaco's made it 3 s) are lazy;
+  first-load JS +1,032 B gzip. Owner pages `/admin/bug-reports[/:id]`, strings in `admin-bug-reports.en.json` (added by
+  the admin chunk), badge on AdminNav's 60 s timer. CSP `img-src` has `blob:`. Privacy page text: draft outside the repo.
 - Local dev DB accounts (to clean up): `uitest-owner` (owner), `uitest-admin` (admin), `uitest-partway`,
   `uitest-new` (user), all `@example.test`. The audit log has two test role changes on `uitest-new`.
 - Open: no social links (no real URLs yet). The `scroll-fade` utility's `:dir(rtl)` is compiled to
