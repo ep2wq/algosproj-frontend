@@ -39,6 +39,14 @@ flowchart TD
         security["Security console<br/>[AdminSecurityPage.tsx]"]
         content["Content management<br/>[AdminContentPage.tsx]"]
         problems["Problem editor<br/>[AdminProblemPage.tsx]"]
+        bugadmin["Bug report inbox<br/>[AdminBugReportsPage.tsx]"]
+    end
+    subgraph bugs["Bug reports"]
+        boundary["Render error page<br/>[ErrorBoundary.tsx]"]
+        capture["Recent errors buffer<br/>[capture.ts]"]
+        report["Report opener<br/>[reportBug.ts]"]
+        dialog["Report dialog (lazy)<br/>[BugReportDialog.tsx]"]
+        shot["Screenshot (lazy)<br/>[screenshot.ts, html-to-image]"]
     end
     subgraph shared["Shared client services"]
         i18ncontent["Language-aware content<br/>[Content.tsx]"]
@@ -61,6 +69,16 @@ flowchart TD
     guards -->|opens| security
     guards -->|opens| content
     guards -->|opens| problems
+    guards -->|opens for owners| bugadmin
+    bugadmin -->|loads reports| api
+    boundary -->|wraps| app
+    layout -->|More menu opens| report
+    boundary -->|offers report| report
+    report -->|lazy-loads| shot
+    report -->|opens| dialog
+    dialog -->|reads| capture
+    dialog -->|sends report| api
+    api -->|records failed requests| capture
     layout -->|switches language| i18n
     lesson -->|renders lesson| body
     lesson -->|selects visual| registry
@@ -92,6 +110,8 @@ React 19, TypeScript, Vite, Tailwind v4 (via `@tailwindcss/vite`, so there is no
 `tailwind.config` file), React Router, and Monaco (`@monaco-editor/react`) for the code
 editor. UI components come from shadcn/ui on Base UI (`@base-ui/react`, `class-variance-authority`,
 `clsx`, `tailwind-merge`, `lucide-react`). API calls use `fetch`; auth state lives in a React context.
+`html-to-image` (MIT, exact version 1.11.13, no dependencies) takes the bug report screenshot; it is only
+ever loaded by a dynamic import when someone opens the report dialog (see "Bug reports").
 
 ## Setup
 
@@ -662,13 +682,53 @@ dialog), and a refusal (409: a module with lessons, a lesson with problems, a pr
 have solved) is shown next to the button. Edits show on the public pages at once.
 
 Admin strings: every admin text is a key under `admin.*` in `src/locales/en.json` only (the
-shared `BannedBadge`, `ConfirmAction`, `DeleteButton` and `Pagination` use them too). In
+shared `BannedBadge`, `ConfirmAction`, `DeleteButton` and `Pagination` use them too). The one
+exception is the Bug reports page: its `admin.bugReports.*` and `admin.nav.bugReports*` keys are in
+`src/locales/admin-bug-reports.en.json`, which the admin chunk adds to the same store
+(`pages/admin/bugReportsI18n.ts`), so they are not in every visitor's download; still English only. In
 Arabic mode they fall back to English, and `AdminRoute` keeps the area `lang="en" dir="ltr"`.
 To enable Arabic for admin (not done): remove the `lang="en" dir="ltr"` wrapper in
 `AdminRoute.tsx` and the `admin` rule in `api.ts` (`Accept-Language: en` for `/admin`), add
 `admin.*` to `ar.json` (then `npm run check:i18n` requires every key), make `formatTime` in
 `pages/admin/format.ts` use the app language, and check every admin page right to left
 (tables, the test case form, the user actions, the audit log details) at 375 px.
+
+## Bug reports
+
+Anyone can report a bug; the backend README ("Bug reports") has the API, the limits and what is stored.
+
+- **Opening it.** "Report a bug" is the solid button at the bottom of the More menu (desktop and phone).
+  "Report this problem" (`ReportProblemButton`) sits on page and block errors: the 404 page, the render
+  error page, the load errors of the lessons list, a lesson, the challenges list, a challenge, the
+  leaderboard and the three landing panels, a failed submit on the problem page (503, 429, 419, network),
+  and every admin load error (a 403 page does not exist: guards show the 404 page). Not on expected form
+  feedback: a wrong password (401), field errors (422) or other inline field messages.
+- **`src/reportBug.ts`** (main bundle): `openBugReport(error?)` starts the screenshot in the click
+  (before the dialog covers the page) and sends a window event; `BugReportHost` (in `main.tsx`, outside
+  the error boundary) lazy-loads the dialog. The problem page registers what "my code and the problem"
+  sends with `setProblemSource`.
+- **`src/capture.ts`** (main bundle, started in `main.tsx`): the last 10 failed API calls (from
+  `request()` in `api.ts`, path without the query) and the last 10 console errors (`error`,
+  `unhandledrejection`, a `console.error` wrapper), each cut to 300 characters, in memory only.
+- **The dialog** (`BugReportDialog.tsx`, lazy, native `<dialog>` like the ban dialog): what went wrong
+  (10 to 2000 characters), an email for visitors, and "What will be sent" with a reason for each item.
+  Always: page address without the query, time, browser and screen, language, theme, app version, and
+  the error the page showed. Optional, each ticked by default: account details (signed in), failed
+  requests and console errors, the screenshot (with a preview), and on the problem page the code and the
+  problem. A hidden field (`form_extra`) is sent only when filled. States: sending, sent (with the
+  reference), field errors, 429, and offline or 5xx with the contact email. Its strings are a lazy
+  `bugReport` namespace (`src/locales/bug-report.*.json`, `components/bugReportI18n.ts`).
+- **The screenshot** (`src/screenshot.ts`, lazy, with `html-to-image`): the visible part of the page
+  without the dialog, password fields, one-time-code inputs and `[data-no-screenshot]` painted over,
+  WebP (PNG where WebP cannot be encoded), at most 1600 px a side and 1.5 MB. Only standard style
+  properties are copied (`includeStyleProperties`): copying Monaco's ~1,400 custom properties to every
+  node took the problem page from under 0.5 s to 3 s. Over 3 s or on failure, the dialog says so and
+  sends without it. The CSP allows `img-src blob:` for the preview and `data:` for html-to-image.
+- **Admin** (owners, `/admin/bug-reports` and `/admin/bug-reports/:id`, admin chunk): list with filters
+  in the address (status, unseen, search, screenshot), cards below md; the detail groups every field,
+  loads the screenshot through the session as a blob, saves status and a private note, deletes with a
+  confirmation; opening a report marks it seen. The "Bug reports" tab badge shares the Security badge's
+  60 s timer in `AdminNav.tsx` ("99+" above 99, nothing at 0).
 
 ## Visualizations
 
