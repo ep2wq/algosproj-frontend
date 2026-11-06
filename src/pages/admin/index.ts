@@ -1,6 +1,9 @@
 // The admin pages as one lazy chunk (src/App.tsx): visitors and normal users never download it.
+import './bugReportsI18n'
 export { default as AdminActivityPage } from './AdminActivityPage'
 export { default as AdminAuditLogPage } from './AdminAuditLogPage'
+export { default as AdminBugReportPage } from './AdminBugReportPage'
+export { default as AdminBugReportsPage } from './AdminBugReportsPage'
 export { default as AdminContentPage } from './AdminContentPage'
 export { default as AdminLessonPage } from './AdminLessonPage'
 export { default as AdminNav } from './AdminNav'

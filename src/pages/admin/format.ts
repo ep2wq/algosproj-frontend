@@ -94,3 +94,8 @@ export function browserLabel(userAgent: string): string | null {
   if (!browser) return null
   return os ? `${browser} · ${os}` : browser
 }
+
+// Who sent a bug report: the account's email, the email a visitor typed, or "Anonymous".
+export function reporter(report: { user: { email: string } | null; contact_email: string | null }, t: TFunction): string {
+  return report.user?.email ?? report.contact_email ?? t('admin.bugReports.anonymous')
+}
