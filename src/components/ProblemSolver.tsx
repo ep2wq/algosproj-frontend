@@ -1,14 +1,16 @@
 import MonacoEditor, { loader } from '@monaco-editor/react'
 import { Fragment, lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { ApiError, LANGUAGES, submitSolution, type Language, type Problem, type SubmitResult, type User } from '../api'
 import { useAuth } from '../auth'
+import { setProblemSource } from '../reportBug'
 import { play } from '../sound'
 import { useTheme } from '../theme'
 import { LANGUAGE_LABELS, STARTER_CODE } from '../starters'
 import Content from './Content'
 import { CellLoader } from './Loading'
+import ReportProblemButton from './ReportProblemButton'
 import { TextWithCode } from './LessonBody'
 import ResendVerification from './ResendVerification'
 import SubmitResultPanel from './SubmitResultPanel'
@@ -49,6 +51,8 @@ export default function ProblemSolver({
   const [code, setCode] = useState<Record<Language, string>>({ ...STARTER_CODE })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  // A failed submit that is not field feedback (503 sandbox busy, 429, 419, network): it gets "Report this problem".
+  const [failure, setFailure] = useState<unknown>(null)
   const [result, setResult] = useState<SubmitResult | null>(null)
   // Counts results, so the result panel can replay its pass moment for each new one.
   const [attempt, setAttempt] = useState(0)
@@ -64,6 +68,21 @@ export default function ProblemSolver({
     if (refusedUser) unverifiedRef.current?.focus()
   }, [refusedUser])
 
+  // What "my code and the problem" sends with a bug report from this page (problem slug = lesson slug).
+  // The code is cut to the 20,000 characters the backend keeps: a full 64 KB submission would make the
+  // part longer than its 60,000-character limit and the whole report would be refused.
+  const { slug } = useParams()
+  useEffect(
+    () =>
+      setProblemSource(() => ({
+        slug: slug ?? null,
+        language,
+        code: code[language].slice(0, 20000),
+        ...(result ? { result: { status: result.status, passed_count: result.passed_count, total_count: result.total_count, ...(result.compile_error ? { message: result.compile_error.slice(0, 300) } : {}) } } : {}),
+      })),
+    [slug, language, code, result],
+  )
+
   const languageId = `language-${problem.id}`
   const hintId = `editor-hint-${problem.id}`
   // While Monaco's code downloads (Suspense) and while it starts (the editor's own loading slot).
@@ -72,6 +91,7 @@ export default function ProblemSolver({
   async function handleSubmit() {
     setBusy(true)
     setError('')
+    setFailure(null)
     try {
       const submitted = await submitSolution(problem.id, language, code[language])
       setResult(submitted)
@@ -91,6 +111,7 @@ export default function ProblemSolver({
         setError(Object.values(err.fieldErrors).flat().join(' ') || err.message)
       } else {
         setError(err instanceof ApiError ? err.message : t('common.genericError'))
+        setFailure(err)
       }
     } finally {
       setBusy(false)
@@ -236,6 +257,7 @@ export default function ProblemSolver({
             <span dir="auto">{error}</span>
           </p>
         )}
+        {failure !== null && <ReportProblemButton error={failure} className="inline-flex min-h-11 items-center rounded border border-field bg-surface px-3 text-sm font-medium text-ink hover:border-muted sm:pointer-fine:min-h-9" />}
       </div>
 
       {result && <SubmitResultPanel result={result} attempt={attempt} heading={ExamplesHeading === 'h2' ? 'h3' : 'h4'} />}

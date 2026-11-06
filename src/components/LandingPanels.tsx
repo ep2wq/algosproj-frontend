@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ApiError, getLeaderboard, getMyRank, type ChallengeSummary, type LeaderboardEntry, type LessonSummary, type Module, type MyRank } from '../api'
+import ReportProblemButton from './ReportProblemButton'
 import { useAuth } from '../auth'
 import { formatNumber, formatPercent } from '../i18n'
 import { groupByTrack, trackName } from '../progress'
@@ -34,6 +35,7 @@ function LoadError({ failure, fallback, retry }: { failure: unknown; fallback: s
       <button type="button" onClick={retry} className="mt-2 rounded border border-current px-3 py-1 text-sm font-medium hover:bg-fail/10">
         {t('common.tryAgain')}
       </button>
+      <ReportProblemButton error={failure} />
     </div>
   )
 }

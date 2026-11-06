@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError, getChallenge, type Challenge } from '../api'
+import ReportProblemButton from '../components/ReportProblemButton'
 import { useAuth } from '../auth'
 import Content from '../components/Content'
 import DifficultyBadge from '../components/DifficultyBadge'
@@ -75,6 +76,7 @@ export default function ChallengePage() {
               {t('common.tryAgain')}
             </button>
           )}
+          <ReportProblemButton error={failure} />
         </div>
         <Link to="/challenges" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
           {t('challenge.back')}

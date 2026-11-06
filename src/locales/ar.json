@@ -641,5 +641,12 @@
   "filters": {
     "label": "التصفية",
     "clearSearch": "مسح البحث"
+  },
+  "bugReport": {
+    "reportBug": "الإبلاغ عن خطأ",
+    "reportProblem": "الإبلاغ عن هذه المشكلة",
+    "boundaryTitle": "حدث خطأ ما",
+    "boundaryBody": "توقفت هذه الصفحة عن العمل. أعد تحميلها لتحاول مرة أخرى.",
+    "reload": "إعادة تحميل الصفحة"
   }
 }

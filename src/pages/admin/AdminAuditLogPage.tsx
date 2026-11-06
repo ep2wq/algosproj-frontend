@@ -5,13 +5,14 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { ApiError, getAuditLog, type AuditEntry, type Page } from '../../api'
+import ReportProblemButton from '../../components/ReportProblemButton'
 import FilterBar from '../../components/FilterBar'
 import Pagination from '../../components/Pagination'
 import { cardList, headRow, row, table, tableCard, th, truncate } from '../../components/tableStyles'
 import { formatNumber } from '../../i18n'
 import { dateRangeSummary, groupByUtcDay } from './format'
 import UtcClock from './UtcClock'
-import { alertClass } from './styles'
+import { alertClass, secondaryButton } from './styles'
 
 const ACTIONS = [
   'module.create', 'module.update', 'module.delete',
@@ -246,9 +247,12 @@ export default function AdminAuditLogPage() {
       />
 
       {error && (
-        <p role="alert" className={`mt-4 ${alertClass}`}>
-          {error}
-        </p>
+        <>
+          <p role="alert" className={`mt-4 ${alertClass}`}>
+            {error}
+          </p>
+          <ReportProblemButton context={{ message: error }} className={`mt-2 ${secondaryButton}`} />
+        </>
       )}
       {!error && result === null && <p className="mt-4 text-muted">{t('admin.audit.loading')}</p>}
       {result !== null && result.data.length === 0 && (

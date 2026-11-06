@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError, getLeaderboard, getMyRank, type LeaderboardEntry, type MyRank } from '../api'
+import ReportProblemButton from '../components/ReportProblemButton'
 import { useAuth } from '../auth'
 import EmptyState from '../components/EmptyState'
 import { boardName, boardPoints, boardRank, boardRow } from '../components/leaderboardStyles'
@@ -76,6 +77,7 @@ export default function LeaderboardPage() {
           >
             {t('common.tryAgain')}
           </button>
+          <ReportProblemButton error={failure} />
         </div>
       )}
       {/* The table with its real header and a row for each one asked for. */}

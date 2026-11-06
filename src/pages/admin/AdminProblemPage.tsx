@@ -18,6 +18,7 @@ import {
   type ProblemInput,
   type TestCaseInput,
 } from '../../api'
+import ReportProblemButton from '../../components/ReportProblemButton'
 import DeleteButton from '../../components/DeleteButton'
 import Field from '../../components/Field'
 import TextAreaField from '../../components/TextAreaField'
@@ -129,9 +130,12 @@ function TestCases({ problemId }: { problemId: string }) {
 
   if (loadError) {
     return (
-      <p role="alert" className={`mt-4 ${alertClass}`}>
-        {loadError}
-      </p>
+      <div>
+        <p role="alert" className={`mt-4 ${alertClass}`}>
+          {loadError}
+        </p>
+        <ReportProblemButton context={{ message: loadError }} className={`mt-2 ${secondaryButton}`} />
+      </div>
     )
   }
   if (!testCases) return <p className="mt-4 text-muted">{t('admin.problem.testsLoading')}</p>
@@ -322,6 +326,7 @@ export default function AdminProblemPage() {
         <p role="alert" className={alertClass}>
           {loadError}
         </p>
+        <ReportProblemButton context={{ message: loadError }} className={`mt-2 ${secondaryButton}`} />
         <Link to="/admin" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
           {t('admin.common.backToContent')}
         </Link>

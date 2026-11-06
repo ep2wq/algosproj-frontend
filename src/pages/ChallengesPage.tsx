@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ApiError, getChallenges, type ChallengeSummary } from '../api'
+import ReportProblemButton from '../components/ReportProblemButton'
 import { useAuth } from '../auth'
 import Content from '../components/Content'
 import DifficultyBadge from '../components/DifficultyBadge'
@@ -128,6 +129,7 @@ export default function ChallengesPage() {
           >
             {t('common.tryAgain')}
           </button>
+          <ReportProblemButton error={failure} />
         </div>
       )}
       {/* The filter bar's frame, the count line and the first rows (cards on a phone, the table from

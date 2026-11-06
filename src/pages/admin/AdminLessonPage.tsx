@@ -2,11 +2,12 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ApiError, createLesson, deleteLesson, getAdminLesson, getAdminModules, updateLesson, type LessonInput, type Module } from '../../api'
+import ReportProblemButton from '../../components/ReportProblemButton'
 import DeleteButton from '../../components/DeleteButton'
 import Field from '../../components/Field'
 import LessonBody from '../../components/LessonBody'
 import TextAreaField from '../../components/TextAreaField'
-import { alertClass, primaryButton, selectClass } from './styles'
+import { alertClass, primaryButton, selectClass, secondaryButton } from './styles'
 
 // /admin/lessons/new?module=<id> and /admin/lessons/:id
 export default function AdminLessonPage() {
@@ -80,6 +81,7 @@ export default function AdminLessonPage() {
         <p role="alert" className={alertClass}>
           {loadError}
         </p>
+        <ReportProblemButton context={{ message: loadError }} className={`mt-2 ${secondaryButton}`} />
         <Link to="/admin" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
           {t('admin.common.backToContent')}
         </Link>

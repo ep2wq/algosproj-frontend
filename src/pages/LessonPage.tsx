@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
 import { ApiError, getLesson, getModules, type Lesson, type Module } from '../api'
+import ReportProblemButton from '../components/ReportProblemButton'
 import { skipLink } from '../components/buttonStyles'
 import Content from '../components/Content'
 import DifficultyBadge from '../components/DifficultyBadge'
@@ -125,6 +126,7 @@ export default function LessonPage() {
               {t('common.tryAgain')}
             </button>
           )}
+          <ReportProblemButton error={failure} />
         </div>
         <Link to="/lessons" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
           {t('lesson.backToLessons')}

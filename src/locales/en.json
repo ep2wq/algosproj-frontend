@@ -997,5 +997,12 @@
   "filters": {
     "label": "Filters",
     "clearSearch": "Clear search"
+  },
+  "bugReport": {
+    "reportBug": "Report a bug",
+    "reportProblem": "Report this problem",
+    "boundaryTitle": "Something went wrong",
+    "boundaryBody": "This page stopped working. Reload it to try again.",
+    "reload": "Reload the page"
   }
 }

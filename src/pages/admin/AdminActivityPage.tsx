@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ApiError, getActivity, type ActivityEntry, type Page } from '../../api'
+import ReportProblemButton from '../../components/ReportProblemButton'
 import FilterBar from '../../components/FilterBar'
 import Pagination from '../../components/Pagination'
 import { cardList, headRow, row, rowLink, table, tableCard, td, th, truncate } from '../../components/tableStyles'
 import { formatNumber } from '../../i18n'
 import { browserLabel, dateRangeSummary, EVENTS, groupByUtcDay } from './format'
 import UtcClock from './UtcClock'
-import { alertClass } from './styles'
+import { alertClass, secondaryButton } from './styles'
 
 const EMPTY = { event: '', user: '', from: '', to: '', page: '' }
 
@@ -144,9 +145,12 @@ export default function AdminActivityPage() {
       />
 
       {error && (
-        <p role="alert" className={`mt-4 ${alertClass}`}>
-          {error}
-        </p>
+        <>
+          <p role="alert" className={`mt-4 ${alertClass}`}>
+            {error}
+          </p>
+          <ReportProblemButton context={{ message: error }} className={`mt-2 ${secondaryButton}`} />
+        </>
       )}
       {!error && result === null && <p className="mt-4 text-muted">{t('admin.activity.loading')}</p>}
       {result !== null && result.data.length === 0 && (

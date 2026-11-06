@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { primaryButton, secondaryButton } from '../components/buttonStyles'
 import { TextWithCode } from '../components/LessonBody'
 import { CellLoader } from '../components/Loading'
+import ReportProblemButton from '../components/ReportProblemButton'
 
 // A binary search over HTTP status codes that does not find 404, in the lesson's own cells. Lazy
 // like every visualization; the message and links below never depend on it.
@@ -39,6 +40,7 @@ export default function NotFoundPage() {
           {t('notFound.lessons')}
         </Link>
       </div>
+      <ReportProblemButton context={{ status: 404, message: t('notFound.title') }} className={`mt-4 ${secondaryButton}`} />
     </div>
   )
 }

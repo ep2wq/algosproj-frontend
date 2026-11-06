@@ -6,7 +6,9 @@
 # Security headers on every response. scripts/prerender.mjs fills in the two placeholders of the
 # Content-Security-Policy at build time: the sha256 of each inline script in index.html and the API's
 # origin from VITE_API_URL. Styles allow 'unsafe-inline' (the prerendered markup has style attributes;
-# the theme script and Monaco add <style> elements). Nothing loads from another host.
+# the theme script and Monaco add <style> elements). Nothing loads from another host. img-src: data:
+# for the bug report screenshot (html-to-image draws the page as an SVG data: image), blob: for the
+# screenshot preview in the report dialog and on the admin Bug reports page (object URLs).
 /*
   Cache-Control: no-cache
   X-Content-Type-Options: nosniff
@@ -14,7 +16,7 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   X-Frame-Options: DENY
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: default-src 'self'; script-src 'self' %INLINE_SCRIPT_HASHES%; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' %API_ORIGIN%; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' %INLINE_SCRIPT_HASHES%; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' %API_ORIGIN%; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
 
 /assets/*
   ! Cache-Control

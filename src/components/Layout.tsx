@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { Languages } from 'lucide-react'
 import { useAuth } from '../auth'
 import type { User } from '../api'
-import { skipLink } from './buttonStyles'
+import { primaryButton, skipLink } from './buttonStyles'
+import { openBugReport } from '../reportBug'
 import { CellLoader } from './Loading'
 import CookieNotice from './CookieNotice'
 import VerifyEmailNotice from './VerifyEmailNotice'
@@ -185,6 +186,22 @@ function SiteMenu() {
             {t(key)}
           </NavLink>
         ))}
+        {/* Closes the menu first, so the screenshot shows the page and not the open menu; focus comes
+            back to the menu button when the dialog closes. */}
+        <div className="mt-1 border-t border-line p-1 pt-2">
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            onClick={() => {
+              setOpen(false)
+              button.current?.focus()
+              requestAnimationFrame(() => openBugReport())
+            }}
+            className={`${primaryButton} w-full text-sm`}
+          >
+            {t('bugReport.reportBug')}
+          </button>
+        </div>
       </div>
     </div>
   )

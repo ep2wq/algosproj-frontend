@@ -2,9 +2,10 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ApiError, createModule, deleteModule, getAdminModules, updateModule, type ModuleInput } from '../../api'
+import ReportProblemButton from '../../components/ReportProblemButton'
 import DeleteButton from '../../components/DeleteButton'
 import Field from '../../components/Field'
-import { alertClass, primaryButton } from './styles'
+import { alertClass, primaryButton, secondaryButton } from './styles'
 
 // /admin/modules/new and /admin/modules/:id
 export default function AdminModulePage() {
@@ -68,6 +69,7 @@ export default function AdminModulePage() {
         <p role="alert" className={alertClass}>
           {loadError}
         </p>
+        <ReportProblemButton context={{ message: loadError }} className={`mt-2 ${secondaryButton}`} />
         <Link to="/admin" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
           {t('admin.common.backToContent')}
         </Link>

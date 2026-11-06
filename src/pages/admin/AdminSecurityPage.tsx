@@ -16,6 +16,7 @@ import {
   type SecurityEvent,
   type SecurityEventType,
 } from '../../api'
+import ReportProblemButton from '../../components/ReportProblemButton'
 import FilterBar from '../../components/FilterBar'
 import Pagination from '../../components/Pagination'
 import { cardList, headRow, num, row, rowLink, table, tableCard, td, th, truncate } from '../../components/tableStyles'
@@ -461,9 +462,12 @@ function EventsTab({ filters, apply, announce }: { filters: typeof EMPTY; apply:
       )}
 
       {error && (
-        <p role="alert" className={`mt-4 ${alertClass}`}>
-          {error}
-        </p>
+        <>
+          <p role="alert" className={`mt-4 ${alertClass}`}>
+            {error}
+          </p>
+          <ReportProblemButton context={{ message: error }} className={`mt-2 ${secondaryButton}`} />
+        </>
       )}
       {!error && result === null && <p className="mt-4 text-muted">{t('admin.security.loading')}</p>}
       {result !== null && result.data.length === 0 && (
@@ -656,9 +660,12 @@ function BansTab({ page, apply, announce }: { page: string; apply: (page: string
     <>
       <p className="mt-6 max-w-prose text-sm text-muted">{t('admin.security.bansIntro')}</p>
       {error && (
-        <p role="alert" className={`mt-4 ${alertClass}`}>
-          {error}
-        </p>
+        <>
+          <p role="alert" className={`mt-4 ${alertClass}`}>
+            {error}
+          </p>
+          <ReportProblemButton context={{ message: error }} className={`mt-2 ${secondaryButton}`} />
+        </>
       )}
       {!error && result === null && <p className="mt-4 text-muted">{t('admin.security.bansLoading')}</p>}
       {result !== null && result.data.length === 0 && (

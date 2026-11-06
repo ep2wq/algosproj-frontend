@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ApiError, getChallenges, getModules, type ChallengeSummary, type Module } from '../api'
+import ReportProblemButton from '../components/ReportProblemButton'
 import { useAuth } from '../auth'
 import Content from '../components/Content'
 import EmptyState from '../components/EmptyState'
@@ -107,6 +108,7 @@ export default function LessonsPage() {
           >
             {t('common.tryAgain')}
           </button>
+          <ReportProblemButton error={failure} />
         </div>
       )}
       {/* The first track: its heading and four module cards in the real columns. */}

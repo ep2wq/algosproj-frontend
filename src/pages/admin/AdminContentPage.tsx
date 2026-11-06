@@ -3,12 +3,13 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ApiError, getAdminModules, getAdminProblems, type AdminModule, type AdminProblem, type LessonSummary } from '../../api'
+import ReportProblemButton from '../../components/ReportProblemButton'
 import DifficultyBadge from '../../components/DifficultyBadge'
 import FilterBar from '../../components/FilterBar'
 import { AlertIcon } from '../../components/Icons'
 import { rowLink } from '../../components/tableStyles'
 import { VISUALS } from '../../visuals'
-import { alertClass } from './styles'
+import { alertClass, secondaryButton } from './styles'
 
 type ProblemSummary = Pick<AdminProblem, 'id' | 'lesson_id' | 'slug' | 'title' | 'difficulty' | 'points'>
 
@@ -212,9 +213,12 @@ export default function AdminContentPage() {
       </div>
 
       {error && (
-        <p role="alert" className={`mt-6 ${alertClass}`}>
-          {error}
-        </p>
+        <>
+          <p role="alert" className={`mt-6 ${alertClass}`}>
+            {error}
+          </p>
+          <ReportProblemButton context={{ message: error }} className={`mt-2 ${secondaryButton}`} />
+        </>
       )}
       {!error && modules === null && <p className="mt-6 text-muted">{t('admin.content.loading')}</p>}
 

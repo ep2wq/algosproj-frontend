@@ -16,12 +16,13 @@ import {
   type AdminUserDetail,
   type Page,
 } from '../../api'
+import ReportProblemButton from '../../components/ReportProblemButton'
 import { useAuth } from '../../auth'
 import BannedBadge from '../../components/BannedBadge'
 import ConfirmAction from '../../components/ConfirmAction'
 import Pagination from '../../components/Pagination'
 import { controlClass, formatTime } from './format'
-import { alertClass } from './styles'
+import { alertClass, secondaryButton } from './styles'
 
 // /admin/users/:id. Only the actions the current role may use are shown; the backend checks
 // every one of them again (403 with a message, shown next to the action).
@@ -78,6 +79,7 @@ export default function AdminUserPage() {
         <p role="alert" className={alertClass}>
           {loadError}
         </p>
+        <ReportProblemButton context={{ message: loadError }} className={`mt-2 ${secondaryButton}`} />
         <Link to="/admin/users" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
           {t('admin.user.backToUsers')}
         </Link>

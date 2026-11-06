@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ApiError, getAdminUsers, type AdminUserRow, type Page, type Role } from '../../api'
+import ReportProblemButton from '../../components/ReportProblemButton'
 import FilterBar from '../../components/FilterBar'
 import Pagination from '../../components/Pagination'
 import { cardList, headRow, num, row, table, tableCard, td, th } from '../../components/tableStyles'
 import { formatNumber } from '../../i18n'
 import { formatTime, shortDate } from './format'
-import { alertClass } from './styles'
+import { alertClass, secondaryButton } from './styles'
 
 const EMPTY = { search: '', role: '', banned: '', page: '' }
 
@@ -150,9 +151,12 @@ export default function AdminUsersPage() {
       />
 
       {error && (
-        <p role="alert" className={`mt-4 ${alertClass}`}>
-          {error}
-        </p>
+        <>
+          <p role="alert" className={`mt-4 ${alertClass}`}>
+            {error}
+          </p>
+          <ReportProblemButton context={{ message: error }} className={`mt-2 ${secondaryButton}`} />
+        </>
       )}
       {!error && result === null && <p className="mt-4 text-muted">{t('admin.users.loading')}</p>}
       {result !== null && result.data.length === 0 && (

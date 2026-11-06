@@ -5,6 +5,12 @@ import './index.css'
 import './i18n'
 import App from './App.tsx'
 import { AuthProvider } from './auth.tsx'
+import { startCapture } from './capture'
+import BugReportHost from './components/BugReportHost'
+import ErrorBoundary from './components/ErrorBoundary'
+
+// The bug report buffer of recent failed requests and console errors (memory only).
+startCapture()
 
 // After a deploy, a tab opened before it asks for hashed files that no longer exist and a lazy page
 // fails to load. Reload once to get the new build. At most one reload per 10 seconds (the time is kept
@@ -28,7 +34,10 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
+        <BugReportHost />
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
