@@ -5,6 +5,87 @@ Students read lessons, watch visualizations, and write code in the browser. This
 only talks to the Laravel backend (`algosproj-backend`), which handles auth, lessons and
 grading. It never calls the sandbox service directly.
 
+## Architecture
+
+Pages get their data through one API client, the only part that talks to the backend.
+
+```mermaid
+flowchart TD
+    learner(("Learner"))
+    subgraph shell["Application shell"]
+        app["Routes and pages<br/>[App.tsx]"]
+        layout["Site layout<br/>[Layout.tsx]"]
+        guards["Admin and owner guards<br/>[AdminRoute.tsx, OwnerRoute.tsx]"]
+    end
+    subgraph learn["Learning experience"]
+        lessons["Lesson catalog<br/>[LessonsPage.tsx]"]
+        lesson["Lesson study<br/>[LessonPage.tsx]"]
+        challenges["Challenge catalog<br/>[ChallengesPage.tsx]"]
+        challenge["Challenge solving<br/>[ChallengePage.tsx]"]
+        landing["Landing dashboard<br/>[LandingPage.tsx]"]
+        body["Lesson rendering<br/>[LessonBody.tsx]"]
+        registry["Visualization registry<br/>[index.ts]"]
+        visuals["Algorithm visuals"]
+        editor["Code editor<br/>[ProblemSolver.tsx]"]
+    end
+    subgraph account["Account and progress"]
+        panels["Progress panels<br/>[LandingPanels.tsx]"]
+        leaderboard["Leaderboard<br/>[LeaderboardPage.tsx]"]
+        signin["Sign-in pages<br/>[AuthForm.tsx]"]
+        progress["Progress state<br/>[progress.ts]"]
+        authstate["Authentication state<br/>[auth.tsx]"]
+    end
+    subgraph admin["Administration"]
+        security["Security console<br/>[AdminSecurityPage.tsx]"]
+        content["Content management<br/>[AdminContentPage.tsx]"]
+        problems["Problem editor<br/>[AdminProblemPage.tsx]"]
+    end
+    subgraph shared["Shared client services"]
+        i18ncontent["Language-aware content<br/>[Content.tsx]"]
+        textlang["Text language detection<br/>[textLang.ts]"]
+        i18n["Localization<br/>[i18n.ts]"]
+        api["Backend API client<br/>[api.ts]"]
+    end
+    backend(["Laravel backend"])
+    learner -->|opens pages| app
+    app -->|wraps routes| layout
+    app -->|routes to| lessons
+    app -->|routes to| lesson
+    app -->|routes to| challenges
+    app -->|routes to| challenge
+    app -->|routes to| landing
+    app -->|routes to| leaderboard
+    app -->|routes to| signin
+    app -->|routes /admin through| guards
+    guards -->|reads role| authstate
+    guards -->|opens| security
+    guards -->|opens| content
+    guards -->|opens| problems
+    layout -->|switches language| i18n
+    lesson -->|renders lesson| body
+    lesson -->|selects visual| registry
+    registry -->|lazy-loads| visuals
+    lesson -->|loads lesson| api
+    body -->|renders localized text| i18ncontent
+    challenges -->|loads challenges| api
+    challenge -->|loads challenge| api
+    challenge -->|presents editor| editor
+    editor -->|submits solution| api
+    landing -->|renders panels| panels
+    panels -->|computes progress| progress
+    panels -->|loads dashboard data| api
+    leaderboard -->|loads rankings| api
+    signin -->|authenticates users| api
+    signin -->|updates session| authstate
+    authstate -->|checks session| api
+    security -->|loads security data| api
+    content -->|manages content| api
+    problems -->|edits problems| api
+    i18ncontent -->|sets lang and dir| textlang
+    api -->|sends Accept-Language| i18n
+    api -->|sends API requests| backend
+```
+
 ## Stack
 
 React 19, TypeScript, Vite, Tailwind v4 (via `@tailwindcss/vite`, so there is no
