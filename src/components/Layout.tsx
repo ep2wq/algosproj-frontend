@@ -121,7 +121,7 @@ function LanguageToggle() {
   const arabic = i18n.language === 'ar'
 
   return (
-    <button type="button" onClick={() => setLanguage(arabic ? 'en' : 'ar')} className={`${ghostButton} px-2.5`}>
+    <button type="button" onClick={() => void setLanguage(arabic ? 'en' : 'ar')} className={`${ghostButton} px-2.5`}>
       <Languages aria-hidden="true" className="size-4.5 shrink-0" strokeWidth={2} />
       {/* On English pages "العربية" uses a 4 kB cut of the Arabic font (--font-label in index.css). It
           follows <html lang>, not React: an Arabic visit's hidden static English page must not fetch it. */}

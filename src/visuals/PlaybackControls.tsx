@@ -1,6 +1,5 @@
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
-import './i18n'
 import type { Speed, usePlayback } from './usePlayback'
 
 type Playback = ReturnType<typeof usePlayback>

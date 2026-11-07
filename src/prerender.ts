@@ -6,9 +6,12 @@ import { renderToString } from 'react-dom/server'
 import { StaticRouter } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './auth'
-import './i18n'
+import { i18nReady } from './i18n'
 
 export { SITE_URL } from './site'
+
+// The English strings load like in the browser (src/i18n.ts); render only once they are in.
+await i18nReady
 
 // The API's origin, for the Content-Security-Policy's connect-src (public/_headers). Same fallback as src/api.ts.
 export const API_ORIGIN = new URL(import.meta.env.VITE_API_URL || 'http://localhost:8000').origin

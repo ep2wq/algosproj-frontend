@@ -1,8 +1,9 @@
-import { lazy } from 'react'
+import { lazy, useEffect, useState } from 'react'
 import type { i18n as I18n } from 'i18next'
 import { I18nextProvider, useTranslation } from 'react-i18next'
 import { Outlet } from 'react-router-dom'
 import { useAuth } from '../auth'
+import { hasStrings, loadStrings } from '../i18n'
 import { CellLoader } from './Loading'
 import NotFoundPage from '../pages/NotFoundPage'
 
@@ -26,7 +27,15 @@ export default function AdminRoute() {
   const en = useEnglish(i18n)
   const t = en.t
   const { user, loading } = useAuth()
+  // On an Arabic site the English strings are not loaded yet (src/i18n.ts): load them here, and in
+  // the meantime show the silent loader (its label is one of those strings). api.ts's English
+  // messages for /admin requests come from the same strings; only these pages send them.
+  const [englishReady, setEnglishReady] = useState(() => hasStrings('en'))
+  useEffect(() => {
+    if (!englishReady) void loadStrings('en').then(() => setEnglishReady(true))
+  }, [englishReady])
 
+  if (!englishReady) return <CellLoader className="min-h-screen items-start pt-20" />
   if (loading) return <CellLoader label={t('admin.common.loading')} className="min-h-screen items-start pt-20" />
   if (user?.role !== 'admin' && user?.role !== 'owner') return <NotFoundPage />
   // Staff only: always English and left to right, whatever the interface language.

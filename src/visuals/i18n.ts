@@ -1,12 +1,19 @@
 import type { TFunction } from 'i18next'
-import i18n from '../i18n'
-import ar from '../locales/visuals.ar.json'
-import en from '../locales/visuals.en.json'
+import { lazy, type ComponentType } from 'react'
+import { addNamespace } from '../i18n'
 
-// The visualization strings are their own i18next namespace, "visuals". Every visual imports
-// this file, so the strings load with the first visual instead of in the main bundle.
-i18n.addResourceBundle('en', 'visuals', en)
-i18n.addResourceBundle('ar', 'visuals', ar)
+// The visualization strings are their own i18next namespace, "visuals", in the page's language only
+// (src/i18n.ts loads the other one before the language changes). They load with the first visual:
+// every visual is lazyVisual, which loads its code and its strings side by side and renders when both
+// are in, so no key ever shows.
+export function loadVisualStrings(): Promise<void> {
+  return addNamespace('visuals', (language) => (language === 'ar' ? import('../locales/visuals.ar.json') : import('../locales/visuals.en.json')))
+}
+
+// The same type as React's lazy.
+export function lazyVisual<C extends ComponentType<any>>(load: () => Promise<{ default: C }>, strings: () => Promise<unknown> = loadVisualStrings) {
+  return lazy(() => Promise.all([load(), strings()]).then(([module]) => module))
+}
 
 // The frame functions take the translate function as their last argument, so they stay pure:
 // the same input and language always give the same frames.

@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
-import './i18n'
+import { i18nReady } from './i18n'
 import App from './App.tsx'
 import { AuthProvider } from './auth.tsx'
 import { startCapture } from './capture'
@@ -26,22 +26,25 @@ window.addEventListener('vite:preloadError', (event) => {
   window.location.reload()
 })
 
-// A prerendered page (scripts/prerender.mjs) brings its own head tags; the app renders its own
-// and replaces the static markup in #root.
-document.querySelectorAll('[data-prerender]').forEach((element) => element.remove())
+// The app renders once the page language's strings are in (src/i18n.ts), so no key ever shows.
+void i18nReady.then(() => {
+  // A prerendered page (scripts/prerender.mjs) brings its own head tags; the app renders its own
+  // and replaces the static markup in #root.
+  document.querySelectorAll('[data-prerender]').forEach((element) => element.remove())
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <ErrorBoundary>
-          <App />
-        </ErrorBoundary>
-        <BugReportHost />
-      </AuthProvider>
-    </BrowserRouter>
-  </StrictMode>,
-)
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <BrowserRouter>
+        <AuthProvider>
+          <ErrorBoundary>
+            <App />
+          </ErrorBoundary>
+          <BugReportHost />
+        </AuthProvider>
+      </BrowserRouter>
+    </StrictMode>,
+  )
 
-// The web fonts, after the app (src/fonts.css says why).
-void import('./fonts.css')
+  // The web fonts, after the app (src/fonts.css says why).
+  void import('./fonts.css')
+})

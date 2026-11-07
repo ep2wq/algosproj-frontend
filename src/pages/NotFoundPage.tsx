@@ -1,14 +1,15 @@
-import { lazy, Suspense } from 'react'
+import { Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { primaryButton, secondaryButton } from '../components/buttonStyles'
 import { TextWithCode } from '../components/LessonBody'
 import { CellLoader } from '../components/Loading'
 import ReportProblemButton from '../components/ReportProblemButton'
+import { lazyVisual } from '../visuals/i18n'
 
 // A binary search over HTTP status codes that does not find 404, in the lesson's own cells. Lazy
 // like every visualization; the message and links below never depend on it.
-const NotFoundSearch = lazy(() => import('../visuals/AutoSearchVisual').then((m) => ({ default: m.NotFoundSearch })))
+const NotFoundSearch = lazyVisual(() => import('../visuals/AutoSearchVisual').then((m) => ({ default: m.NotFoundSearch })))
 
 // Every unknown address, including unknown /admin paths and admin pages for non-staff. A
 // single-page app answers these with status 200 (docs/ui-public-pages.md), so robots get noindex.

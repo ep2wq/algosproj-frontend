@@ -1,4 +1,5 @@
-import { lazy, type ComponentType, type LazyExoticComponent } from 'react'
+import type { ComponentType, LazyExoticComponent } from 'react'
+import { lazyVisual } from './i18n'
 
 // The visuals the landing page's card picks from, one at random per page view. Each is the lesson's
 // own visual with a fixed demo input, playing once by itself; only the chosen one's code is loaded.
@@ -8,7 +9,7 @@ import { lazy, type ComponentType, type LazyExoticComponent } from 'react'
 type Demo = LazyExoticComponent<ComponentType<{ demo: unknown }>>
 
 function entry<D>(slug: string, demo: D, load: () => Promise<{ default: ComponentType<{ demo: D }> }>) {
-  return { slug, demo, Visual: lazy(load) as unknown as Demo }
+  return { slug, demo, Visual: lazyVisual(load) as unknown as Demo }
 }
 
 export const HERO_POOL = [

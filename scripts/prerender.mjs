@@ -5,7 +5,7 @@
 // (the landing page, also the fallback for every other address), dist/<page>.html, robots.txt and
 // sitemap.xml. The browser does not hydrate this HTML: the app renders afresh and replaces it.
 import { createHash } from 'node:crypto'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -26,7 +26,18 @@ function check(name, text) {
 // The client build folder: dist, or the folder given as the first argument (a build elsewhere).
 const dist = process.argv[2] ? pathToFileURL(`${resolve(process.argv[2])}/`) : new URL('../dist/', import.meta.url)
 const { render, ROUTES, SITE_URL, API_ORIGIN } = await import(new URL('../dist-ssr/prerender.js', import.meta.url))
+// The inline script in index.html preloads the page language's strings (src/locales/en.json, ar.json):
+// their built file names go in before the script hashes below are taken.
+const assets = readdirSync(new URL('assets/', dist))
+function stringsFile(language) {
+  const files = assets.filter((file) => new RegExp(`^${language}-[\\w-]{8}\\.js$`).test(file))
+  if (files.length !== 1) throw new Error(`prerender: expected one assets/${language}-*.js (the ${language} strings), found ${files.length}`)
+  return `/assets/${files[0]}`
+}
 const template = readFileSync(new URL('index.html', dist), 'utf8')
+  .replace("'%STRINGS_EN%'", `'${stringsFile('en')}'`)
+  .replace("'%STRINGS_AR%'", `'${stringsFile('ar')}'`)
+if (template.includes('%STRINGS_')) throw new Error('prerender: index.html still has a %STRINGS_ placeholder')
 const ROOT = '<div id="root"></div>'
 if (!template.includes(ROOT)) throw new Error(`dist/index.html has no ${ROOT}`)
 

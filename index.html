@@ -63,6 +63,16 @@
         else if (document.documentElement.lang !== 'en') for (var child = page.firstElementChild; child; child = child.nextElementSibling) child.style.visibility = 'hidden'
         var hidden = document.getElementById('hide-static')
         if (hidden) hidden.remove()
+        // The page language's strings (src/i18n.ts) download while the app's script does, not after it
+        // has run; from here, after the stylesheet the first paint needs. scripts/prerender.mjs fills in
+        // the two file names (the dev server has none).
+        var strings = document.documentElement.lang === 'ar' ? '%STRINGS_AR%' : '%STRINGS_EN%'
+        if (strings.charAt(0) === '/') {
+          var preload = document.createElement('link')
+          preload.rel = 'modulepreload'
+          preload.href = strings
+          document.head.appendChild(preload)
+        }
       } catch (e) {}
     </script>
     <script type="module" src="/src/main.tsx"></script>

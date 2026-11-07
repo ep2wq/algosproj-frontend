@@ -1,7 +1,5 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
-import ar from './locales/ar.json'
-import en from './locales/en.json'
 import { CONTACT_EMAIL, PRODUCT_NAME } from './site'
 
 // The interface language: English or Arabic. Until the user clicks the language button it
@@ -9,6 +7,55 @@ import { CONTACT_EMAIL, PRODUCT_NAME } from './site'
 // choice is stored under `lang` and wins. index.html applies the same rules before the first
 // paint, so keep the two in step. Strings: src/locales/en.json (source and fallback) and ar.json.
 export type AppLanguage = 'en' | 'ar'
+
+// Each language's strings are their own file, so a visitor downloads only the language shown
+// (English is not loaded on Arabic pages, so it is no fallback there; check:i18n keeps the keys
+// equal). A namespace registers how to load one language (addNamespace); loadStrings adds it to
+// i18next once. Switching the language loads every registered namespace first, so no key ever
+// shows. The admin area loads English itself (AdminRoute).
+type Strings = { default: Record<string, unknown> }
+const loaders = new Map<string, (language: AppLanguage) => Promise<Strings>>([
+  ['translation', (language) => (language === 'ar' ? import('./locales/ar.json') : import('./locales/en.json'))],
+])
+const loaded = new Map<string, Promise<void>>()
+// The files that have arrived. Not i18next's hasResourceBundle: the admin chunk adds its own English
+// strings (pages/admin/bugReportsI18n.ts) and is preloaded for staff, so "en" can exist without en.json.
+const ready = new Set<string>()
+
+export function hasStrings(language: AppLanguage, ns = 'translation'): boolean {
+  return ready.has(`${language}/${ns}`)
+}
+
+export function loadStrings(language: AppLanguage, ns = 'translation'): Promise<void> {
+  const key = `${language}/${ns}`
+  let done = loaded.get(key)
+  if (!done) {
+    done = loaders.get(ns)!(language).then(
+      (strings) => {
+        i18n.addResourceBundle(language, ns, strings.default, true, false)
+        ready.add(key)
+      },
+      (error: unknown) => {
+        // A failed download (offline) may be tried again.
+        loaded.delete(key)
+        throw error
+      },
+    )
+    loaded.set(key, done)
+  }
+  return done
+}
+
+// The language being switched to (setLanguage), or the current one.
+let wanted: AppLanguage = 'en'
+
+// A lazy namespace (the visualization strings): its loader, and its strings in the current language,
+// and in the one being switched to when a switch is still loading (setLanguage only loads the
+// namespaces it knew when it started).
+export function addNamespace(ns: string, loader: (language: AppLanguage) => Promise<Strings>): Promise<void> {
+  loaders.set(ns, loader)
+  return Promise.all([loadStrings(i18n.language as AppLanguage, ns), loadStrings(wanted, ns)]).then(() => {})
+}
 
 const KEY = 'lang'
 
@@ -35,9 +82,10 @@ function applyLanguage(language: string) {
 }
 
 const initial = readLanguage()
+wanted = initial
 
 void i18n.use(initReactI18next).init({
-  resources: { en: { translation: en }, ar: { translation: ar } },
+  resources: {},
   lng: initial,
   fallbackLng: 'en',
   // {{product}} and {{email}} work in every string (src/site.ts).
@@ -47,13 +95,20 @@ void i18n.use(initReactI18next).init({
 applyLanguage(initial)
 i18n.on('languageChanged', applyLanguage)
 
-export function setLanguage(language: AppLanguage) {
+// The visitor's language: main.tsx (and the prerender) render only once it has arrived. Setting the
+// language again then lets i18next see the strings (resolvedLanguage, used by GrowthChart).
+export const i18nReady = loadStrings(initial).then(() => i18n.changeLanguage(initial))
+
+// The page keeps the old language until the new one's strings have arrived.
+export async function setLanguage(language: AppLanguage) {
   try {
     localStorage.setItem(KEY, language)
   } catch {
     // Storage blocked: the choice lasts until the page is reloaded.
   }
-  void i18n.changeLanguage(language)
+  wanted = language
+  await Promise.all([...loaders.keys()].map((ns) => loadStrings(language, ns)))
+  await i18n.changeLanguage(language)
 }
 
 // Dates and times: Gregorian calendar and Western digits in both languages, never Hijri.
