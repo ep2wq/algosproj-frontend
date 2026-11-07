@@ -138,7 +138,10 @@ or login answers 419. Use the same host name for the page and the API (`localhos
 not `127.0.0.1`), because the session cookie belongs to a host name.
 
 Monaco is bundled with the app (`src/monaco.ts`), so the editor needs no internet access
-and no CDN.
+and no CDN. The challenge page loads it at once. On a lesson page (`ProblemCard`, `deferEditor`) it
+loads only when the editor's box comes within 400 px of the screen, or when the box gets focus (Tab or
+a click; the editor then takes the focus). Until then the box shows the editor's loading look at the
+editor's size (no layout shift) and has the editor's label.
 
 Other commands:
 
@@ -307,15 +310,20 @@ README, "Content languages").
 Visualizations are translated too; their drawings stay left to right.
 
 - **Where strings live:** no user-visible text is written in components, visual code or
-  frame functions. i18next with react-i18next, strings bundled (no network loading, no
-  detector or backend plugins); `src/i18n.ts` sets it up.
-  - `src/locales/en.json` (the source and the fallback) and `src/locales/ar.json`: pages and
-    components, grouped by area (`nav`, `common`, `auth`, `lesson`, `challenges`, `solver`,
-    `result`, `errors`, ...). `admin.*` is in `en.json` only (see "Admin area").
+  frame functions. i18next with react-i18next (no detector or backend plugins); `src/i18n.ts`
+  sets it up. Each language's strings are their own file, loaded with `import()`, and a visitor
+  downloads only the page's language: `main.tsx` (and the prerender) render once `i18nReady` has
+  them, so no key ever shows. The inline script at the end of `index.html` preloads that file
+  next to the app's script (`scripts/prerender.mjs` fills in its built name). The language
+  button (`setLanguage`) loads the other language's files first, then switches.
+  - `src/locales/en.json` (the source) and `src/locales/ar.json`: pages and components, grouped
+    by area (`nav`, `common`, `auth`, `lesson`, `challenges`, `solver`, `result`, `errors`, ...).
+    English is not loaded on an Arabic page, so it is no fallback there: `check:i18n` keeps the
+    keys equal. `admin.*` is in `en.json` only; `AdminRoute` loads `en.json` itself (see "Admin area").
   - `src/locales/visuals.en.json` and `visuals.ar.json`: the `visuals` namespace, one group per
-    visualization plus `common` and `callTree`. `src/visuals/i18n.ts` registers it, and every
-    visual imports it (through `PlaybackControls`), so these strings (about 130 kB, both
-    languages) load with the first visualization instead of in the main bundle.
+    visualization plus `common` and `callTree`. Every visual is made with `lazyVisual()`
+    (`src/visuals/i18n.ts`): it loads the visual's code and these strings side by side and
+    renders when both are in, so the strings come with the first visualization, in one language.
 - **Adding a string:** add the key to `en.json` and `ar.json` (or the two `visuals.*` files),
   then call `t('group.key', { params })`. Whole sentences only: interpolate values
   (`{{count}}`), never join sentence fragments; joining whole sentences with a space is fine.
@@ -327,7 +335,8 @@ Visualizations are translated too; their drawings stay left to right.
   each sentence stays next to the logic that picks it. Components pass
   `useTranslation('visuals').t` and recompute the frames when the language changes.
 - **DP visuals' strings:** `src/locales/visuals-dp.en.json` and `visuals-dp.ar.json` are a
-  separate namespace, `dp`, registered by `src/visuals/dpI18n.ts` and loaded only with the DP
+  separate namespace, `dp`, loaded by `loadDpStrings()` (`src/visuals/dpI18n.ts`, passed to
+  `lazyVisual` for the DP entries in `src/visuals/index.ts`) only with the DP
   visuals (in the shared `visuals` files they would add about 2 kB gzip to every visual page,
   the landing page included). The DP components use `useTranslation(DP_NS, { nsMode:
   'fallback' })`, so `common.*` keys still come from `visuals`; `check:i18n` checks the pair
@@ -348,8 +357,9 @@ Visualizations are translated too; their drawings stay left to right.
   not in English (a `${...}` part of a key matches anything), or when an English string has a
   `~`.
 - **Adding a language** (for example French): add `fr.json` and `visuals.fr.json` with the
-  same keys, register them in `src/i18n.ts` and `src/visuals/i18n.ts`, add the code to
-  `AppLanguage`, the language button in `Layout.tsx` and the inline script in `index.html`,
+  same keys, add them to the loaders in `src/i18n.ts`, `src/visuals/i18n.ts` and
+  `src/visuals/dpI18n.ts`, add the code to `AppLanguage`, the language button in `Layout.tsx`, both
+  inline scripts in `index.html` (and its strings file to `scripts/prerender.mjs`),
   extend `PLURALS` in `scripts/check-i18n.mjs`, and add its rules for `ar` in
   `SetContentLanguage` and the backend `lang/` folder.
 - **The language button** in the main navigation shows the other language in that language
@@ -416,7 +426,13 @@ Visualizations are translated too; their drawings stay left to right.
   size-adjusted local fallbacks in `src/index.css` (`Plex Fallback`, `Mono Fallback`), so the font
   downloads never compete with the app's script, and the swap (`font-display: swap`) moves nothing.
   Nothing is preloaded. Measured on a slow connection: loading the fonts from `index.css`, or a
-  preload, made LCP worse. Arabic text
+  preload, made LCP worse. The language button's "العربية" on English pages uses its own family,
+  `IBM Plex Sans Arabic Label` (`--font-label`, `font-label` while `<html lang="en">`): the 400
+  Arabic file cut to those seven letters with all layout features kept, 4 kB instead of 42 kB, so
+  English pages never download the full Arabic font. Rebuild it from the Arabic 400 file with
+  `pyftsubset ibm-plex-sans-arabic-arabic-400.woff2 --unicodes=U+0627,U+0644,U+0639,U+0631,U+0628,U+064A,U+0629
+  --layout-features='*' --flavor=woff2 --output-file=ibm-plex-sans-arabic-label-400.woff2` (fonttools,
+  with brotli), and give it a new name if it changes (`/fonts/*` is cached for a year). Arabic text
   is never set in the monospace font (Plex Sans Arabic follows JetBrains Mono in `--font-mono`).
   Monaco gets the same stack in `ProblemSolver.tsx`. Arabic lines are a little taller;
   English passages (`[lang="en"]`) inside an Arabic page keep the English line heights. `letter-spacing` and `text-transform`
@@ -686,7 +702,9 @@ shared `BannedBadge`, `ConfirmAction`, `DeleteButton` and `Pagination` use them 
 exception is the Bug reports page: its `admin.bugReports.*` and `admin.nav.bugReports*` keys are in
 `src/locales/admin-bug-reports.en.json`, which the admin chunk adds to the same store
 (`pages/admin/bugReportsI18n.ts`), so they are not in every visitor's download; still English only. In
-Arabic mode they fall back to English, and `AdminRoute` keeps the area `lang="en" dir="ltr"`.
+Arabic mode `AdminRoute` first loads `en.json` (Arabic visitors don't have it; a silent loader shows
+meanwhile), renders the area with its own English i18next instance and keeps it `lang="en" dir="ltr"`.
+The English messages `api.ts` gives admin requests come from the same strings.
 To enable Arabic for admin (not done): remove the `lang="en" dir="ltr"` wrapper in
 `AdminRoute.tsx` and the `admin` rule in `api.ts` (`Accept-Language: en` for `/admin`), add
 `admin.*` to `ar.json` (then `npm run check:i18n` requires every key), make `formatTime` in

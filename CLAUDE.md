@@ -48,9 +48,12 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   phone on its side is still touch). Text fields and selects get 44 px from a base rule in `index.css`.
 - Restyle (docs/ui-restyle.md outside the repo): radius 4/8 px, shadow only on floating things
   (--float-shadow), motion only behind motion-safe:, Icons.tsx and EmptyState.tsx shared. Reading width:
-  `max-w-prose` is 52ch (a `.max-w-prose` rule in `@layer utilities` in `src/index.css`; Tailwind hard-codes 65ch).
+  `max-w-prose` is 31.2em = 52ch in Plex (a `.max-w-prose` rule in `@layer utilities` in `src/index.css`; Tailwind
+  hard-codes 65ch). Not `ch`: it follows the loaded font, so the column jumped when Plex arrived (Arabic CLS).
 - English/Arabic (README "Languages"): no literal UI text; `t()` with keys in `en.json`/`ar.json`,
-  visuals in lazy `visuals.en.json`/`.ar.json`, `admin.*` in `en.json` only. Whole sentences, six
+  visuals in lazy `visuals.en.json`/`.ar.json`, `admin.*` in `en.json` only. Only the page's language
+  loads (`import()` in `src/i18n.ts`, `i18nReady` before render, `lazyVisual` for visuals, `setLanguage`
+  loads before switching); English is no fallback on Arabic pages; `AdminRoute` loads `en.json` itself. Whole sentences, six
   Arabic plural forms. Frame functions take `t` last. Arabic marks terms `~term~`, values
   `` `code` `` (`TextWithCode`: code plus touching text in one `inline-block`). Course text via
   `Content` (`*_lang`, titles `lang="auto"`). Code, drawings, data inputs, emails, `/admin/*`
@@ -169,6 +172,12 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   (`screenshot.ts`, html-to-image, `includeStyleProperties` without custom properties: Monaco's made it 3 s) are lazy;
   first-load JS +1,032 B gzip. Owner pages `/admin/bug-reports[/:id]`, strings in `admin-bug-reports.en.json` (added by
   the admin chunk), badge on AdminNav's 60 s timer. CSP `img-src` has `blob:`. Privacy page text: draft outside the repo.
+- Done (2026-11-07, page weight fixes; numbers in docs/page-weight-fixes-after.md outside the repo): lesson page
+  Monaco loads within 400 px of the editor or on focus (`deferEditor` in `ProblemSolver`, from `ProblemCard`);
+  "العربية" on English pages uses a 4 kB label subset (`--font-label`, README "Fonts"); only the page language's
+  strings load (`index.html` preloads them, `scripts/prerender.mjs` fills in the file name); `max-w-prose` in em
+  (Arabic text pages' CLS). Open: admin CLS 0.14–0.16 is the footer coming into view when the `min-h-screen`
+  loader is replaced by a short page; `bugReportI18n.ts` still adds both languages' bug-report strings.
 - Local dev DB accounts (to clean up): `uitest-owner` (owner), `uitest-admin` (admin), `uitest-partway`,
   `uitest-new` (user), all `@example.test`. The audit log has two test role changes on `uitest-new`.
 - Open: no social links (no real URLs yet). The `scroll-fade` utility's `:dir(rtl)` is compiled to
