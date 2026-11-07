@@ -33,14 +33,18 @@ const Editor = lazy(() =>
 
 // The statement, examples, editor and Submit for one problem. Shared by the lesson page
 // (inside ProblemCard) and the challenge page; each page renders its own title above it.
+// deferEditor (the lesson page, where the editor comes after the lesson text): Monaco is only
+// downloaded when the editor area comes within 400 px of the screen or gets focus (Tab, click).
 export default function ProblemSolver({
   problem,
   examplesHeading: ExamplesHeading = 'h3',
   onPassed,
+  deferEditor = false,
 }: {
   problem: Problem
   examplesHeading?: 'h2' | 'h3'
   onPassed?: (result: SubmitResult) => void
+  deferEditor?: boolean
 }) {
   const { t } = useTranslation()
   const { user, loading, refreshUser } = useAuth()
@@ -62,6 +66,20 @@ export default function ProblemSolver({
   const [refusedUser, setRefusedUser] = useState<User | null>(null)
   const unverified = Boolean(user && (!user.email_verified || refusedUser === user))
   const unverifiedRef = useRef<HTMLDivElement>(null)
+  // The deferred editor: whether Monaco is wanted yet, and whether the editor has started.
+  const [editorWanted, setEditorWanted] = useState(!deferEditor)
+  const [editorReady, setEditorReady] = useState(false)
+  const editorAreaRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const area = editorAreaRef.current
+    if (editorWanted || !area) return
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) setEditorWanted(true)
+    }, { rootMargin: '400px 0px' })
+    observer.observe(area)
+    return () => observer.disconnect()
+  }, [editorWanted])
 
   // The Submit button just went away under the user's focus: move it to the explanation.
   useEffect(() => {
@@ -87,6 +105,7 @@ export default function ProblemSolver({
   const hintId = `editor-hint-${problem.id}`
   // While Monaco's code downloads (Suspense) and while it starts (the editor's own loading slot).
   const editorLoading = <CellLoader label={t('solver.loadingEditor')} className="h-[280px] w-full" />
+  const editorLabel = t('solver.editorLabel', { language: LANGUAGE_LABELS[language], title: problem.title })
 
   async function handleSubmit() {
     setBusy(true)
@@ -186,38 +205,53 @@ export default function ProblemSolver({
             <TextWithCode text={t('solver.tabHint')} />
           </p>
         </div>
-        {/* Code is always left to right, in both interface languages. */}
-        <div dir="ltr">
-          <Suspense fallback={editorLoading}>
-            <Editor
-              height="280px"
-              language={language}
-              // Changing the theme restyles the open editor; it is not remounted, so the code stays.
-              theme={dark ? 'vs-dark' : 'vs'}
-              value={code[language]}
-              onChange={(value) => setCode((current) => ({ ...current, [language]: value ?? '' }))}
-              // Screen readers read the Tab hint with the editor.
-              // Monaco measures the font once; measure again when JetBrains Mono has arrived.
-              // The bundled Monaco sometimes skips the first paint of the scrollbar's overview ruler (its
-              // border and cursor mark); one full render draws it as the CDN build did.
-              onMount={(editor, monaco) => {
-                editor.getDomNode()?.querySelector('textarea, .native-edit-context')?.setAttribute('aria-describedby', hintId)
-                void document.fonts.load("14px 'JetBrains Mono'").then(() => monaco.editor.remeasureFonts())
-                requestAnimationFrame(() => editor.render(true))
-              }}
-              loading={editorLoading}
-              options={{
-                ariaLabel: t('solver.editorLabel', { language: LANGUAGE_LABELS[language], title: problem.title }),
-                minimap: { enabled: false },
-                fontSize: 14,
-                // The --font-mono stack in src/index.css (Monaco can't read a CSS variable).
-                fontFamily: "'JetBrains Mono', 'Mono Fallback', 'IBM Plex Sans Arabic', monospace",
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                tabSize: 4,
-              }}
-            />
-          </Suspense>
+        {/* Code is always left to right, in both interface languages. A deferred editor's box takes
+            focus (Tab or a click) until the editor has started: focus loads it, and the editor then
+            takes the focus. Before that it shows the editor's loading look, at the editor's size. */}
+        <div
+          ref={editorAreaRef}
+          dir="ltr"
+          {...(deferEditor && !editorReady
+            ? { tabIndex: 0, role: 'group', 'aria-label': editorLabel, 'aria-describedby': hintId, 'aria-busy': editorWanted, onFocus: () => setEditorWanted(true) }
+            : {})}
+        >
+          {!editorWanted ? (
+            <CellLoader className="h-[280px] w-full" />
+          ) : (
+            <Suspense fallback={editorLoading}>
+              <Editor
+                height="280px"
+                language={language}
+                // Changing the theme restyles the open editor; it is not remounted, so the code stays.
+                theme={dark ? 'vs-dark' : 'vs'}
+                value={code[language]}
+                onChange={(value) => setCode((current) => ({ ...current, [language]: value ?? '' }))}
+                // Screen readers read the Tab hint with the editor.
+                // Monaco measures the font once; measure again when JetBrains Mono has arrived.
+                // The bundled Monaco sometimes skips the first paint of the scrollbar's overview ruler (its
+                // border and cursor mark); one full render draws it as the CDN build did.
+                onMount={(editor, monaco) => {
+                  editor.getDomNode()?.querySelector('textarea, .native-edit-context')?.setAttribute('aria-describedby', hintId)
+                  void document.fonts.load("14px 'JetBrains Mono'").then(() => monaco.editor.remeasureFonts())
+                  requestAnimationFrame(() => editor.render(true))
+                  // The user tabbed or clicked into the deferred editor's box while it loaded.
+                  if (document.activeElement === editorAreaRef.current) editor.focus()
+                  setEditorReady(true)
+                }}
+                loading={editorLoading}
+                options={{
+                  ariaLabel: editorLabel,
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  // The --font-mono stack in src/index.css (Monaco can't read a CSS variable).
+                  fontFamily: "'JetBrains Mono', 'Mono Fallback', 'IBM Plex Sans Arabic', monospace",
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  tabSize: 4,
+                }}
+              />
+            </Suspense>
+          )}
         </div>
       </div>
       {language === 'java' && (

@@ -22,7 +22,7 @@ export default function ProblemCard({ problem, id }: { problem: Problem; id?: st
         <span className="text-sm text-muted">{t(`difficulty.${problem.difficulty}`, { defaultValue: problem.difficulty })}</span>
         <span className="text-sm text-muted tabular-nums">{t('common.points', { count: problem.points })}</span>
       </div>
-      <ProblemSolver problem={problem} />
+      <ProblemSolver problem={problem} deferEditor />
     </article>
   )
 }
