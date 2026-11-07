@@ -60,6 +60,9 @@
      monospace element fall through to Plex Sans Arabic: Arabic is never set in the monospace font. */
   --font-sans: 'IBM Plex Sans Arabic', 'Plex Fallback', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
   --font-mono: 'JetBrains Mono', 'Mono Fallback', 'IBM Plex Sans Arabic', 'Plex Fallback', ui-monospace, monospace;
+  /* Only the language button's "العربية" on English pages (src/fonts.css); no full Plex Arabic in the
+     stack, so those pages never download it. */
+  --font-label: 'IBM Plex Sans Arabic Label', 'Plex Fallback', ui-sans-serif, system-ui, sans-serif;
 
   /* Elevation, radius and motion: docs/ui-restyle.md (outside this repo) and README "Themes". Only
      floating things (the account menu, the skip link) get a shadow (--float-shadow below); cards

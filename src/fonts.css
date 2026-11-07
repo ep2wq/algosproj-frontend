@@ -54,6 +54,17 @@
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
 }
 
+/* The language button's label "العربية" on English pages (--font-label): the same 400 font cut to
+   those seven letters and their joined forms (pyftsubset, all layout features kept), 4 kB instead of
+   the 42 kB Arabic file. Its own family name, so Arabic pages never use it for their text. */
+@font-face {
+  font-family: 'IBM Plex Sans Arabic Label';
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-sans-arabic-label-400.woff2') format('woff2');
+  unicode-range: U+0627-0629, U+0631, U+0639, U+0644, U+064A;
+}
+
 @font-face {
   font-family: 'JetBrains Mono';
   font-weight: 400;
