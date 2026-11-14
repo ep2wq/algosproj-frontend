@@ -7,8 +7,8 @@ type AuthContextValue = {
   user: User | null
   // True while /me tells who is logged in (by the session cookie) on startup.
   loading: boolean
-  login: (email: string, password: string, remember: boolean, honeypot?: string) => Promise<void>
-  register: (name: string, email: string, password: string, honeypot?: string) => Promise<void>
+  login: (email: string, password: string, remember: boolean, honeypot?: string, captchaToken?: string) => Promise<void>
+  register: (name: string, email: string, password: string, honeypot?: string, captchaToken?: string) => Promise<void>
   // Finishes a Google or GitHub sign-up (/auth/complete).
   completeSignIn: (name: string) => Promise<void>
   logout: () => Promise<void>
@@ -46,13 +46,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false))
   }, [])
 
-  const login = useCallback(async (email: string, password: string, remember: boolean, honeypot = '') => {
-    const result = await api.login(email, password, remember, honeypot)
+  const login = useCallback(async (email: string, password: string, remember: boolean, honeypot = '', captchaToken = '') => {
+    const result = await api.login(email, password, remember, honeypot, captchaToken)
     setUser(result.user)
   }, [])
 
-  const register = useCallback(async (name: string, email: string, password: string, honeypot = '') => {
-    const result = await api.register(name, email, password, honeypot)
+  const register = useCallback(async (name: string, email: string, password: string, honeypot = '', captchaToken = '') => {
+    const result = await api.register(name, email, password, honeypot, captchaToken)
     setUser(result.user)
   }, [])
 

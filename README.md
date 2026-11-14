@@ -32,6 +32,7 @@ flowchart TD
         panels["Progress panels<br/>[LandingPanels.tsx]"]
         leaderboard["Leaderboard<br/>[LeaderboardPage.tsx]"]
         signin["Sign-in pages<br/>[AuthForm.tsx]"]
+        captcha["Captcha widget (lazy)<br/>[Captcha.tsx, Turnstile.tsx]"]
         progress["Progress state<br/>[progress.ts]"]
         authstate["Authentication state<br/>[auth.tsx]"]
     end
@@ -55,6 +56,7 @@ flowchart TD
         api["Backend API client<br/>[api.ts]"]
     end
     backend(["Laravel backend"])
+    cloudflare(["Cloudflare Turnstile"])
     learner -->|opens pages| app
     app -->|wraps routes| layout
     app -->|routes to| lessons
@@ -95,6 +97,9 @@ flowchart TD
     leaderboard -->|loads rankings| api
     signin -->|authenticates users| api
     signin -->|updates session| authstate
+    signin -->|waits for a token| captcha
+    dialog -->|guests wait for a token| captcha
+    captcha -->|loads widget script| cloudflare
     authstate -->|checks session| api
     security -->|loads security data| api
     content -->|manages content| api
@@ -159,6 +164,9 @@ Put these in `.env` (copy `.env.example`; `.env` is not committed):
 - `VITE_SITE_URL` — public address of the site, for example `https://algoslab.sa`, no
   trailing slash. Only for production builds: canonical links, `og:url`, `og:image` and `sitemap.xml`
   need it and are left out without it. Baked in at build time like `VITE_API_URL`.
+- `VITE_TURNSTILE_SITE_KEY` — the Cloudflare Turnstile site key (see "Captcha"). Empty (local development):
+  no widget, no token, and the backend's `TURNSTILE_ENABLED` must be false. Baked in at build time.
+  Cloudflare's public test keys: `1x00000000000000000000AA` always passes, `2x00000000000000000000AB` always fails.
 
 Only the theme choice (`theme`), the language choice (`lang`), the sound choice (`sound`) and the
 closed cookie notice (`cookie-notice`, value `LEGAL_UPDATED`) are stored in `localStorage`, every read and write in `try`/`catch`. The login is an HttpOnly
@@ -671,6 +679,20 @@ Bot trap: login, register and forgot password have an off-screen text field `for
 leave it empty and the request does not include it; a bot that fills it gets an ordinary failure from
 the server.
 
+Captcha: Cloudflare Turnstile on login, register, forgot password (`AuthForm` `captcha` prop) and the bug
+report dialog for guests (backend README "Captcha"). Only with `VITE_TURNSTILE_SITE_KEY`; without it nothing
+shows and nothing is sent.
+- `Captcha.tsx` (main bundle, small) reserves the widget's height before anything loads (65 px, or 140 px for the
+  compact widget when its box is under 300 px wide, a container query) and lazy-loads `Turnstile.tsx`, which
+  adds Cloudflare's `api.js?render=explicit` script on first use. No other page loads the script.
+- The widget follows the theme and the language (rendered again when either changes) and sits in a group
+  labelled "Security check". Submit stays disabled until there is a token. After any failed submit the
+  widget is rendered again (`key`), because a token works once. A 422 on `turnstile_token` shows our own
+  message under the widget; a blocked script shows "couldn't load", a widget error "couldn't verify this
+  browser", both with Try again.
+- The request carries `turnstile_token` (`CAPTCHA_FIELD` in `api.ts`) only when there is a token.
+- CSP (`public/_headers`): `https://challenges.cloudflare.com` in `script-src`, `connect-src` and `frame-src`.
+
 Banned accounts: login shows "This account is banned. Reason: ..." from the 403. A request
 while signed in that gets that 403 is handled like a 401: the signed-in state is cleared and
 the user goes to `/login`, which shows the ban message. Banning deletes the user's sessions,
@@ -733,7 +755,8 @@ Anyone can report a bug; the backend README ("Bug reports") has the API, the lim
   Always: page address without the query, time, browser and screen, language, theme, app version, and
   the error the page showed. Optional, each ticked by default: account details (signed in), failed
   requests and console errors, the screenshot (with a preview), and on the problem page the code and the
-  problem. A hidden field (`form_extra`) is sent only when filled. States: sending, sent (with the
+  problem. A hidden field (`form_extra`) is sent only when filled. Guests also get the captcha (see
+  "Captcha" under "Admin area"); signed-in users do not. States: sending, sent (with the
   reference), field errors, 429, and offline or 5xx with the contact email. Its strings are a lazy
   `bugReport` namespace (`src/locales/bug-report.*.json`, `components/bugReportI18n.ts`).
 - **The screenshot** (`src/screenshot.ts`, lazy, with `html-to-image`): the visible part of the page

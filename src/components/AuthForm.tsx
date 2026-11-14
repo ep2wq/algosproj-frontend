@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'rea
 import { flushSync } from 'react-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import { Label } from '@/components/ui/label'
-import { HONEYPOT_FIELD } from '../api'
+import { CAPTCHA_ON, HONEYPOT_FIELD } from '../api'
+import Captcha from './Captcha'
 import SocialSignIn from './SocialSignIn'
 
 type AuthFormProps = {
@@ -11,8 +12,9 @@ type AuthFormProps = {
   busyLabel: string
   busy: boolean
   error: ReactNode
-  // Gets the hidden field's value ('' for a person) when the form has one.
-  onSubmit: (honeypot: string) => void
+  // Gets the hidden field's value ('' for a person) when the form has one, and the captcha token
+  // ('' when the captcha is off).
+  onSubmit: (honeypot: string, captchaToken: string) => void
   footer: ReactNode
   children: ReactNode
   // A server error on accepted_terms (register only). Shown with our own message.
@@ -23,6 +25,10 @@ type AuthFormProps = {
   social?: boolean
   // The hidden bot trap (login, register, forgot password).
   honeypot?: boolean
+  // The Cloudflare Turnstile widget (login, register, forgot password); submit waits for its token.
+  captcha?: boolean
+  // A server error on turnstile_token. Shown with our own message.
+  captchaErrors?: string[]
 }
 
 // Opens in a new tab, so a half-filled form is not lost; screen readers are told.
@@ -37,7 +43,7 @@ function NewTabLink({ href, children }: { href: string; children?: ReactNode }) 
 }
 
 // Shared frame for the login, register, forgot password and reset password pages.
-export default function AuthForm({ title, submitLabel, busyLabel, busy, error, onSubmit, footer, children, termsErrors, terms = true, social = false, honeypot = false }: AuthFormProps) {
+export default function AuthForm({ title, submitLabel, busyLabel, busy, error, onSubmit, footer, children, termsErrors, terms = true, social = false, honeypot = false, captcha = false, captchaErrors }: AuthFormProps) {
   const { t } = useTranslation()
   const formRef = useRef<HTMLFormElement>(null)
   const termsRef = useRef<HTMLInputElement>(null)
@@ -46,12 +52,22 @@ export default function AuthForm({ title, submitLabel, busyLabel, busy, error, o
   const [accepted, setAccepted] = useState(false)
   const [termsMissing, setTermsMissing] = useState(false)
   const termsInvalid = termsMissing || Boolean(termsErrors?.length)
+  const needsToken = captcha && CAPTCHA_ON
+  const [token, setToken] = useState('')
+  const [captchaKey, setCaptchaKey] = useState(0)
+  const wasBusy = useRef(false)
 
   // When a submit fails (busy goes back to false), focus the first field the server marked
   // invalid, so its label and error are read out. A successful submit leaves the page instead.
+  // The token was used up by that submit, so the widget starts again for a fresh one.
   useEffect(() => {
     if (!busy) formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
-  }, [busy])
+    if (!busy && wasBusy.current && needsToken) {
+      setToken('')
+      setCaptchaKey((key) => key + 1)
+    }
+    wasBusy.current = busy
+  }, [busy, needsToken])
 
   // Nothing is sent, and no sign-in starts, until the box is checked. The error is rendered before
   // the focus moves, so the box is read out with it.
@@ -62,12 +78,12 @@ export default function AuthForm({ title, submitLabel, busyLabel, busy, error, o
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    if (busy) return
+    if (busy || (needsToken && !token)) return
     if (terms && !accepted) {
       refuseWithoutTerms()
       return
     }
-    onSubmit(honeypotRef.current?.value ?? '')
+    onSubmit(honeypotRef.current?.value ?? '', token)
   }
 
   return (
@@ -117,6 +133,7 @@ export default function AuthForm({ title, submitLabel, busyLabel, busy, error, o
             )}
           </div>
         )}
+        {captcha && <Captcha key={captchaKey} onToken={setToken} rejected={Boolean(captchaErrors?.length)} />}
         {error && (
           <p role="alert" className="rounded-lg border border-fail/30 bg-fail/5 px-3 py-2 text-sm text-fail">
             {error}
@@ -124,7 +141,7 @@ export default function AuthForm({ title, submitLabel, busyLabel, busy, error, o
         )}
         <button
           type="submit"
-          disabled={busy}
+          disabled={busy || (needsToken && !token)}
           className="min-h-11 w-full rounded bg-accent px-4 font-medium text-inverse hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {busy ? busyLabel : submitLabel}

@@ -1,7 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
-import { ApiError, HONEYPOT_FIELD, sendBugReport, type BugReportIncluded } from '../api'
+import { ApiError, CAPTCHA_FIELD, CAPTCHA_ON, HONEYPOT_FIELD, sendBugReport, type BugReportIncluded } from '../api'
 import { useAuth } from '../auth'
 import { captured } from '../capture'
 import { formatNumber } from '../i18n'
@@ -9,6 +9,7 @@ import { currentProblem, type BugReportRequest } from '../reportBug'
 import { CONTACT_EMAIL } from '../site'
 import { useTheme } from '../theme'
 import { primaryButton, secondaryButton } from './buttonStyles'
+import Captcha from './Captcha'
 import './bugReportI18n'
 
 const MIN = 10
@@ -72,6 +73,10 @@ export default function BugReportDialog({ error, screenshot, onClose }: BugRepor
   const [parts, setParts] = useState<BugReportIncluded>({ account: true, diagnostics: true, screenshot: true, problem: true })
   const [state, setState] = useState<{ step: 'form' | 'sending' | 'sent'; reference?: string; message?: string; mail?: boolean; fields?: Record<string, string[]> }>({ step: 'form' })
   const [tooShort, setTooShort] = useState(false)
+  // Guests only (logged-in users need no captcha). Remounted after a failed send: a token works once.
+  const needsToken = !user && CAPTCHA_ON
+  const [token, setToken] = useState('')
+  const [captchaKey, setCaptchaKey] = useState(0)
 
   useLayoutEffect(() => {
     const dialog = ref.current
@@ -101,6 +106,7 @@ export default function BugReportDialog({ error, screenshot, onClose }: BugRepor
 
   async function submit(event: FormEvent) {
     event.preventDefault()
+    if (needsToken && !token) return
     if (length < MIN) {
       setTooShort(true)
       descriptionRef.current?.focus()
@@ -133,13 +139,20 @@ export default function BugReportDialog({ error, screenshot, onClose }: BugRepor
     form.append('included', JSON.stringify(included))
     const trap = honeypotRef.current?.value ?? ''
     if (trap) form.append(HONEYPOT_FIELD, trap)
+    if (needsToken) form.append(CAPTCHA_FIELD, token)
 
     try {
       const { id: reference } = await sendBugReport(form)
       setState({ step: 'sent', reference })
     } catch (err) {
+      if (needsToken) {
+        setToken('')
+        setCaptchaKey(captchaKey + 1)
+      }
       if (err instanceof ApiError && err.status === 422) {
-        setState({ step: 'form', message: Object.values(err.fieldErrors).flat().join(' ') || err.message, fields: err.fieldErrors })
+        // A refused captcha shows its own message under the widget.
+        const message = err.fieldErrors[CAPTCHA_FIELD] ? undefined : Object.values(err.fieldErrors).flat().join(' ') || err.message
+        setState({ step: 'form', message, fields: err.fieldErrors })
       } else if (err instanceof ApiError && err.status === 429) {
         setState({ step: 'form', message: t('bugReport.tooMany') })
       } else {
@@ -313,6 +326,8 @@ export default function BugReportDialog({ error, screenshot, onClose }: BugRepor
             </ul>
           </section>
 
+          {!user && <Captcha key={captchaKey} onToken={setToken} rejected={Boolean(state.fields?.[CAPTCHA_FIELD])} />}
+
           {state.message && (
             <p role="alert" className="rounded border border-fail/30 bg-fail/5 px-3 py-2 text-sm text-fail">
               {state.message}
@@ -335,7 +350,7 @@ export default function BugReportDialog({ error, screenshot, onClose }: BugRepor
           </p>
 
           <div className="flex flex-wrap gap-2">
-            <button type="submit" disabled={busy} className={`${primaryButton} disabled:opacity-60`}>
+            <button type="submit" disabled={busy || (needsToken && !token)} className={`${primaryButton} disabled:opacity-60`}>
               {busy ? t('bugReport.sending') : t('bugReport.send')}
             </button>
             <button type="button" disabled={busy} onClick={() => ref.current?.close()} className={secondaryButton}>

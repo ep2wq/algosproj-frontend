@@ -1,4 +1,4 @@
-import { Bot, ChevronDown, Crosshair, Gauge, KeyRound, Lock, ShieldX, TriangleAlert, type LucideIcon } from 'lucide-react'
+import { Bot, ChevronDown, CloudOff, Crosshair, Gauge, KeyRound, Lock, ShieldAlert, ShieldX, TriangleAlert, type LucideIcon } from 'lucide-react'
 import { useEffect, useLayoutEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -35,6 +35,8 @@ const TYPES: SecurityEventType[] = [
   'suspicious_input',
   'rate_limited',
   'csrf_mismatch',
+  'captcha_failed',
+  'captcha_unavailable',
 ]
 const DURATIONS: BanDuration[] = ['1h', '24h', '7d', 'permanent']
 const EMPTY = { tab: '', type: '', status: '', ip: '', page: '' }
@@ -51,6 +53,9 @@ const TYPE_STYLE: Record<SecurityEventType, [LucideIcon, string]> = {
   suspicious_input: [TriangleAlert, FAIL],
   rate_limited: [Gauge, MUTED],
   csrf_mismatch: [KeyRound, MUTED],
+  // A person can fail a captcha too; Cloudflare not answering is an outage, not an attack.
+  captcha_failed: [ShieldAlert, MUTED],
+  captcha_unavailable: [CloudOff, MUTED],
 }
 
 const smallButton = `${secondaryButton} disabled:cursor-not-allowed disabled:opacity-60 aria-disabled:cursor-not-allowed aria-disabled:opacity-60`

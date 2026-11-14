@@ -429,18 +429,28 @@ function trap(honeypot: string) {
   return honeypot ? { [HONEYPOT_FIELD]: honeypot } : {}
 }
 
+// The Cloudflare Turnstile token (README "Captcha"); empty when the captcha is off. Without
+// VITE_TURNSTILE_SITE_KEY (local development) there is no widget and no token is sent.
+export const CAPTCHA_FIELD = 'turnstile_token'
+export const TURNSTILE_SITE_KEY = String(import.meta.env.VITE_TURNSTILE_SITE_KEY ?? '')
+export const CAPTCHA_ON = TURNSTILE_SITE_KEY !== ''
+
+function captcha(token: string) {
+  return token ? { [CAPTCHA_FIELD]: token } : {}
+}
+
 // Login and register start a session (the server sets the cookie); the response has only the user.
 // Register is only called once the Terms and Privacy box is checked (AuthForm); the server records it.
-export async function register(name: string, email: string, password: string, honeypot = '') {
+export async function register(name: string, email: string, password: string, honeypot = '', captchaToken = '') {
   await refreshCsrfCookie()
-  const result = await request<AuthResponse>('POST', '/register', { name, email, password, accepted_terms: true, ...trap(honeypot) })
+  const result = await request<AuthResponse>('POST', '/register', { name, email, password, accepted_terms: true, ...trap(honeypot), ...captcha(captchaToken) })
   signedIn = true
   return result
 }
 
-export async function login(email: string, password: string, remember: boolean, honeypot = '') {
+export async function login(email: string, password: string, remember: boolean, honeypot = '', captchaToken = '') {
   await refreshCsrfCookie()
-  const result = await request<AuthResponse>('POST', '/login', { email, password, remember, ...trap(honeypot) })
+  const result = await request<AuthResponse>('POST', '/login', { email, password, remember, ...trap(honeypot), ...captcha(captchaToken) })
   signedIn = true
   return result
 }
@@ -485,9 +495,9 @@ export function resendVerification() {
   return request<{ message: string }>('POST', '/email/verification-notification')
 }
 
-export async function forgotPassword(email: string, honeypot = '') {
+export async function forgotPassword(email: string, honeypot = '', captchaToken = '') {
   await refreshCsrfCookie()
-  return request<{ message: string }>('POST', '/forgot-password', { email, ...trap(honeypot) })
+  return request<{ message: string }>('POST', '/forgot-password', { email, ...trap(honeypot), ...captcha(captchaToken) })
 }
 
 export async function resetPassword(token: string, email: string, password: string, passwordConfirmation: string) {
@@ -661,6 +671,8 @@ export type SecurityEventType =
   | 'suspicious_input'
   | 'rate_limited'
   | 'csrf_mismatch'
+  | 'captcha_failed'
+  | 'captcha_unavailable'
 export type SecurityEvent = {
   id: string
   type: SecurityEventType

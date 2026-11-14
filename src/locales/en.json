@@ -200,6 +200,13 @@
       "social_banned": "This account is banned."
     }
   },
+  "captcha": {
+    "label": "Security check",
+    "failed": "The security check didn't go through. Complete it again, then retry.",
+    "loadFailed": "The security check couldn't load. Check your connection or turn off blockers for this site.",
+    "widgetFailed": "The security check couldn't verify this browser.",
+    "retry": "Try again"
+  },
   "forgot": {
     "title": "Reset your password",
     "intro": "Enter the email address of your account. We'll send you a link to set a new password.",
@@ -708,7 +715,9 @@
         "decoy_url": "Decoy address",
         "suspicious_input": "Suspicious input",
         "rate_limited": "Rate limited",
-        "csrf_mismatch": "CSRF check failed"
+        "csrf_mismatch": "CSRF check failed",
+        "captcha_failed": "Captcha failed",
+        "captcha_unavailable": "Captcha service unreachable"
       },
       "rules": {
         "sql_injection": "SQL injection pattern",

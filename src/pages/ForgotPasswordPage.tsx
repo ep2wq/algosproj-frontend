@@ -21,12 +21,12 @@ export default function ForgotPasswordPage() {
     if (sent) sentRef.current?.focus()
   }, [sent])
 
-  async function handleSubmit(honeypot: string) {
+  async function handleSubmit(honeypot: string, captchaToken: string) {
     setBusy(true)
     setError('')
     setFieldErrors({})
     try {
-      await forgotPassword(email, honeypot)
+      await forgotPassword(email, honeypot, captchaToken)
       setSent(true)
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) {
@@ -73,6 +73,8 @@ export default function ForgotPasswordPage() {
         error={error}
         onSubmit={handleSubmit}
         honeypot
+        captcha
+        captchaErrors={fieldErrors.turnstile_token}
         terms={false}
         footer={backToLogin}
       >
