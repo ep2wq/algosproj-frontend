@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { TextWithCode } from '../components/LessonBody'
 import type { T } from './i18n'
 import { longestSubstringFrames, type WindowFrame } from './longestSubstringFrames'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 import { useScrollCue } from './useScrollCue'
 
@@ -43,8 +44,8 @@ function inWindow(frame: WindowFrame, index: number) {
 }
 
 function cellStyle(frame: WindowFrame, index: number) {
-  if (inBest(frame, index)) return 'border-pass bg-pass text-inverse'
-  if (frame.right === index) return 'border-warn bg-warn text-inverse'
+  if (inBest(frame, index)) return 'border-found-line bg-found text-found-ink'
+  if (frame.right === index) return 'border-warn bg-warn text-inverse motion-safe:[[data-travel]_&]:animate-hit'
   if (frame.earlier === index) return 'border-dashed border-warn bg-surface text-ink'
   if (inWindow(frame, index)) return 'border-accent bg-accent-soft text-ink'
   return 'border-muted bg-surface text-ink'
@@ -106,7 +107,7 @@ export default function LongestSubstringVisual() {
   const describedBy = `${id}-hint${inputError ? ` ${id}-error` : ''}`
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -144,7 +145,7 @@ export default function LongestSubstringVisual() {
                     <span className="h-4 text-xs leading-4 font-semibold text-ink">{names[0] ?? ''}</span>
                     <span className="h-4 text-xs leading-4 font-semibold text-ink">{names[1] ?? ''}</span>
                     <span
-                      className={`mt-0.5 flex size-9 items-center justify-center rounded border-2 font-mono text-sm font-medium motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${cellStyle(current, index)}`}
+                      className={`elev-raised mt-0.5 flex size-9 items-center justify-center rounded border-2 font-mono text-sm font-medium motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${cellStyle(current, index)}`}
                     >
                       {letter}
                     </span>
@@ -177,7 +178,7 @@ export default function LongestSubstringVisual() {
                 <th
                   key={entry.letter}
                   scope="col"
-                  className={`min-w-9 px-2 py-1 text-center font-mono font-semibold motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${updated === entry.letter ? 'bg-warn text-inverse' : ''}`}
+                  className={`min-w-9 px-2 py-1 text-center font-mono font-semibold motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${updated === entry.letter ? 'bg-warn text-inverse' : ''}`}
                 >
                   {entry.letter}
                 </th>
@@ -191,7 +192,7 @@ export default function LongestSubstringVisual() {
               {current.last.map((entry) => (
                 <td
                   key={entry.letter}
-                  className={`min-w-9 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${updated === entry.letter ? 'bg-warn text-inverse' : ''}`}
+                  className={`min-w-9 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${updated === entry.letter ? 'bg-warn text-inverse' : ''}`}
                 >
                   {entry.index}
                 </td>
@@ -215,7 +216,7 @@ export default function LongestSubstringVisual() {
           <TextWithCode text={t('longestSubstring.legendWindow')} />
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block h-3.5 w-5 rounded border-2 border-pass bg-pass" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-found-line bg-found" aria-hidden="true" />
           <TextWithCode text={t('longestSubstring.legendBest')} />
         </li>
         <li>{t('common.smallPositions')}</li>
@@ -227,9 +228,7 @@ export default function LongestSubstringVisual() {
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} />
 
       <PlaybackControls playback={playback} />
 
@@ -237,39 +236,41 @@ export default function LongestSubstringVisual() {
         <button type="button" onClick={() => restart(randomExample(text))} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <div className="flex flex-wrap items-end gap-2">
-            <div className="min-w-0 flex-1 basis-40">
-              <label htmlFor={`${id}-input`} className="block text-sm font-medium">
-                {t('longestSubstring.ownWord')}
-              </label>
-              <input
-                id={`${id}-input`}
-                type="text"
-                autoComplete="off"
-                spellCheck={false}
-                dir="ltr"
-                value={customText}
-                onChange={(event) => setCustomText(event.target.value)}
-                placeholder={t('longestSubstring.placeholder')}
-                aria-invalid={Boolean(inputError)}
-                aria-describedby={describedBy}
-                className={`mt-1 block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${inputError ? 'border-fail' : 'border-field hover:border-muted'}`}
-              />
+        <OwnInput>
+          <form onSubmit={handleCustom} noValidate>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="min-w-0 flex-1 basis-40">
+                <label htmlFor={`${id}-input`} className="block text-sm font-medium">
+                  {t('longestSubstring.ownWord')}
+                </label>
+                <input
+                  id={`${id}-input`}
+                  type="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  dir="ltr"
+                  value={customText}
+                  onChange={(event) => setCustomText(event.target.value)}
+                  placeholder={t('longestSubstring.placeholder')}
+                  aria-invalid={Boolean(inputError)}
+                  aria-describedby={describedBy}
+                  className={`mt-1 block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${inputError ? 'border-fail' : 'border-field hover:border-muted'}`}
+                />
+              </div>
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThis')}
+              </button>
             </div>
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThis')}
-            </button>
-          </div>
-          <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={t('longestSubstring.hint', { count: MAX_LETTERS })} />
-          </p>
-          {inputError && (
-            <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError} />
+            <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={t('longestSubstring.hint', { count: MAX_LETTERS })} />
             </p>
-          )}
-        </form>
+            {inputError && (
+              <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError} />
+              </p>
+            )}
+          </form>
+        </OwnInput>
       </div>
     </div>
   )

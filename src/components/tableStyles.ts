@@ -9,9 +9,13 @@ export const row = 'h-11 border-b border-line last:border-b-0 hover:bg-hover'
 export const td = 'px-3 py-2 align-middle'
 // Numbers: end-aligned, mono, digits of one width.
 export const num = 'text-end font-mono tabular-nums'
-export const cardList = 'mt-4 divide-y divide-line rounded-lg border border-line bg-surface md:hidden'
+export const cardList = 'mt-4 overflow-hidden divide-y divide-line rounded-lg border border-line bg-surface md:hidden'
 // A primary link in a row: ink, underlined on hover; the focus ring is the global one.
 export const rowLink = 'rounded text-ink underline-offset-4 hover:underline'
+// Makes the link's whole row (a relative li or tr) the click target: the real link stays the only
+// interactive element and the one keyboard and screen readers see. Other controls in the row need
+// `relative z-10`.
+export const stretchLink = 'after:absolute after:inset-0'
 // One long value (email, id, slug) on one line with an ellipsis; the element keeps the full text
 // (screen readers read it) and a title shows it on hover.
 export const truncate = 'block min-w-0 truncate'

@@ -75,7 +75,7 @@ function TypeChip({ type }: { type: SecurityEventType }) {
 
 function NewChip() {
   const { t } = useTranslation()
-  return <span className="inline-flex shrink-0 items-center rounded border border-accent/50 px-1.5 py-0.5 text-xs font-medium text-accent">{t('admin.security.new')}</span>
+  return <span className="inline-flex shrink-0 items-center rounded border border-accent/50 px-1.5 py-0.5 text-xs font-medium text-accent-text">{t('admin.security.new')}</span>
 }
 
 // A date and time in UTC ("2026-11-05 14:03 UTC"), local time in the title.

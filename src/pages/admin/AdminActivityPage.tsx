@@ -16,7 +16,7 @@ const EMPTY = { event: '', user: '', from: '', to: '', page: '' }
 
 // Each event as a chip with an icon and its word, never colour alone. Login sky, registration pass,
 // bans fail, the rest muted.
-const INFO = 'border-sky-700/40 bg-sky-500/10 text-sky-800 dark:border-sky-300/40 dark:text-sky-300'
+const INFO = 'border-sky-700/40 bg-sky-500/10 text-sky-900 dark:border-sky-300/40 dark:text-sky-300'
 const PASS = 'border-pass/40 bg-pass/10 text-pass'
 const FAIL = 'border-fail/40 bg-fail/10 text-fail'
 const MUTED = 'border-line text-muted'

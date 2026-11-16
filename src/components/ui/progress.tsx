@@ -5,11 +5,14 @@ import { cn } from '@/lib/utils'
 // 6 px line track with an accent fill. Give it aria-label or a ProgressLabel, and getAriaValueText
 // for a translated value.
 function Progress({ className, children, value, ...props }: ProgressPrimitive.Root.Props) {
+  const min = props.min ?? 0
+  const max = props.max ?? 100
+  const fraction = value == null || max <= min ? null : Math.min(1, Math.max(0, (value - min) / (max - min)))
   return (
     <ProgressPrimitive.Root value={value} data-slot="progress" className={cn('flex flex-wrap gap-3', className)} {...props}>
       {children}
       <ProgressTrack>
-        <ProgressIndicator />
+        <ProgressIndicator style={fraction === null ? undefined : { width: '100%', transform: `scaleX(${fraction})` }} />
       </ProgressTrack>
     </ProgressPrimitive.Root>
   )
@@ -29,7 +32,7 @@ function ProgressIndicator({ className, ...props }: ProgressPrimitive.Indicator.
   return (
     <ProgressPrimitive.Indicator
       data-slot="progress-indicator"
-      className={cn('h-full rounded-full bg-accent motion-safe:transition-[width] motion-safe:duration-200 motion-safe:ease-calm', className)}
+      className={cn('h-full origin-left rounded-full bg-accent motion-safe:transition-transform motion-safe:duration-(--dur-state) motion-safe:ease-out rtl:origin-right', className)}
       {...props}
     />
   )

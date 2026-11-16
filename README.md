@@ -168,7 +168,8 @@ Put these in `.env` (copy `.env.example`; `.env` is not committed):
   no widget, no token, and the backend's `TURNSTILE_ENABLED` must be false. Baked in at build time.
   Cloudflare's public test keys: `1x00000000000000000000AA` always passes, `2x00000000000000000000AB` always fails.
 
-Only the theme choice (`theme`), the language choice (`lang`), the sound choice (`sound`) and the
+Only the theme choice (`theme`), the language choice (`lang`), the sound choice (`sound`), the last
+code language (`code-lang`, `src/codeLang.ts`: the editor's and the lesson code tabs' default) and the
 closed cookie notice (`cookie-notice`, value `LEGAL_UPDATED`) are stored in `localStorage`, every read and write in `try`/`catch`. The login is an HttpOnly
 session cookie that JavaScript never sees; a leftover `token` key from the old token login is
 removed once at startup. With storage blocked the app still loads in the dark theme and follows the browser
@@ -188,21 +189,22 @@ such as an old `system`, is ignored (dark).
   script in `index.html` does the same before the first paint, so a light page never flashes
   dark; keep the two in step. The prerendered HTML is dark (`class="dark"` on `<html>` in
   `index.html`), and both set the single `theme-color` meta (the browser bar).
-- The sticky header (`.site-header` in `src/index.css`) is the surface at 92% in both themes
-  (`--header-glass`; over the gray paper it reads as the same white as the footer, and every header
-  text pair stays at 4.5:1 even over black or white with no blur) with a `line` bottom edge. Once
+- The sticky header (`.site-header` in `src/index.css`) is the surface itself in light and the
+  surface at 92% in dark (`--header-glass`; light matches the footer, and every header
+  text pair stays at 4.5:1) with a `line` bottom edge. Once
   the page has scrolled (one IntersectionObserver in `Layout.tsx`) it adds a 14 px backdrop blur. A
   solid surface without `backdrop-filter` support, under `prefers-reduced-transparency` or
   `prefers-contrast: more`. Blur is used nowhere else.
-- Light mode is a cool gray `paper` (#e8ebef) with white `surface` cards, header, footer and
-  inputs; the footer is `surface` with a `line` top edge in both themes. The page itself (body) has
-  a static 18 px dot grid from top to bottom (`--dot-color`: ink at 7% in both themes, so even text
-  sitting on a dot passes: light `fail` 4.57 is the lowest), not printed. Everything dense has a
+- Light mode is a true neutral gray (no blue tint, no white): `paper` #b4b4b4 with `surface` #c8c8c8
+  cards, header, footer and inputs; `accent-text` for accent used as text, `note` for narration and
+  status boxes (`.note-box`, 3 px accent edge in light), `found*` for result cells; the footer is `surface` with a `line` top edge in both themes. The page itself (body) has
+  a static 18 px dot grid from top to bottom (`--dot-color`: black at 12% in light, ink at 7% in dark;
+  text sitting on a dot still passes: light `pass` 4.51 is the lowest), not printed. Everything dense has a
   solid background, so dots never show behind code, the editor, tables or inputs.
 - More tokens: `hover` (the soft background of a hovered or keyboard-focused ghost button, menu
   item or table row), `code` (every code area: the landing sample, lesson code, examples and output
-  values; never `paper`, so code inside a white card does not melt into the page), `band` (the
-  landing CTA band: white with a line border in light, near black in dark) and the `syntax-*`
+  values; never `paper`, so code inside a card does not melt into the page), `band` (the
+  landing CTA band: the surface with a line border in light, near black in dark) and the `syntax-*`
   colours (keyword, function, number, string, comment, operator; each at least 4.5:1 on `code`;
   never emerald or lime, which mean the accent and "passed"). Rule: nothing inside a card uses
   `paper` as its background, except the visualizations' "ruled out" cell state.
@@ -232,9 +234,40 @@ such as an old `system`, is ignored (dark).
   floating things (the site menu panel, skip link) and uses `shadow-(--float-shadow)`, a plain `:root`
   variable redefined in `.dark`, not a `@theme` value, because Tailwind would bake the light
   value into the utility. Every animation or transition in a component is behind `motion-safe:`:
-  nothing moves under `prefers-reduced-motion`, nothing loops, nothing autoplays. A base rule in
-  `src/index.css` gives links, buttons, selects and inputs a short colour transition, only when
-  motion is allowed and never inside Monaco.
+  nothing moves under `prefers-reduced-motion`, nothing loops, nothing autoplays (the 404's search
+  plays once by itself, and opens on its last step under reduced motion). A base rule in
+  `src/index.css` gives links, buttons, selects and inputs a `--dur-micro` transition of colour,
+  transform and scale, only when motion is allowed and never inside Monaco.
+- Motion system. Tokens in `src/index.css` (`@theme static`), mirrored in `src/motion.ts` for
+  JS-driven animation (change both together): durations `--dur-micro` 120 ms (press, hover),
+  `--dur-ui` 200 (menus, chips, colour changes), `--dur-state` 250 (state changes), `--dur-move` 350
+  (things travelling), `--dur-max` 500 (nothing longer, except visualization moves at slow speed);
+  easings `--ease-out`, `--ease-in-out` and `--ease-settle` (overshoots a little: follow-through
+  only, never on text-heavy UI), usable as `ease-out`, `ease-in-out`, `ease-settle` and
+  `duration-(--dur-ui)`. Keyframes: `check-draw` (a pass's check), `bump` (header points), `pop` (a
+  passed result badge), `shake` (an invalid field or a failed result: two cycles of 4 px, symmetric,
+  so the same in RTL; `shakeElement` in `src/lib/normalize.ts` replays it), `appear`, `pulse-twice`
+  (the Submit busy cells use it once, `animate-pulse-once`); in visualizations `animate-hit` (the
+  current piece pulses once) and `animate-step-text`. A pressed button scales to 0.97 (the old 150 ms
+  colour transition with a 1 px move down is gone). Elevation: `elev-surface`, `elev-raised` (a 1 px
+  bottom edge that goes when pressed), `elev-raised-svg`, `elev-floating`. Menu and Date panels
+  are `.disclosure-panel` (`visibility` and opacity, set by `data-open`): they fade and drop in,
+  close in 70% of the time, and no longer use the `hidden` attribute.
+- Submit strip: Submit sits right under the editor on the end side, the largest control of the
+  block. On a phone or touch screen the strip sticks to the bottom of the screen, above the cookie
+  notice, while the block is on screen. A failed submit shows its message on the start side and
+  shakes once; the result summary is a named group that takes focus (that announces it).
+
+## Keyboard shortcuts
+
+`src/shortcuts.ts`, `ShortcutsHost` in `Layout`, `ShortcutsDialog` (a lazy chunk, opened by `?` or
+"Keyboard shortcuts" in the More menu). None fires while typing in a field, a select or Monaco, or
+while a dialog is open. `/` focuses the page's search field (`data-search-input`, the filter bar's);
+`?` opens the list; Ctrl+Enter (Cmd+Enter on Apple devices) submits from anywhere in the editor block
+or the result, Monaco included, and does nothing while a submit runs. In a visualization (focus inside
+it): Space plays or pauses, Left and Right step back and forward (the drawing runs left to right in
+both languages); Space keeps activating a focused button, and the arrows keep scrolling a drawing
+that scrolls sideways. Esc closes a dialog.
 
 ## UI components (shadcn/ui)
 
@@ -871,6 +904,13 @@ Frame design decisions:
   with best[amount] still INF and prints -1. House robber names take, skip or equal per house.
   The DP visuals' step text is not announced while playing (`aria-live` off), only when
   paused or stopped.
+- Motion in visualizations: a step reached by playing forward moves the drawing between poses
+  (`useFlip`: pieces marked `data-flip` travel from their old place with transform and opacity only;
+  measured when the step, Reset or the input changes, or the box is resized, not on every render).
+  Step back/forward, Reset, new input and reduced motion jump to the pose. `usePlayback` sets
+  `--dur-move` from the speed (`moveDuration` in `src/motion.ts`: never more than 80% of a step) and
+  the step text (`StepText`) waits for the move, then fades in. The progress fill under the
+  transport is `dir="ltr"`: it fills left to right in both languages, like the stage and the buttons.
 - DP tables: knapsack draws the lesson's example table `[i][w]` (one row per item), not the
   one-row downward loop of its code. The LCS traceback goes diagonally on equal letters, else
   to the larger neighbour (up on a tie), and stops on row 0 or column 0; the edit distance

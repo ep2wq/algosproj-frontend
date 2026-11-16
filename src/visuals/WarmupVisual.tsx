@@ -1,8 +1,9 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { normalizeNumberInput, shakeElement } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import type { T } from './i18n'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 import { PROMPT, SOLUTIONS, warmupFrames, type WarmupFrame } from './warmupFrames'
 
@@ -11,7 +12,7 @@ type Language = keyof typeof SOLUTIONS
 
 // Returns the number, or an error message to show.
 function parseNumber(text: string, t: T): number | string {
-  const trimmed = text.trim()
+  const trimmed = normalizeNumberInput(text)
   if (!/^-?\d+$/.test(trimmed) || Math.abs(Number(trimmed)) > LIMIT) return t('warmup.invalid', { limit: LIMIT })
   return Number(trimmed) || 0 // turns -0 into 0
 }
@@ -58,15 +59,17 @@ export default function WarmupVisual() {
     const parsed = parseNumber(customText, t)
     if (typeof parsed === 'string') {
       setInputError(parsed)
+      shakeElement(event.currentTarget.querySelector('input'))
       return
     }
     setInputError('')
+    setCustomText(String(parsed))
     setN(parsed)
     goTo(0)
   }
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <div>
           <label htmlFor={`${id}-language`} className="text-sm font-medium">
@@ -95,7 +98,7 @@ export default function WarmupVisual() {
           </p>
           <p
             dir="ltr"
-            className={`mt-2 rounded border-2 px-2 py-1 font-mono text-sm break-all motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
+            className={`elev-raised mt-2 rounded border-2 px-2 py-1 font-mono text-sm break-all motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${
               inputRead ? 'border-line bg-paper text-muted' : 'border-warn bg-surface text-ink'
             }`}
           >
@@ -112,7 +115,7 @@ export default function WarmupVisual() {
             {lines.map(([key, text], index) => (
               <code
                 key={index}
-                className={`block px-2 whitespace-pre motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
+                className={`block px-2 whitespace-pre motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${
                   key !== '' && key === current.line ? 'bg-warn text-inverse' : ''
                 }`}
               >
@@ -154,9 +157,7 @@ export default function WarmupVisual() {
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} />
 
       <PlaybackControls playback={playback} />
 

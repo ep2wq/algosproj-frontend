@@ -80,7 +80,7 @@ export default function AdminUserPage() {
           {loadError}
         </p>
         <ReportProblemButton context={{ message: loadError }} className={`mt-2 ${secondaryButton}`} />
-        <Link to="/admin/users" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
+        <Link to="/admin/users" className="mt-4 inline-block rounded text-accent-text underline underline-offset-2">
           {t('admin.user.backToUsers')}
         </Link>
       </div>
@@ -96,7 +96,7 @@ export default function AdminUserPage() {
 
   return (
     <div className="max-w-4xl">
-      <Link to="/admin/users" className="rounded text-sm text-muted hover:text-accent">
+      <Link to="/admin/users" className="rounded text-sm text-muted hover:text-accent-text">
         {t('admin.nav.users')}
       </Link>
       <div className="mt-2 flex flex-wrap items-center gap-2">

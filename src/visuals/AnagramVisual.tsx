@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { TextWithCode } from '../components/LessonBody'
 import { anagramFrames, type AnagramFrame } from './anagramFrames'
 import type { T } from './i18n'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 import { useScrollCue } from './useScrollCue'
 
@@ -52,7 +53,7 @@ function parseWord(text: string, name: string, t: T): string | { message: string
 
 function letterStyle(frame: AnagramFrame, word: Field, index: number) {
   const active = frame.pass === word && frame.index === index
-  if (active) return frame.below !== null ? 'border-fail bg-fail text-inverse' : 'border-warn bg-warn text-inverse'
+  if (active) return frame.below !== null ? 'border-fail bg-fail text-inverse' : 'border-warn bg-warn text-inverse motion-safe:[[data-travel]_&]:animate-hit'
   const read = frame.pass === 'done' || (frame.pass === 't' && (word === 's' || index < frame.index!)) || (frame.pass === 's' && word === 's' && index < frame.index!)
   if (read) return 'border-line bg-paper text-muted'
   return 'border-muted bg-surface text-ink'
@@ -61,7 +62,7 @@ function letterStyle(frame: AnagramFrame, word: Field, index: number) {
 function countStyle(frame: AnagramFrame, letter: string) {
   if (frame.below === letter) return 'bg-fail text-inverse'
   if (frame.changed === letter) return 'bg-warn text-inverse'
-  if (frame.pass === 'done') return 'bg-pass text-inverse'
+  if (frame.pass === 'done') return 'bg-found text-found-ink'
   return ''
 }
 
@@ -89,7 +90,7 @@ function WordRow({ frame, word }: { frame: AnagramFrame; word: Field }) {
           {[...text].map((letter, index) => (
             <div key={index} className="flex flex-col items-center">
               <span
-                className={`flex size-8 items-center justify-center rounded border-2 font-mono text-sm font-medium motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${letterStyle(frame, word, index)}`}
+                className={`elev-raised flex size-8 items-center justify-center rounded border-2 font-mono text-sm font-medium motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${letterStyle(frame, word, index)}`}
               >
                 {letter}
               </span>
@@ -146,7 +147,7 @@ export default function AnagramVisual() {
     }`
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -182,7 +183,7 @@ export default function AnagramVisual() {
               </th>
               {current.counts.length === 0 && <td className="px-2 py-1 text-muted">{tr('anagram.tableEmpty')}</td>}
               {current.counts.map((entry) => (
-                <th key={entry.letter} scope="col" className={`min-w-9 px-2 py-1 text-center font-mono font-semibold motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${countStyle(current, entry.letter)}`}>
+                <th key={entry.letter} scope="col" className={`min-w-9 px-2 py-1 text-center font-mono font-semibold motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${countStyle(current, entry.letter)}`}>
                   {entry.letter}
                 </th>
               ))}
@@ -193,7 +194,7 @@ export default function AnagramVisual() {
               </th>
               {current.counts.length === 0 && <td className="px-2 py-1 text-muted">-</td>}
               {current.counts.map((entry) => (
-                <td key={entry.letter} className={`min-w-9 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${countStyle(current, entry.letter)}`}>
+                <td key={entry.letter} className={`min-w-9 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${countStyle(current, entry.letter)}`}>
                   {entry.count}
                 </td>
               ))}
@@ -212,7 +213,7 @@ export default function AnagramVisual() {
           <TextWithCode text={tr('anagram.legendBelow')} />
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block h-3.5 w-5 rounded border-2 border-pass bg-pass" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-found-line bg-found" aria-hidden="true" />
           <TextWithCode text={tr('anagram.legendZero')} />
         </li>
         <li>{tr('common.smallPositions')}</li>
@@ -224,9 +225,7 @@ export default function AnagramVisual() {
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} />
 
       <PlaybackControls playback={playback} />
 
@@ -234,57 +233,59 @@ export default function AnagramVisual() {
         <button type="button" onClick={() => restart(randomExample())} className={buttonClass}>
           {tr('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <div className="flex flex-wrap items-end gap-2">
-            <div className="min-w-0 flex-1 basis-28">
-              <label htmlFor={`${id}-s`} className="block text-sm font-medium">
-                <TextWithCode text={tr('anagram.ownS')} />
-              </label>
-              <input
-                id={`${id}-s`}
-                type="text"
-                autoComplete="off"
-                spellCheck={false}
-                value={sText}
-                onChange={(event) => setSText(event.target.value)}
-                dir="ltr"
-                placeholder={tr('anagram.placeholderS')}
-                aria-invalid={inputError?.field === 's'}
-                aria-describedby={describedBy('s')}
-                className={`mt-1 ${inputClass('s')}`}
-              />
+        <OwnInput>
+          <form onSubmit={handleCustom} noValidate>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="min-w-0 flex-1 basis-28">
+                <label htmlFor={`${id}-s`} className="block text-sm font-medium">
+                  <TextWithCode text={tr('anagram.ownS')} />
+                </label>
+                <input
+                  id={`${id}-s`}
+                  type="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={sText}
+                  onChange={(event) => setSText(event.target.value)}
+                  dir="ltr"
+                  placeholder={tr('anagram.placeholderS')}
+                  aria-invalid={inputError?.field === 's'}
+                  aria-describedby={describedBy('s')}
+                  className={`mt-1 ${inputClass('s')}`}
+                />
+              </div>
+              <div className="min-w-0 flex-1 basis-28">
+                <label htmlFor={`${id}-t`} className="block text-sm font-medium">
+                  <TextWithCode text={tr('anagram.ownT')} />
+                </label>
+                <input
+                  id={`${id}-t`}
+                  type="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={tText}
+                  onChange={(event) => setTText(event.target.value)}
+                  dir="ltr"
+                  placeholder={tr('anagram.placeholderT')}
+                  aria-invalid={inputError?.field === 't'}
+                  aria-describedby={describedBy('t')}
+                  className={`mt-1 ${inputClass('t')}`}
+                />
+              </div>
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {tr('common.useThese')}
+              </button>
             </div>
-            <div className="min-w-0 flex-1 basis-28">
-              <label htmlFor={`${id}-t`} className="block text-sm font-medium">
-                <TextWithCode text={tr('anagram.ownT')} />
-              </label>
-              <input
-                id={`${id}-t`}
-                type="text"
-                autoComplete="off"
-                spellCheck={false}
-                value={tText}
-                onChange={(event) => setTText(event.target.value)}
-                dir="ltr"
-                placeholder={tr('anagram.placeholderT')}
-                aria-invalid={inputError?.field === 't'}
-                aria-describedby={describedBy('t')}
-                className={`mt-1 ${inputClass('t')}`}
-              />
-            </div>
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {tr('common.useThese')}
-            </button>
-          </div>
-          <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={tr('anagram.hint', { count: MAX_LETTERS })} />
-          </p>
-          {inputError && (
-            <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError.message} />
+            <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={tr('anagram.hint', { count: MAX_LETTERS })} />
             </p>
-          )}
-        </form>
+            {inputError && (
+              <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError.message} />
+              </p>
+            )}
+          </form>
+        </OwnInput>
       </div>
     </div>
   )

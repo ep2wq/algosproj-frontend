@@ -1,11 +1,17 @@
-import { useId, useMemo, useState, type FormEvent } from 'react'
+import { useId, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { normalizeNumberInput, numberParts, westernDigits } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import type { T } from './i18n'
-import PlaybackControls, { buttonClass, demoCaptionClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { bracketFrames, nextGreaterFrames, postfixError, postfixFrames, type StackFrame, type StackMode } from './stackFrames'
+import { useFlip } from './useFlip'
 import { usePlayback } from './usePlayback'
 import { useCentreCells, useScrollCue } from './useScrollCue'
+
+// The name of the reading position, drawn above its cell.
+const POINTER = 'i'
 
 function randomInt(min: number, max: number) {
   return min + Math.floor(Math.random() * (max - min + 1))
@@ -67,7 +73,7 @@ function parseBrackets(text: string, t: T): Parsed {
 }
 
 function parsePostfix(text: string, t: T): Parsed {
-  const tokens = text.trim().split(/\s+/).filter(Boolean)
+  const tokens = westernDigits(text).trim().split(/\s+/).filter(Boolean)
   if (tokens.length === 0) return { error: t('stack.atLeastOneToken') }
   if (tokens.length > 9) return { error: t('stack.tooManyTokens', { count: 9 }) }
   // The problem's token range: numbers are 0 to 1000. Negative values only appear as results.
@@ -80,7 +86,7 @@ function parsePostfix(text: string, t: T): Parsed {
 }
 
 function parseNumbers(text: string, t: T): Parsed {
-  const parts = text.split(/[\s,]+/).filter(Boolean)
+  const parts = numberParts(text)
   if (parts.length === 0) return { error: t('common.atLeastOneNumber') }
   if (parts.length > 12) return { error: t('common.atMostNumbers', { count: 12 }) }
   if (parts.some((part) => !/^-?\d+$/.test(part) || Number(part) < -99 || Number(part) > 99)) {
@@ -98,7 +104,7 @@ const MODES = {
 }
 
 function itemStyle(frame: StackFrame, index: number) {
-  if (frame.current === index) return 'border-warn bg-warn text-inverse'
+  if (frame.current === index) return 'border-warn bg-warn text-inverse motion-safe:[[data-travel]_&]:animate-hit'
   const read = frame.current === null ? frame.result !== null : index < frame.current
   return read ? 'border-line bg-paper text-muted' : 'border-muted bg-surface text-ink'
 }
@@ -132,6 +138,11 @@ export default function StackVisual({ mode, demo }: { mode: StackMode; demo?: st
   // With no position being read: the start before the first step, the end once there is a result.
   const focusIndex = current.current ?? (current.result !== null ? current.items.length - 1 : 0)
   useCentreCells(scrollRef, focusIndex, focusIndex, source)
+  // While it plays, the i pointer slides to the next position (that cell pulses once), a pushed item
+  // fades in on top of the stack and the items under it slide down to make room.
+  useFlip(scrollRef, playback)
+  const stackRef = useRef<HTMLDivElement>(null)
+  useFlip(stackRef, playback)
 
   function restart(nextSource: string) {
     setSource(nextSource)
@@ -146,13 +157,15 @@ export default function StackVisual({ mode, demo }: { mode: StackMode; demo?: st
       return
     }
     setInputError('')
-    restart(customText)
+    const clean = mode === 'next-greater' ? normalizeNumberInput(customText) : mode === 'postfix' ? westernDigits(customText).trim() : customText
+    setCustomText(clean)
+    restart(clean)
   }
 
   const showAnswers = current.answers !== null
 
   return (
-    <div className={demo === undefined ? 'mt-4 max-w-5xl' : undefined}>
+    <div className={demo === undefined ? 'mt-4 max-w-5xl' : undefined} {...playback.rootProps}>
       {demo === undefined && (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <SpeedSelect playback={playback} />
@@ -176,18 +189,18 @@ export default function StackVisual({ mode, demo }: { mode: StackMode; demo?: st
             {current.items.length === 0 && <p className="text-sm text-muted">{t('stack.noCharacters')}</p>}
             {current.items.map((item, index) => (
               <div key={index} data-index={index} className="flex min-w-10 flex-col items-center">
-                <span className="h-4 text-xs font-semibold text-ink">{current.current === index ? 'i' : ''}</span>
+                <span className="h-4 text-xs font-semibold text-ink">{current.current === index && <span data-flip="pointer-i">{POINTER}</span>}</span>
                 <span
-                  className={`mt-0.5 flex h-10 min-w-10 items-center justify-center rounded border-2 px-1 font-mono font-medium motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${itemStyle(current, index)}`}
+                  className={`elev-raised mt-0.5 flex h-10 min-w-10 items-center justify-center rounded border-2 px-1 font-mono font-medium motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${itemStyle(current, index)}`}
                 >
                   {item}
                 </span>
                 <span className="mt-0.5 font-mono text-xs text-muted tabular-nums">{index}</span>
                 {showAnswers && (
                   <span
-                    className={`mt-1 flex h-8 w-10 items-center justify-center rounded border text-sm tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
+                    className={`mt-1 flex h-8 w-10 items-center justify-center rounded border text-sm tabular-nums motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${
                       current.filled.includes(index)
-                        ? 'border-pass bg-pass text-inverse'
+                        ? 'border-found-line bg-found text-found-ink'
                         : current.answers![index] === null
                           ? 'border-dashed border-line text-muted'
                           : 'border-line bg-surface text-ink'
@@ -205,7 +218,7 @@ export default function StackVisual({ mode, demo }: { mode: StackMode; demo?: st
           <p className="text-sm font-medium">
             <TextWithCode text={t('stack.stackTitle')} />
           </p>
-          <div role="img" aria-label={stackLabel(current, t)} dir="ltr" className="mt-1 flex flex-col gap-1">
+          <div ref={stackRef} role="img" aria-label={stackLabel(current, t)} dir="ltr" className="mt-1 flex flex-col gap-1">
             {current.stack.length === 0 ? (
               <span className="flex h-10 items-center justify-center rounded border-2 border-dashed border-line text-sm text-muted">
                 {t('stack.empty')}
@@ -214,7 +227,10 @@ export default function StackVisual({ mode, demo }: { mode: StackMode; demo?: st
               [...current.stack].reverse().map((item, position) => (
                 <div key={current.stack.length - 1 - position}>
                   {position === 0 && <span className="block text-xs font-semibold text-ink">top</span>}
-                  <span className="flex min-h-10 flex-col items-center justify-center rounded border-2 border-accent bg-accent-soft px-2 py-1 font-mono font-medium">
+                  <span
+                    data-flip={`item-${current.stack.length - 1 - position}`}
+                    className="elev-raised flex min-h-10 flex-col items-center justify-center rounded border-2 border-accent bg-accent-soft px-2 py-1 font-mono font-medium"
+                  >
                     {item.text}
                     {item.index !== undefined && <span className="font-sans text-xs font-normal text-muted">{t('stack.indexChip', { index: item.index })}</span>}
                   </span>
@@ -239,7 +255,7 @@ export default function StackVisual({ mode, demo }: { mode: StackMode; demo?: st
             </li>
             {showAnswers && (
               <li className="flex items-center gap-1.5">
-                <span className="inline-block size-3 rounded-sm border border-pass bg-pass" aria-hidden="true" />
+                <span className="inline-block size-3 rounded-sm border border-found-line bg-found" aria-hidden="true" />
                 {t('stack.legendAnswer')}
               </li>
             )}
@@ -254,9 +270,7 @@ export default function StackVisual({ mode, demo }: { mode: StackMode; demo?: st
         </>
       )}
 
-      <p aria-live={demo === undefined ? 'polite' : undefined} className={demo === undefined ? 'mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm' : demoCaptionClass}>
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} demo={demo !== undefined} />
 
       <PlaybackControls playback={playback} wide={demo !== undefined} />
 
@@ -265,39 +279,41 @@ export default function StackVisual({ mode, demo }: { mode: StackMode; demo?: st
           <button type="button" onClick={() => restart(config.random(t))} className={buttonClass}>
             {t('common.newRandomExample')}
           </button>
-          <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-            <label htmlFor={`${id}-input`} className="block text-sm font-medium">
-              {t(`stack.${mode}.inputLabel`)}
-            </label>
-            <div className="mt-1 flex flex-col gap-2 sm:flex-row">
-              <input
-                id={`${id}-input`}
-                type="text"
-                autoComplete="off"
-                spellCheck={false}
-                dir="ltr"
-                value={customText}
-                onChange={(event) => setCustomText(event.target.value)}
-                placeholder={t(`stack.${mode}.placeholder`)}
-                aria-invalid={Boolean(inputError)}
-                aria-describedby={`${id}-input-hint${inputError ? ` ${id}-input-error` : ''}`}
-                className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${
-                  inputError ? 'border-fail' : 'border-field hover:border-muted'
-                }`}
-              />
-              <button type="submit" className={`${buttonClass} shrink-0`}>
-                {t('common.useThis')}
-              </button>
-            </div>
-            <p id={`${id}-input-hint`} className="mt-1 text-xs text-muted">
-              <TextWithCode text={t(`stack.${mode}.hint`)} />
-            </p>
-            {inputError && (
-              <p id={`${id}-input-error`} role="alert" className="mt-1 text-sm text-fail">
-                <TextWithCode text={inputError} />
+          <OwnInput>
+            <form onSubmit={handleCustom} noValidate>
+              <label htmlFor={`${id}-input`} className="block text-sm font-medium">
+                {t(`stack.${mode}.inputLabel`)}
+              </label>
+              <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+                <input
+                  id={`${id}-input`}
+                  type="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  dir="ltr"
+                  value={customText}
+                  onChange={(event) => setCustomText(event.target.value)}
+                  placeholder={t(`stack.${mode}.placeholder`)}
+                  aria-invalid={Boolean(inputError)}
+                  aria-describedby={`${id}-input-hint${inputError ? ` ${id}-input-error` : ''}`}
+                  className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${
+                    inputError ? 'border-fail' : 'border-field hover:border-muted'
+                  }`}
+                />
+                <button type="submit" className={`${buttonClass} shrink-0`}>
+                  {t('common.useThis')}
+                </button>
+              </div>
+              <p id={`${id}-input-hint`} className="mt-1 text-xs text-muted">
+                <TextWithCode text={t(`stack.${mode}.hint`)} />
               </p>
-            )}
-          </form>
+              {inputError && (
+                <p id={`${id}-input-error`} role="alert" className="mt-1 text-sm text-fail">
+                  <TextWithCode text={inputError} />
+                </p>
+              )}
+            </form>
+          </OwnInput>
         </div>
       )}
     </div>

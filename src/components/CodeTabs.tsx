@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Language } from '../api'
 import type { CodeTab } from '../lessonText'
+import { readCodeLang, saveCodeLang } from '../codeLang'
 import { LANGUAGE_LABELS } from '../starters'
 import { highlight, TOKEN_CLASS } from '../syntax'
 import { useScrollCue } from '../visuals/useScrollCue'
@@ -10,13 +11,16 @@ import { TextWithCode } from './LessonBody'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 
 // A lesson's run of "## Python", "## Java"... sections as one code block with a tab per language
-// (lessonText.ts lessonItems decides when). Python opens first: the problem editor does not keep the
-// last language anywhere. The code has static syntax colours (src/syntax.ts), or none if the pieces
+// (lessonText.ts lessonItems decides when). It opens on the last language picked (codeLang.ts), else Python. The code has static syntax colours (src/syntax.ts), or none if the pieces
 // would not give back the exact text. A heading's extra words and a short paragraph after the code
 // show as small notes under it. Copy copies the exact code and says so in a status line.
 export default function CodeTabs({ tabs }: { tabs: CodeTab[] }) {
   const { t } = useTranslation()
-  const [value, setValue] = useState<Language>(tabs.some((tab) => tab.language === 'python') ? 'python' : tabs[0].language)
+  const [value, setValue] = useState<Language>(() => {
+    const stored = readCodeLang()
+    if (stored && tabs.some((tab) => tab.language === stored)) return stored
+    return tabs.some((tab) => tab.language === 'python') ? 'python' : tabs[0].language
+  })
   const [copied, setCopied] = useState(false)
   const timer = useRef<number | undefined>(undefined)
   const [tabRow, moreTabs] = useScrollCue<HTMLDivElement>()
@@ -29,13 +33,16 @@ export default function CodeTabs({ tabs }: { tabs: CodeTab[] }) {
       .then(() => {
         setCopied(true)
         window.clearTimeout(timer.current)
-        timer.current = window.setTimeout(() => setCopied(false), 2000)
+        timer.current = window.setTimeout(() => setCopied(false), 1500)
       })
       .catch(() => {})
   }
 
   return (
-    <Tabs value={value} onValueChange={(next) => setValue(next as Language)} className="mt-6 overflow-hidden rounded-lg border border-line bg-code">
+    <Tabs value={value} onValueChange={(next) => {
+        setValue(next as Language)
+        saveCodeLang(next as Language)
+      }} className="mt-6 overflow-hidden rounded-lg border border-line bg-code">
       <div className="flex items-stretch border-b border-line bg-surface">
         <TabsList ref={tabRow} aria-label={t('lesson.codeTabs')} className={`min-w-0 flex-1 border-b-0 px-1 ${moreTabs ? 'scroll-fade' : ''}`}>
           {tabs.map((tab) => (

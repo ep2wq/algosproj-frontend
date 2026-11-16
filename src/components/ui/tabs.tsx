@@ -29,7 +29,7 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
       className={cn(
         // The row clips anything outside it, so the focus outline is drawn inside the tab.
         'inline-flex min-h-11 shrink-0 focus-visible:outline-offset-[-2px]! items-center justify-center gap-1.5 border-b-2 px-2.5 text-sm font-medium whitespace-nowrap sm:px-4 sm:text-base',
-        'aria-selected:border-accent aria-selected:text-ink aria-[selected=false]:border-transparent aria-[selected=false]:text-muted aria-[selected=false]:hover:border-line aria-[selected=false]:hover:text-accent',
+        'aria-selected:border-accent aria-selected:text-ink aria-[selected=false]:border-transparent aria-[selected=false]:text-muted aria-[selected=false]:hover:border-line aria-[selected=false]:hover:text-accent-text',
         'disabled:cursor-not-allowed disabled:opacity-60 aria-disabled:cursor-not-allowed aria-disabled:opacity-60 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4',
         className,
       )}

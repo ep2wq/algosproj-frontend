@@ -1,9 +1,11 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { normalizeNumberInput, numberParts, shakeElement } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import { binarySearchFrames } from './binarySearchFrames'
 import type { T } from './i18n'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 import SearchCells, { CELL_STYLES } from './SearchCells'
 
@@ -28,7 +30,7 @@ function randomCase() {
 
 // Returns the sorted numbers, or an error message to show.
 function parseNumbers(text: string, t: T): number[] | string {
-  const parts = text.split(/[\s,]+/).filter(Boolean)
+  const parts = numberParts(text)
   if (parts.length === 0) return t('common.atLeastOneNumber')
   if (parts.length > MAX_NUMBERS) return t('common.atMostNumbers', { count: MAX_NUMBERS })
   if (parts.some((part) => !/^\d+$/.test(part) || Number(part) < 1 || Number(part) > 99)) {
@@ -40,7 +42,7 @@ function parseNumbers(text: string, t: T): number[] | string {
 }
 
 function parseTarget(text: string, t: T): number | string {
-  const trimmed = text.trim()
+  const trimmed = normalizeNumberInput(text)
   if (!/^\d+$/.test(trimmed) || Number(trimmed) < 1 || Number(trimmed) > 99) return t('binarySearch.targetInvalid')
   return Number(trimmed)
 }
@@ -82,9 +84,11 @@ export default function BinarySearchVisual() {
     const parsed = parseTarget(targetText, t)
     if (typeof parsed === 'string') {
       setTargetError(parsed)
+      shakeElement(event.currentTarget.querySelector('input'))
       return
     }
     setTargetError('')
+    setTargetText(String(parsed))
     setTarget(parsed)
     goTo(0)
   }
@@ -97,12 +101,13 @@ export default function BinarySearchVisual() {
       return
     }
     setInputError('')
+    setCustomText(normalizeNumberInput(customText))
     setArray(parsed)
     goTo(0)
   }
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
         <form onSubmit={handleTarget} noValidate>
           <label htmlFor={`${id}-target`} className="text-sm font-medium">
@@ -111,7 +116,7 @@ export default function BinarySearchVisual() {
           <input
             id={`${id}-target`}
             type="text"
-            inputMode="numeric"
+            inputMode="text"
             dir="ltr"
             value={targetText}
             onChange={(event) => setTargetText(event.target.value)}
@@ -135,6 +140,7 @@ export default function BinarySearchVisual() {
 
       <SearchCells
         frame={current}
+        playback={playback}
         regionLabel={t('binarySearch.region')}
         imageLabel={t('binarySearch.label', { values: current.array.join(', '), target })}
       />
@@ -151,9 +157,7 @@ export default function BinarySearchVisual() {
         </li>
       </ul>
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} />
 
       <PlaybackControls playback={playback} />
 
@@ -161,38 +165,40 @@ export default function BinarySearchVisual() {
         <button type="button" onClick={handleRandom} className={buttonClass}>
           <TextWithCode text={t('common.newRandomArray')} />
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <label htmlFor={`${id}-numbers`} className="block text-sm font-medium">
-            {t('common.yourOwnNumbers')}
-          </label>
-          <div className="mt-1 flex flex-col gap-2 sm:flex-row">
-            <input
-              id={`${id}-numbers`}
-              type="text"
-              inputMode="numeric"
-              dir="ltr"
-              value={customText}
-              onChange={(event) => setCustomText(event.target.value)}
-              placeholder={t('binarySearch.placeholder')}
-              aria-invalid={Boolean(inputError)}
-              aria-describedby={`${id}-numbers-hint${inputError ? ` ${id}-numbers-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
-                inputError ? 'border-fail' : 'border-field hover:border-muted'
-              }`}
-            />
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThese')}
-            </button>
-          </div>
-          <p id={`${id}-numbers-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={t('binarySearch.hint', { count: MAX_NUMBERS })} />
-          </p>
-          {inputError && (
-            <p id={`${id}-numbers-error`} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError} />
+        <OwnInput>
+          <form onSubmit={handleCustom} noValidate>
+            <label htmlFor={`${id}-numbers`} className="block text-sm font-medium">
+              {t('common.yourOwnNumbers')}
+            </label>
+            <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+              <input
+                id={`${id}-numbers`}
+                type="text"
+                inputMode="text"
+                dir="ltr"
+                value={customText}
+                onChange={(event) => setCustomText(event.target.value)}
+                placeholder={t('binarySearch.placeholder')}
+                aria-invalid={Boolean(inputError)}
+                aria-describedby={`${id}-numbers-hint${inputError ? ` ${id}-numbers-error` : ''}`}
+                className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
+                  inputError ? 'border-fail' : 'border-field hover:border-muted'
+                }`}
+              />
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThese')}
+              </button>
+            </div>
+            <p id={`${id}-numbers-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={t('binarySearch.hint', { count: MAX_NUMBERS })} />
             </p>
-          )}
-        </form>
+            {inputError && (
+              <p id={`${id}-numbers-error`} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError} />
+              </p>
+            )}
+          </form>
+        </OwnInput>
       </div>
     </div>
   )

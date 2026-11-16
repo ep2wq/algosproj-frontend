@@ -1,17 +1,22 @@
 import { CalendarDays, ChevronDown, Search, X } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type FocusEvent, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
+import { SEARCH_ATTRIBUTE } from '../shortcuts'
 
 // One line of filters on a surface card (admin lists and Challenges): a search field, a chip per
 // select, an optional date-range chip with a small popover, extra controls, and "Clear" while
 // something is applied. Text and dates apply 300 ms after the last change (Enter applies the search
 // at once); selects apply on change. All text comes from props, so it works in English and Arabic.
-// Logical classes only, so it follows the page's direction.
+// Logical classes only, so it follows the page's direction. Only the first MAX_VISIBLE filters show;
+// the rest sit behind a "More filters" chip (open on its own while one of them is applied). The search
+// field carries data-search-input, which the "/" shortcut looks for (src/shortcuts.ts).
 
 const DEBOUNCE_MS = 300
+const MAX_VISIBLE = 4
 
 // A chip: 44 px on touch screens, 32 px with a mouse from sm. An applied filter gets the accent border.
 const chipClass = (active: boolean) =>
-  `relative inline-flex min-h-11 items-center gap-1 rounded border bg-surface text-sm text-ink hover:border-muted sm:pointer-fine:min-h-8 ${active ? 'border-accent' : 'border-field'}`
+  `elev-raised relative inline-flex min-h-11 items-center gap-1 rounded border bg-surface text-sm text-ink hover:border-muted sm:pointer-fine:min-h-8 ${active ? 'border-accent' : 'border-field'}`
 
 export type SelectFilter = {
   id: string
@@ -95,6 +100,7 @@ function SearchField({
       <input
         ref={input}
         id={id}
+        {...{ [SEARCH_ATTRIBUTE]: '' }}
         type="text"
         value={draft}
         placeholder={label}
@@ -166,6 +172,12 @@ function DateChip({ filter }: { filter: DateFilter }) {
   const panelId = useId()
   const key = `${from}|${to}`
   useDebounced(key, `${filter.from}|${filter.to}`, () => filter.onChange(from, to))
+  const panel = useRef<HTMLDivElement>(null)
+
+  // Opening moves focus to the From field; Escape (below) puts it back on the chip.
+  useEffect(() => {
+    if (open && !panel.current?.contains(document.activeElement)) panel.current?.querySelector<HTMLElement>('input')?.focus()
+  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -208,9 +220,10 @@ function DateChip({ filter }: { filter: DateFilter }) {
         <ChevronDown aria-hidden="true" className="size-4 text-muted" />
       </button>
       <div
+        ref={panel}
         id={panelId}
-        hidden={!open}
-        className="absolute end-2 top-full z-20 mt-1 w-80 max-w-[calc(100%-1rem)] rounded-lg border border-line bg-surface p-3 shadow-(--float-shadow)"
+        data-open={open ? '' : undefined}
+        className="disclosure-panel elev-floating absolute end-2 top-full z-20 mt-1 w-80 max-w-[calc(100%-1rem)] p-3"
       >
         <div className="grid grid-cols-2 gap-2">
           <div>
@@ -257,20 +270,40 @@ export default function FilterBar({
   meta?: ReactNode
   metaEnd?: ReactNode
 }) {
+  const { t } = useTranslation()
+  // The filters in order (the selects, then the date), the first MAX_VISIBLE in the bar.
+  const filters = [...selects.map((filter) => ({ id: filter.id, active: filter.value !== '', node: <SelectChip filter={filter} /> })), ...(date ? [{ id: 'date', active: Boolean(date.from || date.to), node: <DateChip filter={date} /> }] : [])]
+  const rest = filters.slice(MAX_VISIBLE)
+  const [moreOpen, setMoreOpen] = useState(false)
+  const moreShown = moreOpen || rest.some((filter) => filter.active)
+
   return (
     <div className="mt-6">
       <div role="search" aria-label={label} className="relative flex flex-wrap items-center gap-2 rounded-lg border border-line bg-surface p-2">
         {search && <SearchField {...search} />}
-        {selects.map((filter) => (
-          <SelectChip key={filter.id} filter={filter} />
+        {filters.slice(0, MAX_VISIBLE).map((filter) => (
+          <div key={filter.id} className="contents">
+            {filter.node}
+          </div>
         ))}
-        {date && <DateChip filter={date} />}
+        {rest.length > 0 && (
+          <button type="button" aria-expanded={moreShown} onClick={() => setMoreOpen(!moreShown)} className={`${chipClass(rest.some((filter) => filter.active))} px-2.5`}>
+            {t('filters.more')}
+            <ChevronDown aria-hidden="true" className={`size-4 text-muted motion-safe:transition-transform motion-safe:duration-(--dur-ui) ${moreShown ? 'rotate-180' : ''}`} />
+          </button>
+        )}
+        {moreShown &&
+          rest.map((filter) => (
+            <div key={filter.id} className="contents">
+              {filter.node}
+            </div>
+          ))}
         {extra}
         {active && (
           <button
             type="button"
             onClick={onClear}
-            className="inline-flex min-h-11 items-center rounded px-2 text-sm font-medium text-accent underline-offset-4 hover:underline sm:pointer-fine:min-h-8"
+            className="inline-flex min-h-11 items-center rounded px-2 text-sm font-medium text-accent-text underline-offset-4 hover:underline sm:pointer-fine:min-h-8"
           >
             {clearLabel}
           </button>

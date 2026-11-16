@@ -78,7 +78,7 @@ export default function ResetPasswordPage() {
         <p
           ref={resultRef}
           tabIndex={-1}
-          className={`mt-6 rounded-lg border px-3 py-2 ${done ? 'border-line bg-accent-soft text-ink' : 'border-fail/30 bg-fail/5 text-fail'}`}
+          className={`mt-6 rounded-lg border px-3 py-2 ${done ? 'border-line note-box text-ink' : 'border-fail/30 bg-fail/5 text-fail'}`}
         >
           {t(done ? 'reset.done' : 'reset.invalid')}
         </p>
@@ -106,7 +106,7 @@ export default function ResetPasswordPage() {
         onSubmit={handleSubmit}
         terms={false}
         footer={
-          <Link to="/login" className="inline-flex min-h-11 items-center rounded text-accent underline underline-offset-2 sm:pointer-fine:min-h-6">
+          <Link to="/login" className="inline-flex min-h-11 items-center rounded text-accent-text underline underline-offset-2 sm:pointer-fine:min-h-6">
             {t('forgot.backToLogin')}
           </Link>
         }

@@ -18,11 +18,11 @@ export default function AboutPage() {
       <LessonBody text={t('about.body', { visuals: formatNumber(VISUALS.size, i18n.language) })} lang={i18n.language} />
       <p className="mt-10 max-w-prose text-muted">
         {t('about.more')}{' '}
-        <Link to="/faq" className="rounded text-accent underline underline-offset-2">
+        <Link to="/faq" className="rounded text-accent-text underline underline-offset-2">
           {t('nav.faq')}
         </Link>{' '}
         <span aria-hidden="true">·</span>{' '}
-        <Link to="/contact" className="rounded text-accent underline underline-offset-2">
+        <Link to="/contact" className="rounded text-accent-text underline underline-offset-2">
           {t('nav.contact')}
         </Link>
       </p>

@@ -35,7 +35,7 @@ type AuthFormProps = {
 function NewTabLink({ href, children }: { href: string; children?: ReactNode }) {
   const { t } = useTranslation()
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="rounded text-accent underline underline-offset-2">
+    <a href={href} target="_blank" rel="noopener noreferrer" className="rounded text-accent-text underline underline-offset-2">
       {children}
       <span className="sr-only"> {t('auth.opensInNewTab')}</span>
     </a>

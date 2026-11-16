@@ -1,11 +1,13 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { numberParts } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import CallTreeDiagram, { CallTreeLegend, type CallMark } from './CallTreeDiagram'
 import type { CallNode } from './callTree'
 import type { T } from './i18n'
 import { permutationFrames, type PermFrame } from './permutationFrames'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 
 // The problem permutes the numbers 1 to n with n up to 6; the visual takes 1 to 4 items of
@@ -33,7 +35,7 @@ function randomItems() {
 
 // Returns the items, or an error message to show.
 function parseItems(text: string, t: T): string[] | string {
-  const parts = text.split(/[\s,]+/).filter(Boolean)
+  const parts = numberParts(text)
   if (parts.length === 0) return t('permutations.noItems', { count: MAX_ITEMS })
   const long = parts.find((part) => part.length > 1)
   if (long !== undefined) return t('permutations.longItem', { item: long })
@@ -103,7 +105,7 @@ export default function PermutationsVisual() {
   const callStack = current.stack.map((call) => tree[call].label)
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -123,8 +125,8 @@ export default function PermutationsVisual() {
               return (
                 <li key={item} className="flex w-14 flex-col items-center">
                   <span
-                    className={`flex size-10 items-center justify-center rounded font-mono text-lg font-semibold motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
-                      current.focus === index ? 'border-4 border-warn' : 'border-2'
+                    className={`elev-raised flex size-10 items-center justify-center rounded font-mono text-lg font-semibold motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${
+                      current.focus === index ? 'border-4 border-warn motion-safe:[[data-travel]_&]:animate-hit' : 'border-2'
                     } ${current.used[index] ? 'border-accent bg-accent-soft text-ink' : 'border-muted bg-surface text-ink'}`}
                   >
                     {item}
@@ -174,7 +176,7 @@ export default function PermutationsVisual() {
         </span>
       </p>
 
-      <CallTreeDiagram nodes={tree} shown={current.shown} markOf={markFor(current)} label={treeLabel(current, tree, t)} />
+      <CallTreeDiagram playback={playback} nodes={tree} shown={current.shown} markOf={markFor(current)} label={treeLabel(current, tree, t)} />
       <CallTreeLegend />
       <p className="mt-1 text-xs text-muted">
         <TextWithCode text={t('permutations.boxNote')} />
@@ -191,7 +193,7 @@ export default function PermutationsVisual() {
         {current.results.map((result, index) => {
           const isNew = current.kind === 'print' && index === current.results.length - 1
           return (
-            <li key={result} className={`rounded border px-1.5 py-0.5 font-mono text-sm ${isNew ? 'border-pass bg-pass text-inverse' : 'border-muted bg-surface'}`}>
+            <li key={result} className={`rounded border px-1.5 py-0.5 font-mono text-sm ${isNew ? 'border-found-line bg-found text-found-ink' : 'border-muted bg-surface'}`}>
               {result}
               {isNew && <span className="ms-1 font-sans text-xs">{t('callTree.new')}</span>}
             </li>
@@ -199,9 +201,7 @@ export default function PermutationsVisual() {
         })}
       </ol>
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} />
 
       <PlaybackControls playback={playback} />
 
@@ -209,39 +209,41 @@ export default function PermutationsVisual() {
         <button type="button" onClick={() => restart(randomItems())} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <label htmlFor={`${id}-items`} className="block text-sm font-medium">
-            {t('permutations.ownItems')}
-          </label>
-          <div className="mt-1 flex flex-col gap-2 sm:flex-row">
-            <input
-              id={`${id}-items`}
-              type="text"
-              autoComplete="off"
-              spellCheck={false}
-              dir="ltr"
-              value={itemsText}
-              onChange={(event) => setItemsText(event.target.value)}
-              placeholder={t('permutations.placeholder')}
-              aria-invalid={Boolean(inputError)}
-              aria-describedby={`${id}-items-hint${inputError ? ` ${id}-items-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${
-                inputError ? 'border-fail' : 'border-field hover:border-muted'
-              }`}
-            />
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThese')}
-            </button>
-          </div>
-          <p id={`${id}-items-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={t('permutations.hint', { count: MAX_ITEMS })} />
-          </p>
-          {inputError && (
-            <p id={`${id}-items-error`} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError} />
+        <OwnInput>
+          <form onSubmit={handleCustom} noValidate>
+            <label htmlFor={`${id}-items`} className="block text-sm font-medium">
+              {t('permutations.ownItems')}
+            </label>
+            <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+              <input
+                id={`${id}-items`}
+                type="text"
+                autoComplete="off"
+                spellCheck={false}
+                dir="ltr"
+                value={itemsText}
+                onChange={(event) => setItemsText(event.target.value)}
+                placeholder={t('permutations.placeholder')}
+                aria-invalid={Boolean(inputError)}
+                aria-describedby={`${id}-items-hint${inputError ? ` ${id}-items-error` : ''}`}
+                className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${
+                  inputError ? 'border-fail' : 'border-field hover:border-muted'
+                }`}
+              />
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThese')}
+              </button>
+            </div>
+            <p id={`${id}-items-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={t('permutations.hint', { count: MAX_ITEMS })} />
             </p>
-          )}
-        </form>
+            {inputError && (
+              <p id={`${id}-items-error`} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError} />
+              </p>
+            )}
+          </form>
+        </OwnInput>
       </div>
     </div>
   )

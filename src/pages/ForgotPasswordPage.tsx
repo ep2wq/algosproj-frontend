@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
     setError('')
     setFieldErrors({})
     try {
-      await forgotPassword(email, honeypot, captchaToken)
+      await forgotPassword(email.trim(), honeypot, captchaToken)
       setSent(true)
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) {
@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
   }
 
   const backToLogin = (
-    <Link to="/login" className="inline-flex min-h-11 items-center rounded text-accent underline underline-offset-2 sm:pointer-fine:min-h-6">
+    <Link to="/login" className="inline-flex min-h-11 items-center rounded text-accent-text underline underline-offset-2 sm:pointer-fine:min-h-6">
       {t('forgot.backToLogin')}
     </Link>
   )
@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
         <title>{t('titles.page', { name: t('forgot.title') })}</title>
         <meta name="robots" content="noindex" />
         <h1 className="text-2xl font-semibold">{t('forgot.title')}</h1>
-        <p ref={sentRef} tabIndex={-1} className="mt-6 rounded-lg border border-line bg-accent-soft px-3 py-2 text-ink">
+        <p ref={sentRef} tabIndex={-1} className="mt-6 rounded-lg border border-line note-box px-3 py-2 text-ink">
           {t('forgot.sent')}
         </p>
         <p className="mt-4 text-sm text-muted">{t('forgot.sentHint')}</p>

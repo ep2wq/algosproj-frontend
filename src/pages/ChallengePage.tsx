@@ -78,7 +78,7 @@ export default function ChallengePage() {
           )}
           <ReportProblemButton error={failure} />
         </div>
-        <Link to="/challenges" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
+        <Link to="/challenges" className="mt-4 inline-block rounded text-accent-text underline underline-offset-2">
           {t('challenge.back')}
         </Link>
       </div>
@@ -86,7 +86,7 @@ export default function ChallengePage() {
   }
 
   const backLink = (
-    <Link to="/challenges" className="inline-flex min-h-11 items-center rounded text-sm text-muted hover:text-accent sm:pointer-fine:min-h-8">
+    <Link to="/challenges" className="inline-flex min-h-11 items-center rounded text-sm text-muted hover:text-accent-text sm:pointer-fine:min-h-8">
       {t('challenge.back')}
     </Link>
   )
@@ -139,8 +139,11 @@ export default function ChallengePage() {
               </p>
             </div>
             <div className="h-[280px]" />
+            {/* The Submit strip under the editor. */}
+            <div className="flex min-h-[calc(3.75rem+1px)] items-center justify-end border-t border-line px-3 py-2">
+              <Skeleton className="h-11 w-28" />
+            </div>
           </div>
-          <Skeleton className="mt-4 h-[2.625rem] w-36" />
         </LoadingRegion>
       </div>
     )
@@ -166,7 +169,7 @@ export default function ChallengePage() {
           </span>
         )}
         {challenge.lesson_slug && (
-          <Link to={`/lessons/${challenge.lesson_slug}`} className="inline-flex min-h-11 items-center rounded text-accent underline underline-offset-2 sm:pointer-fine:min-h-0">
+          <Link to={`/lessons/${challenge.lesson_slug}`} className="inline-flex min-h-11 items-center rounded text-accent-text underline underline-offset-2 sm:pointer-fine:min-h-0">
             {t('challenge.openLesson')}
           </Link>
         )}

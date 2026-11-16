@@ -344,7 +344,7 @@ export default function BugReportDialog({ error, screenshot, onClose }: BugRepor
 
           <p className="text-xs text-muted">
             {t('bugReport.privacy')}{' '}
-            <Link to="/privacy" onClick={() => ref.current?.close()} className="font-medium text-accent underline-offset-4 hover:underline">
+            <Link to="/privacy" onClick={() => ref.current?.close()} className="font-medium text-accent-text underline-offset-4 hover:underline">
               {t('bugReport.privacyLink')}
             </Link>
           </p>

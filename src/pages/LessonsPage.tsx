@@ -8,7 +8,8 @@ import Content from '../components/Content'
 import EmptyState from '../components/EmptyState'
 import { CheckIcon } from '../components/Icons'
 import { LoadingRegion, SkeletonLines } from '../components/Loading'
-import { groupByTrack, trackName } from '../progress'
+import { primaryButton } from '../components/buttonStyles'
+import { groupByTrack, lessonsDone, nextLesson, trackName } from '../progress'
 
 const DIFFICULTIES = ['easy', 'medium', 'hard']
 
@@ -91,12 +92,32 @@ export default function LessonsPage() {
     })
   }
 
+  // Logged in: where the course goes on, first on the page (the landing page's rule). The row's space
+  // is held while the progress loads, so the tracks do not jump down.
+  const next = user && modules && challenges ? nextLesson(modules, lessonsDone(challenges)) : null
+  const doneCount = challenges ? lessonsDone(challenges).size : 0
+
   return (
     <div>
       <title>{t('titles.page', { name: t('home.title') })}</title>
       <h1 className="text-3xl font-semibold tracking-tight">{t('home.title')}</h1>
       <p className="mt-3 max-w-prose text-lg text-ink">{t('home.welcome')}</p>
       <p className="mt-1 max-w-prose text-muted">{t('home.intro')}</p>
+
+      {user && !error && (
+        <div className="mt-6 min-h-[3.75rem]">
+          {next && (
+            <div className="flex min-h-[3.75rem] flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-line bg-surface px-4 py-2">
+              <Link to={`/lessons/${next.lesson.slug}`} className={`${primaryButton} max-w-full gap-1 px-4`}>
+                <span className="shrink-0">{doneCount === 0 ? t('landing.lessons.start') : t('landing.lessons.continue')}</span>
+                <Content lang="auto" className="truncate">
+                  {next.lesson.title}
+                </Content>
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
 
       {error && (
         <div role="alert" className="mt-6 rounded-lg border border-fail/30 bg-fail/5 px-3 py-2 text-fail">
@@ -165,7 +186,7 @@ export default function LessonsPage() {
                         <li key={lesson.id} className="group">
                           <Link
                             to={`/lessons/${lesson.slug}`}
-                            className="flex min-h-11 items-center gap-3 px-4 py-2.5 text-accent group-last:rounded-b-lg hover:bg-accent-soft"
+                            className="flex min-h-11 items-center gap-3 px-4 py-2.5 text-accent-text group-last:rounded-b-lg hover:bg-accent-soft"
                           >
                             {/* The wrapper keeps the page's alignment for a title in the other language. */}
                             <span className="min-w-0 flex-1">

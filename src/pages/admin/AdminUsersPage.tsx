@@ -14,8 +14,8 @@ const EMPTY = { search: '', role: '', banned: '', page: '' }
 
 // Owner violet, admin sky, user outlined: a word in each, never colour alone.
 const ROLE_STYLE: Record<Role, string> = {
-  owner: 'border-violet-700/40 bg-violet-500/10 text-violet-800 dark:border-violet-300/40 dark:text-violet-300',
-  admin: 'border-sky-700/40 bg-sky-500/10 text-sky-800 dark:border-sky-300/40 dark:text-sky-300',
+  owner: 'border-violet-700/40 bg-violet-500/10 text-violet-900 dark:border-violet-300/40 dark:text-violet-300',
+  admin: 'border-sky-700/40 bg-sky-500/10 text-sky-900 dark:border-sky-300/40 dark:text-sky-300',
   user: 'border-field text-muted',
 }
 

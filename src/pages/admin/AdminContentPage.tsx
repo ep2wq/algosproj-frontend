@@ -7,7 +7,8 @@ import ReportProblemButton from '../../components/ReportProblemButton'
 import DifficultyBadge from '../../components/DifficultyBadge'
 import FilterBar from '../../components/FilterBar'
 import { AlertIcon } from '../../components/Icons'
-import { rowLink } from '../../components/tableStyles'
+import { rowLink, stretchLink } from '../../components/tableStyles'
+import { normalizeSearch } from '../../lib/normalize'
 import { VISUALS } from '../../visuals'
 import { alertClass, secondaryButton } from './styles'
 
@@ -48,7 +49,7 @@ function RowAction({ to, label, icon }: { to: string; label: string; icon: React
       to={to}
       aria-label={label}
       title={label}
-      className="inline-flex size-11 shrink-0 items-center justify-center rounded text-muted hover:bg-surface hover:text-ink sm:pointer-fine:size-8 pointer-fine:[.group:not(:hover,:focus-within)_&]:opacity-0"
+      className="relative z-10 inline-flex size-11 shrink-0 items-center justify-center rounded text-muted hover:bg-surface hover:text-ink sm:pointer-fine:size-8 pointer-fine:[.group:not(:hover,:focus-within)_&]:opacity-0"
     >
       {icon}
     </Link>
@@ -66,14 +67,14 @@ function Chevron({ open, controls, title, onToggle }: { open: boolean; controls:
       aria-label={label}
       title={label}
       onClick={onToggle}
-      className="inline-flex size-11 shrink-0 items-center justify-center rounded text-muted hover:bg-surface hover:text-ink sm:pointer-fine:size-7"
+      className="relative z-10 inline-flex size-11 shrink-0 items-center justify-center rounded text-muted hover:bg-surface hover:text-ink sm:pointer-fine:size-7"
     >
       <ChevronRight aria-hidden="true" className={`size-4 motion-safe:transition-transform ${open ? 'rotate-90' : ''}`} />
     </button>
   )
 }
 
-const rowClass = 'group flex min-h-11 items-center gap-2 border-t border-line pe-2 hover:bg-hover focus-within:bg-hover'
+const rowClass = 'group relative flex min-h-11 items-center gap-2 border-t border-line pe-2 hover:bg-hover focus-within:bg-hover'
 // Where a row without a chevron starts its text, so titles line up.
 const spacer = <span aria-hidden="true" className="w-11 shrink-0 sm:pointer-fine:w-7" />
 
@@ -82,7 +83,7 @@ function ProblemRow({ problem }: { problem: ProblemSummary }) {
   return (
     <li className={`${rowClass} ps-12 sm:ps-[6.75rem] sm:pointer-fine:ps-[5.75rem]`}>
       <Code2 aria-hidden="true" className="size-4 shrink-0 text-muted" />
-      <Link to={`/admin/problems/${problem.id}`} title={problem.title} className={`${rowLink} min-w-0 py-2 sm:truncate`}>
+      <Link to={`/admin/problems/${problem.id}`} title={problem.title} className={`${rowLink} ${stretchLink} min-w-0 py-2 sm:truncate`}>
         {problem.title}
       </Link>
       <span className="flex shrink-0 items-center gap-2">
@@ -109,7 +110,7 @@ export default function AdminContentPage() {
 
   const q = params.get('q') ?? ''
   const attention = params.get('attention') === '1'
-  const query = q.trim().toLowerCase()
+  const query = normalizeSearch(q)
   const filtering = Boolean(query) || attention
 
   useEffect(() => {
@@ -156,7 +157,7 @@ export default function AdminContentPage() {
   }
 
   const matches = (title: string, slug: string | null) =>
-    !query || title.toLowerCase().includes(query) || (slug ?? '').toLowerCase().includes(query)
+    !query || normalizeSearch(title).includes(query) || normalizeSearch(slug ?? '').includes(query)
   // A row shows when it matches the search and, with "Needs attention", has a warning; or when one
   // of its children shows.
   const keep = (title: string, slug: string | null, warned: boolean) => matches(title, slug) && (!attention || warned)
@@ -192,7 +193,7 @@ export default function AdminContentPage() {
   const allIds = () => [...(modules ?? []).flatMap((module) => [module.id, ...module.lessons.map((lesson) => lesson.id)]), STANDALONE]
 
   const toolButton =
-    'inline-flex min-h-11 items-center rounded border border-field bg-surface px-2.5 text-sm text-ink hover:border-muted sm:pointer-fine:min-h-8'
+    'elev-raised inline-flex min-h-11 items-center rounded border border-field bg-surface px-2.5 text-sm text-ink hover:border-muted sm:pointer-fine:min-h-8'
 
   return (
     <div className="max-w-5xl">
@@ -204,7 +205,7 @@ export default function AdminContentPage() {
         {modules !== null && (
           <Link
             to="/admin/modules/new"
-            className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded bg-accent px-4 font-medium text-inverse hover:bg-accent/90 sm:pointer-fine:min-h-9"
+            className="elev-raised inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded bg-accent px-4 font-medium text-inverse hover:bg-accent/90 sm:pointer-fine:min-h-9"
           >
             {t('admin.content.addModule')}
             <Plus aria-hidden="true" className="size-4" />
@@ -286,7 +287,7 @@ export default function AdminContentPage() {
                     <li key={module.id}>
                       <div className={`${rowClass} ps-1`}>
                         <Chevron open={open} controls={listId} title={module.title} onToggle={() => toggle(module.id)} />
-                        <Link to={`/admin/modules/${module.id}`} title={module.title} className={`${rowLink} min-w-0 py-2 font-semibold sm:truncate`}>
+                        <Link to={`/admin/modules/${module.id}`} title={module.title} className={`${rowLink} ${stretchLink} min-w-0 py-2 font-semibold sm:truncate`}>
                           {module.title}
                         </Link>
                         <span className="hidden min-w-0 truncate font-mono text-xs text-muted sm:block" title={`${module.track} · ${module.slug}`}>
@@ -362,7 +363,7 @@ function LessonRow({
       <div className={`${rowClass} ps-2 sm:ps-6`}>
         {problems.length > 0 ? <Chevron open={open} controls={listId} title={lesson.title} onToggle={onToggle} /> : spacer}
         <span className="w-6 shrink-0 font-mono text-xs text-muted tabular-nums">{lesson.sort_order}</span>
-        <Link to={`/admin/lessons/${lesson.id}`} title={lesson.title} className={`${rowLink} min-w-0 py-2 sm:truncate`}>
+        <Link to={`/admin/lessons/${lesson.id}`} title={lesson.title} className={`${rowLink} ${stretchLink} min-w-0 py-2 sm:truncate`}>
           {lesson.title}
         </Link>
         <span className="hidden min-w-0 truncate font-mono text-xs text-muted md:block" title={lesson.slug}>

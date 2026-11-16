@@ -1,12 +1,17 @@
 import MonacoEditor, { loader } from '@monaco-editor/react'
-import { Fragment, lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { Fragment, lazy, Suspense, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { ApiError, LANGUAGES, submitSolution, type Language, type Problem, type SubmitResult, type User } from '../api'
 import { useAuth } from '../auth'
+import { readCodeLang, saveCodeLang } from '../codeLang'
+import { reducedMotion } from '../motion'
 import { setProblemSource } from '../reportBug'
+import { isApple } from '../shortcuts'
 import { play } from '../sound'
+import { defineMonacoThemes, monacoThemeName } from '../monacoTheme'
 import { useTheme } from '../theme'
+import type * as Monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { LANGUAGE_LABELS, STARTER_CODE } from '../starters'
 import Content from './Content'
 import { CellLoader } from './Loading'
@@ -14,6 +19,9 @@ import ReportProblemButton from './ReportProblemButton'
 import { TextWithCode } from './LessonBody'
 import ResendVerification from './ResendVerification'
 import SubmitResultPanel from './SubmitResultPanel'
+
+// Between the keys of the shortcut hint.
+const PLUS = '+'
 
 // A description line that is only one of these labels is shown as a small heading (display only;
 // Arabic descriptions mark them as English terms).
@@ -50,7 +58,7 @@ export default function ProblemSolver({
   const { user, loading, refreshUser } = useAuth()
   const { dark } = useTheme()
   const location = useLocation()
-  const [language, setLanguage] = useState<Language>('python')
+  const [language, setLanguage] = useState<Language>(() => readCodeLang() ?? 'python')
   // Code is kept per language, so switching languages doesn't lose what was typed.
   const [code, setCode] = useState<Record<Language, string>>({ ...STARTER_CODE })
   const [busy, setBusy] = useState(false)
@@ -71,6 +79,16 @@ export default function ProblemSolver({
   const [editorReady, setEditorReady] = useState(false)
   const editorAreaRef = useRef<HTMLDivElement>(null)
 
+  // The theme's colours come from the CSS variables of the mode in effect (src/monacoTheme.ts), so
+  // after a light/dark toggle the theme is defined again from the new values, then applied.
+  const monacoRef = useRef<typeof Monaco | null>(null)
+  useEffect(() => {
+    const monaco = monacoRef.current
+    if (!monaco) return
+    defineMonacoThemes(monaco, dark)
+    monaco.editor.setTheme(monacoThemeName(dark))
+  }, [dark])
+
   useEffect(() => {
     const area = editorAreaRef.current
     if (editorWanted || !area) return
@@ -80,6 +98,18 @@ export default function ProblemSolver({
     observer.observe(area)
     return () => observer.disconnect()
   }, [editorWanted])
+
+  // Each new result (never the first render): focus goes to its summary, which is how a screen
+  // reader hears it, and the summary scrolls into view only as far as needed (smoothly, or at once
+  // under reduced motion). The focus call itself does not scroll, and the editor keeps its place in
+  // the page.
+  const summaryRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const summary = summaryRef.current
+    if (attempt === 0 || !summary) return
+    summary.focus({ preventScroll: true })
+    summary.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'nearest' })
+  }, [attempt])
 
   // The Submit button just went away under the user's focus: move it to the explanation.
   useEffect(() => {
@@ -108,6 +138,7 @@ export default function ProblemSolver({
   const editorLabel = t('solver.editorLabel', { language: LANGUAGE_LABELS[language], title: problem.title })
 
   async function handleSubmit() {
+    if (busy) return
     setBusy(true)
     setError('')
     setFailure(null)
@@ -135,6 +166,20 @@ export default function ProblemSolver({
     } finally {
       setBusy(false)
     }
+  }
+
+  // Ctrl+Enter (Cmd+Enter on Apple devices) submits from anywhere in the editor block or the result,
+  // the editor included: caught on the way down, so Monaco never gets it (it would add a line). It
+  // does nothing while a submit is running, and nothing at all for a visitor who cannot submit.
+  const canSubmit = !loading && user !== null && !unverified
+  const apple = isApple()
+  function handleShortcut(event: KeyboardEvent) {
+    if (event.key !== 'Enter' || event.shiftKey || event.altKey || event.nativeEvent.isComposing) return
+    if (apple ? !event.metaKey : !event.ctrlKey) return
+    if (!canSubmit) return
+    event.preventDefault()
+    event.stopPropagation()
+    if (!busy && !event.repeat) void handleSubmit()
   }
 
   return (
@@ -181,8 +226,12 @@ export default function ProblemSolver({
         </div>
       )}
 
-      {/* One framed block: the language picker and the Tab hint in a strip above the editor. */}
-      <div className="mt-6 overflow-hidden rounded-lg border border-line bg-surface">
+      {/* The editor block and the result: Ctrl+Enter submits from anywhere in here. */}
+      <div onKeyDownCapture={handleShortcut}>
+      {/* One framed block: the language picker and the Tab hint in a strip above the editor, Submit in
+          a strip under it. overflow-clip, not hidden: hidden would make this box the scroll container
+          of the sticky strip. */}
+      <div className="mt-6 overflow-clip rounded-lg border border-line bg-surface">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-line px-3 py-2">
           <div>
             <label htmlFor={languageId} className="text-sm font-medium">
@@ -191,7 +240,11 @@ export default function ProblemSolver({
             <select
               id={languageId}
               value={language}
-              onChange={(event) => setLanguage(event.target.value as Language)}
+              onChange={(event) => {
+                const next = event.target.value as Language
+                setLanguage(next)
+                saveCodeLang(next)
+              }}
               className="ms-2 rounded border border-field bg-surface px-2 py-1 text-sm hover:border-muted"
             >
               {LANGUAGES.map((option) => (
@@ -223,7 +276,11 @@ export default function ProblemSolver({
                 height="280px"
                 language={language}
                 // Changing the theme restyles the open editor; it is not remounted, so the code stays.
-                theme={dark ? 'vs-dark' : 'vs'}
+                theme={monacoThemeName(dark)}
+                beforeMount={(monaco) => {
+                  monacoRef.current = monaco
+                  defineMonacoThemes(monaco, dark)
+                }}
                 value={code[language]}
                 onChange={(value) => setCode((current) => ({ ...current, [language]: value ?? '' }))}
                 // Screen readers read the Tab hint with the editor.
@@ -247,10 +304,75 @@ export default function ProblemSolver({
                   fontFamily: "'JetBrains Mono', 'Mono Fallback', 'IBM Plex Sans Arabic', monospace",
                   scrollBeyondLastLine: false,
                   automaticLayout: true,
+                  // Suggestion popups are drawn over the page, not clipped by the editor's box.
+                  fixedOverflowWidgets: true,
                   tabSize: 4,
                 }}
               />
             </Suspense>
+          )}
+        </div>
+        {/* Submit directly under the editor, on the end side, the largest control of the block. On a
+            phone or touch screen the strip sticks to the bottom of the screen (above the cookie
+            notice) for as long as the block is on screen: it is the same button, and it cannot leave
+            the block, so it ends with it. Its height is kept while /me loads, so nothing jumps. */}
+        <div className="z-10 flex min-h-[calc(3.75rem+1px)] flex-wrap items-center justify-end gap-x-3 gap-y-2 border-t border-line bg-surface px-3 py-2 max-sm:sticky max-sm:bottom-[var(--cookie-h,0px)] pointer-coarse:sticky pointer-coarse:bottom-[var(--cookie-h,0px)]">
+          {/* A failed submit, on the start side; it shakes once like a failed result. */}
+          {(error || failure !== null) && (
+            <div className="me-auto flex flex-wrap items-center gap-3">
+              {error && (
+                <p role="alert" className="text-sm text-fail motion-safe:animate-shake">
+                  {/* The server's message or field errors, in the page language; dir="auto" for safety. */}
+                  <span dir="auto">{error}</span>
+                </p>
+              )}
+              {failure !== null && <ReportProblemButton error={failure} className="inline-flex min-h-11 items-center rounded border border-field bg-surface px-3 text-sm font-medium text-ink hover:border-muted sm:pointer-fine:min-h-9" />}
+            </div>
+          )}
+          {/* Nothing while /me is still loading at startup, so a logged-in user never sees "Log in". */}
+          {loading ? null : unverified ? (
+            <div ref={unverifiedRef} tabIndex={-1} className="max-w-prose rounded-lg border border-line note-box px-3 py-2 text-sm text-ink">
+              <p>{t('verify.submitBlocked')}</p>
+              <ResendVerification />
+            </div>
+          ) : user ? (
+            <>
+              {/* The shortcut, where there is a keyboard. Keys stay Latin and left to right. */}
+              <p className="text-xs text-muted max-sm:hidden pointer-coarse:hidden">
+                <span className="sr-only">{t('solver.shortcutHint')} </span>
+                <span dir="ltr" className="inline-flex items-center gap-1">
+                  <kbd className="rounded border border-field bg-surface px-1.5 py-0.5 font-mono">{apple ? t('shortcuts.cmd') : t('shortcuts.ctrl')}</kbd>
+                  <span aria-hidden="true">{PLUS}</span>
+                  <kbd className="rounded border border-field bg-surface px-1.5 py-0.5 font-mono">{t('shortcuts.enter')}</kbd>
+                </span>
+              </p>
+              {/* Busy at once: the label changes and three cells pulse once, then rest (nothing
+                  loops; they do not move under reduced motion). */}
+              <button
+                type="button"
+                onClick={handleSubmit}
+                aria-disabled={busy}
+                aria-keyshortcuts={apple ? 'Meta+Enter' : 'Control+Enter'}
+                className="elev-raised inline-flex min-h-11 items-center justify-center gap-2 rounded bg-accent px-6 font-semibold text-inverse hover:bg-accent/90 aria-disabled:cursor-not-allowed aria-disabled:opacity-60 aria-disabled:hover:bg-accent"
+              >
+                {busy && (
+                  <span aria-hidden="true" className="flex gap-0.5">
+                    {[0, 1, 2].map((cell) => (
+                      <span key={cell} className="size-1.5 rounded-sm bg-current motion-safe:animate-pulse-once" />
+                    ))}
+                  </span>
+                )}
+                {busy ? t('solver.running') : t('solver.submit')}
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              state={{ from: location }}
+              className="inline-flex min-h-11 items-center justify-center rounded border border-accent px-4 font-medium text-accent-text hover:bg-accent-soft motion-safe:active:translate-y-px"
+            >
+              {t('solver.logInToSubmit')}
+            </Link>
           )}
         </div>
       </div>
@@ -260,41 +382,18 @@ export default function ProblemSolver({
         </p>
       )}
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        {/* Nothing while /me is still loading at startup, so a logged-in user never sees "Log in". */}
-        {loading ? null : unverified ? (
-          <div ref={unverifiedRef} tabIndex={-1} className="max-w-prose rounded-lg border border-line bg-accent-soft px-3 py-2 text-sm text-ink">
-            <p>{t('verify.submitBlocked')}</p>
-            <ResendVerification />
-          </div>
-        ) : user ? (
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={busy}
-            className="inline-flex min-h-11 items-center justify-center rounded bg-accent px-4 font-medium text-inverse hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {busy ? t('solver.running') : t('solver.submit')}
-          </button>
-        ) : (
-          <Link
-            to="/login"
-            state={{ from: location }}
-            className="inline-flex min-h-11 items-center justify-center rounded border border-accent px-4 font-medium text-accent hover:bg-accent-soft motion-safe:active:translate-y-px"
-          >
-            {t('solver.logInToSubmit')}
-          </Link>
-        )}
-        {error && (
-          <p role="alert" className="text-sm text-fail">
-            {/* The server's message or field errors, in the page language; dir="auto" for safety. */}
-            <span dir="auto">{error}</span>
-          </p>
-        )}
-        {failure !== null && <ReportProblemButton error={failure} className="inline-flex min-h-11 items-center rounded border border-field bg-surface px-3 text-sm font-medium text-ink hover:border-muted sm:pointer-fine:min-h-9" />}
+      {/* One polite line for a running submit; the result is announced by the focus it gets. */}
+      <p role="status" className="sr-only">
+        {busy ? t('solver.running') : ''}
+      </p>
+      {/* The result area takes its place as soon as Submit is pressed, so the result does not push
+          anything when it arrives; while a later submit runs, the old result stays, dimmed. */}
+      {result ? (
+        <SubmitResultPanel result={result} attempt={attempt} heading={ExamplesHeading === 'h2' ? 'h3' : 'h4'} summaryRef={summaryRef} busy={busy} />
+      ) : (
+        busy && <CellLoader className="mt-4 h-16 rounded-lg border border-line bg-surface" />
+      )}
       </div>
-
-      {result && <SubmitResultPanel result={result} attempt={attempt} heading={ExamplesHeading === 'h2' ? 'h3' : 'h4'} />}
     </>
   )
 }

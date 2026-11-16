@@ -128,7 +128,7 @@ export default function LessonPage() {
           )}
           <ReportProblemButton error={failure} />
         </div>
-        <Link to="/lessons" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
+        <Link to="/lessons" className="mt-4 inline-block rounded text-accent-text underline underline-offset-2">
           {t('lesson.backToLessons')}
         </Link>
       </div>
@@ -136,7 +136,7 @@ export default function LessonPage() {
   }
 
   // Lessons › the module (a link to its first lesson). Lessons alone until the module list arrives.
-  const breadcrumbLink = 'inline-flex min-h-11 items-center rounded hover:text-accent sm:pointer-fine:min-h-8'
+  const breadcrumbLink = 'inline-flex min-h-11 items-center rounded hover:text-accent-text sm:pointer-fine:min-h-8'
   const breadcrumb = (module: Module | null) => (
     <nav aria-label={t('lesson.breadcrumb')} className="text-sm">
       <ol className="flex flex-wrap items-center gap-x-1.5 text-muted">

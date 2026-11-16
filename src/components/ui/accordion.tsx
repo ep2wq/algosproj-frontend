@@ -18,7 +18,7 @@ function AccordionTrigger({ className, children, ...props }: AccordionPrimitive.
       <AccordionPrimitive.Trigger
         data-slot="accordion-trigger"
         className={cn(
-          'group/accordion-trigger flex min-h-11 flex-1 items-center justify-between gap-4 rounded py-2.5 text-start font-medium hover:text-accent aria-disabled:cursor-not-allowed aria-disabled:opacity-60',
+          'group/accordion-trigger flex min-h-11 flex-1 items-center justify-between gap-4 rounded py-2.5 text-start font-medium hover:text-accent-text aria-disabled:cursor-not-allowed aria-disabled:opacity-60',
           className,
         )}
         {...props}
@@ -27,7 +27,7 @@ function AccordionTrigger({ className, children, ...props }: AccordionPrimitive.
         <ChevronDownIcon
           aria-hidden="true"
           data-slot="accordion-trigger-icon"
-          className="pointer-events-none size-4 shrink-0 text-muted group-aria-expanded/accordion-trigger:rotate-180 motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-calm"
+          className="pointer-events-none size-4 shrink-0 text-muted group-aria-expanded/accordion-trigger:rotate-180 motion-safe:transition-transform motion-safe:duration-(--dur-ui) motion-safe:ease-out"
         />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
@@ -39,10 +39,10 @@ function AccordionContent({ className, children, ...props }: AccordionPrimitive.
   return (
     <AccordionPrimitive.Panel
       data-slot="accordion-content"
-      className="h-(--accordion-panel-height) overflow-hidden data-ending-style:h-0 data-starting-style:h-0 motion-safe:transition-[height] motion-safe:duration-200 motion-safe:ease-calm"
+      className="h-(--accordion-panel-height) overflow-hidden data-ending-style:h-0 data-starting-style:h-0 motion-safe:transition-[height] motion-safe:duration-(--dur-ui) motion-safe:ease-out"
       {...props}
     >
-      <div className={cn('pb-3 [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-2 [&_p:not(:last-child)]:mb-4', className)}>{children}</div>
+      <div className={cn('pb-3 [&_a]:text-accent-text [&_a]:underline [&_a]:underline-offset-2 [&_p:not(:last-child)]:mb-4', className)}>{children}</div>
     </AccordionPrimitive.Panel>
   )
 }

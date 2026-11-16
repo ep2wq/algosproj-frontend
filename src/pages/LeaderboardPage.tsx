@@ -149,7 +149,7 @@ export default function LeaderboardPage() {
                     <td className={boardName}>
                       {/* Names can be Arabic or English; dir="auto" lets each show in its own direction. */}
                       <span dir="auto">{entry.name}</span>
-                      {isMe && <span className="ms-2 text-sm whitespace-nowrap text-accent">{t('leaderboard.you')}</span>}
+                      {isMe && <span className="ms-2 text-sm whitespace-nowrap text-accent-text">{t('leaderboard.you')}</span>}
                     </td>
                     <td className={boardPoints}>{formatNumber(entry.points, language)}</td>
                   </tr>

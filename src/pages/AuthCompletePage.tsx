@@ -92,7 +92,7 @@ export default function AuthCompletePage() {
           onSubmit={handleSubmit}
           termsErrors={fieldErrors.accepted_terms}
           footer={
-            <Link to="/login" className="rounded text-accent underline underline-offset-2">
+            <Link to="/login" className="rounded text-accent-text underline underline-offset-2">
               {t('authComplete.cancel')}
             </Link>
           }

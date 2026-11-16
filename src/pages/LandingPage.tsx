@@ -195,7 +195,7 @@ export default function LandingPage() {
                 {/* Where it comes from sits at the foot, as a 44 px link. */}
                 <p className="mt-auto pt-1 text-sm text-muted">
                   {heroTitle ? t('landing.visualFromLesson', { lesson: `\u2068${heroTitle}\u2069` }) : t('landing.visualFromAny')}{' '}
-                  <Link to={`/lessons/${hero.slug}`} className="inline-flex min-h-11 items-center rounded text-accent underline underline-offset-2">
+                  <Link to={`/lessons/${hero.slug}`} className="inline-flex min-h-11 items-center rounded text-accent-text underline underline-offset-2">
                     {t('landing.openLesson')}
                   </Link>
                 </p>
@@ -243,7 +243,7 @@ export default function LandingPage() {
         <ol className="mt-8 grid overflow-hidden rounded-lg border border-line bg-surface md:grid-cols-3">
           {FEATURES.map(({ id, Icon }) => (
             <li key={id} className="border-line p-6 not-first:border-t md:not-first:border-t-0 md:not-first:border-s">
-              <Icon aria-hidden="true" className="size-6 text-accent" strokeWidth={1.75} />
+              <Icon aria-hidden="true" className="size-6 text-accent-text" strokeWidth={1.75} />
               <h3 className="mt-4 text-lg font-semibold">{t(`landing.features.${id}.title`)}</h3>
               <p className="mt-2 text-muted">
                 <TextWithCode text={t(`landing.features.${id}.body`)} />

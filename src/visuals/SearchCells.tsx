@@ -1,13 +1,15 @@
 import type { SearchFrame } from './binarySearchFrames'
+import { useFlip } from './useFlip'
+import type { usePlayback } from './usePlayback'
 import { useCentreCells, useScrollCue } from './useScrollCue'
 
 // The fill and border of each kind of cell, shared with the lesson's legend so its swatches match.
-// Cells still in range get a faint slate fill in light mode, so they read as boxes on the white card.
+// Cells still in range get a surface fill and a muted border, so they read as boxes on the card.
 // oxlint-disable-next-line react/only-export-components
 export const CELL_STYLES = {
-  found: 'border-pass bg-pass',
+  found: 'border-found-line bg-found',
   middle: 'border-warn bg-warn',
-  possible: 'border-muted bg-slate-50 dark:bg-surface',
+  possible: 'border-muted bg-surface',
   ruledOut: 'border-line bg-paper',
 }
 
@@ -31,7 +33,7 @@ function inRange(frame: SearchFrame, index: number) {
 }
 
 function cellStyle(frame: SearchFrame, index: number) {
-  if (frame.result === index) return `${CELL_STYLES.found} text-inverse`
+  if (frame.result === index) return `${CELL_STYLES.found} text-found-ink`
   if (frame.mid === index) return `${CELL_STYLES.middle} text-inverse`
   if (inRange(frame, index)) return `${CELL_STYLES.possible} text-ink`
   return `${CELL_STYLES.ruledOut} text-muted`
@@ -56,8 +58,11 @@ function pointerLabels(frame: SearchFrame, index: number) {
 // row stays one line and scrolls sideways inside its box when wider than the screen, with the
 // end-edge fade, and each step centres the current cell. Always left to right. large (the landing
 // hero): bigger cells from md, so ten of them use the width of the page; framed: its own bordered box.
+// While it plays, the pointers slide to their new cells (useFlip) and the cell being compared pulses
+// once; cells that are ruled out are the dimmed ones.
 export default function SearchCells({
   frame,
+  playback,
   regionLabel,
   imageLabel,
   className = 'mt-4',
@@ -65,6 +70,7 @@ export default function SearchCells({
   framed = true,
 }: {
   frame: SearchFrame
+  playback: ReturnType<typeof usePlayback>
   regionLabel: string
   imageLabel: string
   className?: string
@@ -75,6 +81,7 @@ export default function SearchCells({
   const focusIndex = currentIndex(frame)
 
   useCentreCells(scrollRef, focusIndex, focusIndex, frame.array)
+  useFlip(scrollRef, playback)
 
   const { gap, width, box, small, pointer } = CELL_SIZES[large ? 'large' : 'normal']
 
@@ -93,11 +100,15 @@ export default function SearchCells({
             {/* Pointers on one cell each get their own label, spaced apart (L M H, not "LMH"). */}
             <span className={`flex h-4 gap-1 font-semibold text-ink ${small} ${pointer}`}>
               {pointerLabels(frame, index).map((label) => (
-                <span key={label}>{label}</span>
+                <span key={label} data-flip={`pointer-${label}`}>
+                  {label}
+                </span>
               ))}
             </span>
             <span
-              className={`mt-0.5 flex items-center justify-center rounded border-2 font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${box} ${cellStyle(frame, index)}`}
+              className={`elev-raised mt-0.5 flex items-center justify-center rounded border-2 font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${box} ${cellStyle(frame, index)} ${
+                frame.mid === index || frame.result === index ? 'motion-safe:[[data-travel]_&]:animate-hit' : ''
+              }`}
             >
               {value}
             </span>

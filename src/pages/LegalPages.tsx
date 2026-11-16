@@ -21,7 +21,7 @@ const RELATED: Record<Name, Name[]> = {
 
 // Every cookie and browser storage key the site uses. All are strictly necessary or a setting the
 // visitor chose, so the cookie notice (CookieNotice.tsx) only informs and asks for no consent.
-const STORAGE = ['session', 'xsrf', 'remember', 'lang', 'theme', 'sound', 'cookieNotice']
+const STORAGE = ['session', 'xsrf', 'remember', 'lang', 'theme', 'sound', 'codeLang', 'cookieNotice']
 
 function LegalPage({ name }: { name: Name }) {
   const { t, i18n } = useTranslation()
@@ -110,14 +110,14 @@ function LegalPage({ name }: { name: Name }) {
         </h2>
         <p className="mt-1 text-muted">{t('legal.contactBody')}</p>
         <p className="mt-2">
-          <a href={`mailto:${CONTACT_EMAIL}`} dir="ltr" className="rounded font-medium break-all text-accent underline underline-offset-2">
+          <a href={`mailto:${CONTACT_EMAIL}`} dir="ltr" className="rounded font-medium break-all text-accent-text underline underline-offset-2">
             {CONTACT_EMAIL}
           </a>
         </p>
       </section>
       <p className="mt-6 flex flex-wrap gap-x-4 gap-y-1">
         {RELATED[name].map((other) => (
-          <Link key={other} to={`/${other}`} className="inline-flex min-h-11 items-center rounded text-accent underline underline-offset-2 sm:pointer-fine:min-h-0">
+          <Link key={other} to={`/${other}`} className="inline-flex min-h-11 items-center rounded text-accent-text underline underline-offset-2 sm:pointer-fine:min-h-0">
             {t(`${other}.title`)}
           </Link>
         ))}

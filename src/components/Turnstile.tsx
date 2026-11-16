@@ -104,7 +104,7 @@ export default function Turnstile({ onToken, rejected }: { onToken: (token: stri
               setFailed(null)
               setAttempt(attempt + 1)
             }}
-            className="inline-flex min-h-11 items-center rounded font-medium text-accent underline underline-offset-2 sm:pointer-fine:min-h-6"
+            className="inline-flex min-h-11 items-center rounded font-medium text-accent-text underline underline-offset-2 sm:pointer-fine:min-h-6"
           >
             {t('captcha.retry')}
           </button>

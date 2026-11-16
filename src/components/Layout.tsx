@@ -2,15 +2,17 @@ import { DirectionProvider } from '@base-ui/react/direction-provider'
 import { Suspense, useEffect, useId, useRef, useState, type FocusEvent } from 'react'
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Languages } from 'lucide-react'
+import { ChevronDown, Languages, Menu, Moon, Sun, Volume2, VolumeX } from 'lucide-react'
 import { useAuth } from '../auth'
 import type { User } from '../api'
-import { primaryButton, skipLink } from './buttonStyles'
+import { secondaryButton, skipLink } from './buttonStyles'
 import { openBugReport } from '../reportBug'
 import { CellLoader } from './Loading'
 import CookieNotice from './CookieNotice'
 import VerifyEmailNotice from './VerifyEmailNotice'
-import { setLanguage } from '../i18n'
+import { loadStrings, setLanguage } from '../i18n'
+import ShortcutsHost from './ShortcutsHost'
+import { OPEN_SHORTCUTS } from '../shortcuts'
 import { CONTACT_EMAIL, COPYRIGHT_YEAR, PRODUCT_NAME } from '../site'
 import { setSoundOn, useSoundOn } from '../sound'
 import { toggleTheme, useTheme } from '../theme'
@@ -27,12 +29,24 @@ const navLink = ({ isActive }: { isActive: boolean }) =>
 const ghostButton =
   'inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg text-muted hover:bg-hover hover:text-ink focus-visible:bg-hover focus-visible:text-ink sm:pointer-fine:min-h-9 sm:pointer-fine:min-w-9'
 
-// A disclosure panel's open state, not role="menu": Escape closes it and returns focus to its button,
-// a click outside or focus leaving the wrapper closes it.
+// A disclosure panel's open state, not role="menu": opening moves focus to the first thing in the
+// panel (unless it is already inside), Escape closes it and returns focus to its button, a click
+// outside or focus leaving the wrapper closes it. The panel is .disclosure-panel with data-open
+// (index.css): it opens in --dur-ui and closes in 70% of that.
 function useDisclosure() {
   const [open, setOpen] = useState(false)
   const wrapper = useRef<HTMLDivElement>(null)
   const button = useRef<HTMLButtonElement>(null)
+  const panel = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open || panel.current?.contains(document.activeElement)) return
+    // The first one that is shown (a block hidden at this width, like md:hidden, cannot take focus).
+    const visible = (el: HTMLElement) =>
+      typeof el.checkVisibility === 'function' ? el.checkVisibility() : el.offsetParent !== null || el.getClientRects().length > 0
+    const items = panel.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])') ?? []
+    Array.from(items).find(visible)?.focus()
+  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -57,15 +71,11 @@ function useDisclosure() {
     if (event.relatedTarget && !wrapper.current?.contains(event.relatedTarget)) setOpen(false)
   }
 
-  return { open, setOpen, wrapper, button, onBlur }
+  return { open, setOpen, wrapper, button, panel, onBlur }
 }
 
 function Chevron({ className }: { className: string }) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  )
+  return <ChevronDown aria-hidden="true" className={className} />
 }
 
 // Shows the sun in dark mode and the moon in light mode: the theme a click switches to.
@@ -75,16 +85,7 @@ function ThemeToggle() {
 
   return (
     <button type="button" onClick={toggleTheme} aria-label={dark ? t('theme.toLight') : t('theme.toDark')} className={ghostButton}>
-      {dark ? (
-        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-          <circle cx="12" cy="12" r="4" />
-          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-        </svg>
-      ) : (
-        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinejoin="round">
-          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
-        </svg>
-      )}
+      {dark ? <Sun aria-hidden="true" className="size-5" /> : <Moon aria-hidden="true" className="size-5" />}
     </button>
   )
 }
@@ -105,10 +106,7 @@ function SoundToggle({ className, showLabel = false }: { className: string; show
       aria-label={showLabel ? undefined : t('sound.label')}
       className={className}
     >
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M11 5 6 9H3v6h3l5 4z" />
-        {on ? <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /> : <path d="m16 9 5 6M21 9l-5 6" />}
-      </svg>
+      {on ? <Volume2 aria-hidden="true" className="size-5 shrink-0" /> : <VolumeX aria-hidden="true" className="size-5 shrink-0" />}
       {showLabel && <span className="ms-2">{t('sound.label')}</span>}
     </button>
   )
@@ -119,9 +117,26 @@ function SoundToggle({ className, showLabel = false }: { className: string; show
 function LanguageToggle() {
   const { t, i18n } = useTranslation()
   const arabic = i18n.language === 'ar'
+  // The pressed look shows at once; the page itself waits for the other language's strings (i18n.ts
+  // setLanguage), which are fetched when the pointer or focus arrives, so the wait is usually nil.
+  const [switching, setSwitching] = useState(false)
+  const other = arabic ? 'en' : 'ar'
+  const prefetch = () => void loadStrings(other).catch(() => {})
 
   return (
-    <button type="button" onClick={() => void setLanguage(arabic ? 'en' : 'ar')} className={`${ghostButton} px-2.5`}>
+    <button
+      type="button"
+      onPointerEnter={prefetch}
+      onFocus={prefetch}
+      onClick={() => {
+        setSwitching(true)
+        setLanguage(other)
+          .catch(() => {})
+          .finally(() => setSwitching(false))
+      }}
+      aria-busy={switching}
+      className={`${ghostButton} px-2.5 ${switching ? 'bg-hover text-ink' : ''}`}
+    >
       <Languages aria-hidden="true" className="size-4.5 shrink-0" strokeWidth={2} />
       {/* On English pages "العربية" uses a 4 kB cut of the Arabic font (--font-label in index.css). It
           follows <html lang>, not React: an Arabic visit's hidden static English page must not fetch it. */}
@@ -145,7 +160,7 @@ const MENU_PAGES = [
   ['/contact', 'nav.contact'],
 ] as const
 
-const menuPanel = 'z-10 mt-1 rounded-lg border border-line bg-surface p-1 shadow-(--float-shadow)'
+const menuPanel = 'disclosure-panel elev-floating z-10 mt-1 p-1'
 const menuItem = 'flex min-h-11 w-full items-center rounded px-3 text-start text-muted hover:bg-hover hover:text-ink'
 
 // The last item of the main navigation. From md: "More" with a chevron, holding About, FAQ and
@@ -154,7 +169,7 @@ const menuItem = 'flex min-h-11 w-full items-center rounded px-3 text-start text
 function SiteMenu() {
   const { t } = useTranslation()
   const location = useLocation()
-  const { open, setOpen, wrapper, button, onBlur } = useDisclosure()
+  const { open, setOpen, wrapper, button, panel, onBlur } = useDisclosure()
   const panelId = useId()
   // The button shows the current page when that page lives in the menu.
   const current = MENU_PAGES.some(([path]) => location.pathname === path)
@@ -170,14 +185,12 @@ function SiteMenu() {
         onClick={() => setOpen(!open)}
         className={`group inline-flex min-h-11 min-w-11 items-center justify-center gap-1 rounded px-2 hover:text-ink lg:px-2.5 aria-expanded:text-ink ${current ? activeMark : 'text-muted'}`}
       >
-        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 md:hidden" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-          <path d="M4 7h16M4 12h16M4 17h16" />
-        </svg>
+        <Menu aria-hidden="true" className="size-5 md:hidden" />
         <span className="sr-only md:hidden">{t('nav.menu')}</span>
         <span className="max-md:hidden">{t('nav.more')}</span>
-        <Chevron className="size-4 max-md:hidden motion-safe:transition-transform group-aria-expanded:rotate-180" />
+        <Chevron className="size-4 max-md:hidden motion-safe:transition-transform motion-safe:duration-(--dur-ui) group-aria-expanded:rotate-180" />
       </button>
-      <div id={panelId} hidden={!open} className={`absolute inset-x-4 top-full sm:inset-x-auto sm:start-0 sm:w-64 ${menuPanel}`}>
+      <div ref={panel} id={panelId} data-open={open ? '' : undefined} className={`absolute inset-x-4 top-full sm:inset-x-auto sm:start-0 sm:w-64 ${menuPanel}`}>
         <div className="mb-1 border-b border-line pb-1 md:hidden">
           {NAV_PAGES.map(([path, key]) => (
             <NavLink key={path} to={path} onClick={() => setOpen(false)} className={({ isActive }) => `${menuItem} ${isActive ? 'font-medium text-ink' : ''}`}>
@@ -199,9 +212,21 @@ function SiteMenu() {
             onClick={() => {
               setOpen(false)
               button.current?.focus()
+              requestAnimationFrame(() => window.dispatchEvent(new Event(OPEN_SHORTCUTS)))
+            }}
+            className={`${menuItem} mb-2`}
+          >
+            {t('shortcuts.menu')}
+          </button>
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            onClick={() => {
+              setOpen(false)
+              button.current?.focus()
               requestAnimationFrame(() => openBugReport())
             }}
-            className={`${primaryButton} w-full text-sm`}
+            className={`${secondaryButton} w-full text-sm`}
           >
             {t('bugReport.reportBug')}
           </button>
@@ -218,7 +243,7 @@ function SiteMenu() {
 function AccountMenu({ user, staff, bumps, onLogOut }: { user: User; staff: boolean; bumps: number; onLogOut: () => void }) {
   const { t } = useTranslation()
   const location = useLocation()
-  const { open, setOpen, wrapper, button, onBlur } = useDisclosure()
+  const { open, setOpen, wrapper, button, panel, onBlur } = useDisclosure()
   const panelId = useId()
   const points = t('header.points', { count: user.points })
   // Closes when the page changes (a link inside it, or Back).
@@ -236,9 +261,9 @@ function AccountMenu({ user, staff, bumps, onLogOut }: { user: User; staff: bool
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen(!open)}
-        className="group inline-flex min-h-11 items-center gap-2 rounded-full border border-line ps-1 pe-3 text-sm text-ink hover:bg-hover focus-visible:bg-hover aria-expanded:bg-hover sm:pointer-fine:min-h-9 sm:pointer-fine:ps-0.5 sm:pointer-fine:pe-2.5"
+        className="group elev-raised inline-flex min-h-11 items-center gap-2 rounded-full border border-line ps-1 pe-3 text-sm text-ink hover:bg-hover focus-visible:bg-hover aria-expanded:bg-hover sm:pointer-fine:min-h-9 sm:pointer-fine:ps-0.5 sm:pointer-fine:pe-2.5"
       >
-        <span aria-hidden="true" className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-soft font-bold text-accent sm:pointer-fine:size-7">
+        <span aria-hidden="true" className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-soft font-bold text-accent-text sm:pointer-fine:size-7">
           {Array.from(user.name.trim())[0]?.toLocaleUpperCase()}
         </span>
         <span dir="auto" className="max-w-40 truncate max-lg:sr-only">
@@ -248,13 +273,13 @@ function AccountMenu({ user, staff, bumps, onLogOut }: { user: User; staff: bool
             remounts it, which replays the motion-safe animation. */}
         <span
           key={bumps}
-          className={`inline-block font-semibold whitespace-nowrap text-accent tabular-nums ${bumps > 0 ? 'motion-safe:animate-bump' : ''}`}
+          className={`inline-block font-semibold whitespace-nowrap text-accent-text tabular-nums ${bumps > 0 ? 'motion-safe:animate-bump' : ''}`}
         >
           {points}
         </span>
-        <Chevron className="size-4 text-muted max-md:hidden motion-safe:transition-transform group-aria-expanded:rotate-180" />
+        <Chevron className="size-4 text-muted max-md:hidden motion-safe:transition-transform motion-safe:duration-(--dur-ui) group-aria-expanded:rotate-180" />
       </button>
-      <div id={panelId} hidden={!open} className={`absolute end-0 top-full w-64 max-w-[calc(100vw-2rem)] ${menuPanel}`}>
+      <div ref={panel} id={panelId} data-open={open ? '' : undefined} className={`absolute end-0 top-full w-64 max-w-[calc(100vw-2rem)] ${menuPanel}`}>
         <p className="px-3 py-2 text-sm">
           <span dir="auto" className="font-medium break-words text-ink">
             {user.name}
@@ -353,7 +378,7 @@ export default function Layout() {
               two-row phone header stays 93 px), then one divider before the account. */}
           <div role="group" aria-label={t('header.settings')} className="flex items-center gap-0.5 text-sm">
             <ThemeToggle />
-            <SoundToggle className={`${ghostButton.replace('inline-flex', 'hidden lg:inline-flex')} aria-pressed:text-accent`} />
+            <SoundToggle className={`${ghostButton.replace('inline-flex', 'hidden lg:inline-flex')} aria-pressed:text-accent-text`} />
             <LanguageToggle />
           </div>
           <span aria-hidden="true" className="h-6 w-px bg-line max-md:hidden" />
@@ -399,6 +424,7 @@ export default function Layout() {
       </main>
       <Footer />
       <CookieNotice />
+      <ShortcutsHost />
     </div>
   )
 }

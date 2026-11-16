@@ -10,9 +10,10 @@ import EmptyState from '../components/EmptyState'
 import FilterBar from '../components/FilterBar'
 import { CheckIcon } from '../components/Icons'
 import { LoadingRegion, SkeletonLines } from '../components/Loading'
-import { cardList, headRow, num, row, table, tableCard, td, th } from '../components/tableStyles'
+import { cardList, headRow, num, row, stretchLink, table, tableCard, td, th } from '../components/tableStyles'
 import { Skeleton } from '../components/ui/skeleton'
 import { formatNumber } from '../i18n'
+import { normalizeSearch } from '../lib/normalize'
 import { textLang } from '../textLang'
 
 const DIFFICULTIES = ['easy', 'medium', 'hard']
@@ -36,12 +37,13 @@ function SolvedMark({ solved }: { solved: boolean }) {
   )
 }
 
-// The title in ink, underlined on hover; a solved one is muted, so the unsolved ones stand out.
+// The title in ink, underlined on hover; a solved one is muted, so the unsolved ones stand out. Its
+// ::after covers the whole row or card (stretchLink), so the row is the click target.
 function ChallengeLink({ challenge }: { challenge: ChallengeSummary }) {
   return (
     <Link
       to={`/challenges/${challenge.slug}`}
-      className={`rounded font-medium underline-offset-4 hover:underline ${challenge.solved ? 'text-muted hover:text-ink' : 'text-ink'}`}
+      className={`${stretchLink} rounded font-medium underline-offset-4 hover:underline ${challenge.solved ? 'text-muted hover:text-ink' : 'text-ink'}`}
     >
       <Content lang="auto">{challenge.title}</Content>
     </Link>
@@ -94,12 +96,13 @@ export default function ChallengesPage() {
   }
   const hasStandalone = challenges?.some((challenge) => challenge.topic === null) ?? false
 
-  // Searches the title as shown: Arabic where it is translated, English otherwise.
-  const query = search.trim().toLowerCase()
+  // Searches the title as shown: Arabic where it is translated, English otherwise. Alef forms, ta
+  // marbuta and tashkeel do not matter (normalizeSearch).
+  const query = normalizeSearch(search)
   const statusFilter = user ? status : ''
   const shown = (challenges ?? []).filter(
     (challenge) =>
-      (!query || challenge.title.toLowerCase().includes(query)) &&
+      (!query || normalizeSearch(challenge.title).includes(query)) &&
       (!difficulty || challenge.difficulty === difficulty) &&
       (!topic || (topic === STANDALONE ? challenge.topic === null : challenge.topic?.slug === topic)) &&
       (!statusFilter || (statusFilter === 'solved') === challenge.solved),
@@ -222,7 +225,7 @@ export default function ChallengesPage() {
               {/* Cards on narrow screens, a table from md up. */}
               <ul className={cardList}>
                 {shown.map((challenge) => (
-                  <li key={challenge.slug} className="px-4 py-3">
+                  <li key={challenge.slug} className="relative px-4 py-3 hover:bg-hover">
                     <div className="flex items-center gap-2">
                       {user && <SolvedMark solved={challenge.solved} />}
                       <ChallengeLink challenge={challenge} />
@@ -268,7 +271,7 @@ export default function ChallengesPage() {
                   </thead>
                   <tbody>
                     {shown.map((challenge) => (
-                      <tr key={challenge.slug} className={row}>
+                      <tr key={challenge.slug} className={`${row} relative`}>
                         {user && (
                           <td className={td}>
                             <SolvedMark solved={challenge.solved} />

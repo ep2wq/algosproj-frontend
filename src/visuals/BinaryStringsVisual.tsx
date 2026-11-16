@@ -1,11 +1,13 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { normalizeNumberInput } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import { binaryStringFrames, type BinaryFrame } from './binaryStringFrames'
 import CallTreeDiagram, { CallTreeLegend, type CallMark } from './CallTreeDiagram'
 import type { CallNode } from './callTree'
 import type { T } from './i18n'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 
 // The problem allows 1 <= n <= 10; the visual stops at 4, so the tree (16 leaves) stays readable.
@@ -18,7 +20,7 @@ function randomN(not: number) {
 
 // Returns n, or an error message to show.
 function parseN(text: string, t: T): number | string {
-  const trimmed = text.trim()
+  const trimmed = normalizeNumberInput(text)
   if (!/^\d+$/.test(trimmed) || Number(trimmed) < 1 || Number(trimmed) > MAX_N) return t('binaryString.invalidN', { max: MAX_N })
   return Number(trimmed)
 }
@@ -79,7 +81,7 @@ export default function BinaryStringsVisual() {
   const callStack = current.stack.map((call) => tree[call].label)
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -103,7 +105,7 @@ export default function BinaryStringsVisual() {
         </span>
       </p>
 
-      <CallTreeDiagram nodes={tree} shown={current.shown} markOf={markFor(current)} label={treeLabel(current, tree, t)} />
+      <CallTreeDiagram playback={playback} nodes={tree} shown={current.shown} markOf={markFor(current)} label={treeLabel(current, tree, t)} />
       <CallTreeLegend />
       <p className="mt-1 text-xs text-muted">
         <TextWithCode text={t('binaryString.noPrune', { leaves: 2 ** n })} />
@@ -120,7 +122,7 @@ export default function BinaryStringsVisual() {
         {current.results.map((result, index) => {
           const isNew = current.kind === 'print' && index === current.results.length - 1
           return (
-            <li key={result} className={`rounded border px-1.5 py-0.5 font-mono text-sm ${isNew ? 'border-pass bg-pass text-inverse' : 'border-muted bg-surface'}`}>
+            <li key={result} className={`rounded border px-1.5 py-0.5 font-mono text-sm ${isNew ? 'border-found-line bg-found text-found-ink' : 'border-muted bg-surface'}`}>
               {result}
               {isNew && <span className="ms-1 font-sans text-xs">{t('callTree.new')}</span>}
             </li>
@@ -128,9 +130,7 @@ export default function BinaryStringsVisual() {
         })}
       </ol>
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} />
 
       <PlaybackControls playback={playback} />
 
@@ -138,39 +138,41 @@ export default function BinaryStringsVisual() {
         <button type="button" onClick={() => restart(randomN(n))} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <label htmlFor={`${id}-n`} className="block text-sm font-medium">
-            <TextWithCode text={t('binaryString.ownN')} />
-          </label>
-          <div className="mt-1 flex max-w-xs gap-2">
-            <input
-              id={`${id}-n`}
-              type="text"
-              inputMode="numeric"
-              autoComplete="off"
-              dir="ltr"
-              value={nText}
-              onChange={(event) => setNText(event.target.value)}
-              placeholder={t('binaryString.placeholder')}
-              aria-invalid={Boolean(inputError)}
-              aria-describedby={`${id}-n-hint${inputError ? ` ${id}-n-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
-                inputError ? 'border-fail' : 'border-field hover:border-muted'
-              }`}
-            />
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThis')}
-            </button>
-          </div>
-          <p id={`${id}-n-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={t('binaryString.hint', { max: MAX_N })} />
-          </p>
-          {inputError && (
-            <p id={`${id}-n-error`} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError} />
+        <OwnInput>
+          <form onSubmit={handleCustom} noValidate>
+            <label htmlFor={`${id}-n`} className="block text-sm font-medium">
+              <TextWithCode text={t('binaryString.ownN')} />
+            </label>
+            <div className="mt-1 flex max-w-xs gap-2">
+              <input
+                id={`${id}-n`}
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                dir="ltr"
+                value={nText}
+                onChange={(event) => setNText(event.target.value)}
+                placeholder={t('binaryString.placeholder')}
+                aria-invalid={Boolean(inputError)}
+                aria-describedby={`${id}-n-hint${inputError ? ` ${id}-n-error` : ''}`}
+                className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
+                  inputError ? 'border-fail' : 'border-field hover:border-muted'
+                }`}
+              />
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThis')}
+              </button>
+            </div>
+            <p id={`${id}-n-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={t('binaryString.hint', { max: MAX_N })} />
             </p>
-          )}
-        </form>
+            {inputError && (
+              <p id={`${id}-n-error`} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError} />
+              </p>
+            )}
+          </form>
+        </OwnInput>
       </div>
     </div>
   )

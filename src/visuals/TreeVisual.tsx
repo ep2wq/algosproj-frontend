@@ -1,10 +1,13 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { normalizeNumberInput, numberParts } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import type { T } from './i18n'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { deleteFrames, heightFrames, lcaFrames, type Mark, type TreeFrame, type TreeMode } from './treeFrames'
 import { diagramSize, NODE_R, treeLayout } from './treeLayout'
+import { useFlip } from './useFlip'
 import { usePlayback } from './usePlayback'
 import { useScrollCue } from './useScrollCue'
 
@@ -38,7 +41,7 @@ function randomValues(min: number, max: number) {
 }
 
 function parseValues(text: string, minCount: number, t: T): number[] | string {
-  const parts = text.split(/[\s,]+/).filter(Boolean)
+  const parts = numberParts(text)
   if (parts.some((part) => !/^-?\d+$/.test(part) || Math.abs(Number(part)) > MAX_VALUE)) {
     return t('inversions.invalid', { limit: MAX_VALUE })
   }
@@ -51,7 +54,7 @@ function parseValues(text: string, minCount: number, t: T): number[] | string {
 }
 
 function parseMember(text: string, name: string, values: number[], t: T): number | string {
-  const trimmed = text.trim()
+  const trimmed = normalizeNumberInput(text)
   if (!/^-?\d+$/.test(trimmed)) return t('tree.memberInvalid', { name })
   const value = Number(trimmed)
   if (!values.includes(value)) return t('tree.memberMissing', { name, value, values: values.join(' ') })
@@ -122,13 +125,19 @@ function treeLabel(frame: TreeFrame, mode: TreeMode, t: T) {
   return marks ? t('tree.labelMarks', { root: valueOf(frame.root), nodes, marks }) : t('tree.label', { root: valueOf(frame.root), nodes })
 }
 
+// How far a node's path bows when it moves up to take a deleted node's place, in pixels.
+const ARC = 16
+
+// While it plays (useFlip): a new node fades in; a node that moves (delete: a child linked in the
+// place of its parent) travels there on a curve and its edges follow it; the node the step looks at
+// pulses once; unmarked nodes are dimmed while others are marked.
 function Diagram({ frame, rows }: { frame: TreeFrame; rows: number }) {
   const { width, height } = diagramSize(frame.slots, rows)
   const points = treeLayout(frame.nodes, frame.root)
   const markOf = new Map(frame.marks.map(({ id, mark }) => [id, mark]))
   const edgeIs = (from: number, to: number) => frame.edge !== null && frame.edge[0] === from && frame.edge[1] === to
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block" aria-hidden="true">
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block overflow-visible" aria-hidden="true">
       {frame.nodes.flatMap((node) =>
         [node.left, node.right]
           .filter((child): child is number => child !== null)
@@ -136,7 +145,7 @@ function Diagram({ frame, rows }: { frame: TreeFrame; rows: number }) {
             const a = points.get(node.id)!
             const b = points.get(child)!
             const active = edgeIs(node.id, child)
-            return <line key={`${node.id}-${child}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} strokeWidth={active ? 3 : 2} className={active ? 'stroke-warn' : 'stroke-muted'} />
+            return <line key={`${node.id}-${child}`} data-flip={`edge-${node.id}-${child}`} data-flip-lag="" data-flip-fade="shape" x1={a.x} y1={a.y} x2={b.x} y2={b.y} strokeWidth={active ? 3 : 2} className={active ? 'stroke-warn' : 'stroke-muted'} />
           }),
       )}
       {frame.nodes.map((node) => {
@@ -144,8 +153,21 @@ function Diagram({ frame, rows }: { frame: TreeFrame; rows: number }) {
         const mark = markOf.get(node.id)
         const thick = mark === 'current' || mark === 'focus'
         return (
-          <g key={node.id}>
-            <circle cx={x} cy={y} r={NODE_R} strokeWidth={thick ? 4 : 2} className={`${NODE_CLASS[mark ?? 'plain']} motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm`} />
+          <g
+            key={node.id}
+            data-flip={`node-${node.id}`}
+            data-flip-arc={ARC}
+            className={`motion-safe:transition-opacity motion-safe:duration-(--dur-ui) motion-safe:ease-out ${mark === undefined && frame.marks.length > 0 ? 'opacity-70' : ''}`}
+          >
+            <circle
+              cx={x}
+              cy={y}
+              r={NODE_R}
+              strokeWidth={thick ? 4 : 2}
+              className={`elev-raised-svg ${NODE_CLASS[mark ?? 'plain']} motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${
+                mark === 'current' ? 'origin-center [transform-box:fill-box] motion-safe:[[data-travel]_&]:animate-hit' : ''
+              }`}
+            />
             <text x={x} y={y + 4} textAnchor="middle" className={`font-mono text-xs font-semibold ${mark === 'answer' ? 'fill-inverse' : 'fill-ink'}`}>
               {node.value}
             </text>
@@ -174,6 +196,7 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
+  useFlip(scrollRef, playback)
 
   function restart(nextSource: Source) {
     setSource(nextSource)
@@ -197,6 +220,8 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
       next[field] = value
     }
     setInputError(null)
+    setValuesText(normalizeNumberInput(valuesText))
+    setMemberText({ ...memberText, ...Object.fromEntries(config.fields.map((field) => [field, String(next[field])])) })
     restart(next)
   }
 
@@ -209,7 +234,7 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
   const hasEdge = frames.some((frame) => frame.edge !== null)
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -287,7 +312,7 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
           )}
           {marks.has('answer') && (
             <li className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-full border-2 border-pass bg-pass" aria-hidden="true" />
+              <span className="inline-block size-3 rounded-full border-2 border-found-line bg-found" aria-hidden="true" />
               <TextWithCode text={t('tree.legendAnswer')} />
             </li>
           )}
@@ -307,9 +332,7 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} />
       {step === 0 && lastStep > 0 && <p className="mt-2 text-sm text-muted">{t('tree.pressStep')}</p>}
 
       <PlaybackControls playback={playback} />
@@ -318,59 +341,61 @@ export default function TreeVisual({ mode }: { mode: TreeMode }) {
         <button type="button" onClick={() => restart(config.random())} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <div className="flex flex-wrap items-end gap-2">
-            <div className="min-w-0 flex-1 basis-40">
-              <label htmlFor={`${id}-values`} className="block text-sm font-medium">
-                {t('tree.ownValues')}
-              </label>
-              <input
-                id={`${id}-values`}
-                type="text"
-                autoComplete="off"
-                spellCheck={false}
-                dir="ltr"
-                value={valuesText}
-                onChange={(event) => setValuesText(event.target.value)}
-                placeholder={t(`tree.${mode}.placeholder`)}
-                aria-invalid={inputError?.field === 'values'}
-                aria-describedby={describedBy('values')}
-                className={`mt-1 ${inputClass('values')}`}
-              />
-            </div>
-            {config.fields.map((field) => (
-              <div key={field} className="w-20">
-                <label htmlFor={`${id}-${field}`} className="block text-sm font-medium">
-                  {field}
+        <OwnInput>
+          <form onSubmit={handleCustom} noValidate>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="min-w-0 flex-1 basis-40">
+                <label htmlFor={`${id}-values`} className="block text-sm font-medium">
+                  {t('tree.ownValues')}
                 </label>
                 <input
-                  id={`${id}-${field}`}
+                  id={`${id}-values`}
                   type="text"
-                  inputMode="numeric"
                   autoComplete="off"
                   spellCheck={false}
                   dir="ltr"
-                  value={memberText[field]}
-                  onChange={(event) => setMemberText({ ...memberText, [field]: event.target.value })}
-                  aria-invalid={inputError?.field === field}
-                  aria-describedby={describedBy(field)}
-                  className={`mt-1 ${inputClass(field)}`}
+                  value={valuesText}
+                  onChange={(event) => setValuesText(event.target.value)}
+                  placeholder={t(`tree.${mode}.placeholder`)}
+                  aria-invalid={inputError?.field === 'values'}
+                  aria-describedby={describedBy('values')}
+                  className={`mt-1 ${inputClass('values')}`}
                 />
               </div>
-            ))}
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThese')}
-            </button>
-          </div>
-          <p id={`${id}-input-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={t(`tree.${mode}.hint`, { nodes: MAX_NODES, max: MAX_VALUE })} />
-          </p>
-          {inputError && (
-            <p id={`${id}-input-error`} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError.message} />
+              {config.fields.map((field) => (
+                <div key={field} className="w-20">
+                  <label htmlFor={`${id}-${field}`} className="block text-sm font-medium">
+                    {field}
+                  </label>
+                  <input
+                    id={`${id}-${field}`}
+                    type="text"
+                    inputMode="text"
+                    autoComplete="off"
+                    spellCheck={false}
+                    dir="ltr"
+                    value={memberText[field]}
+                    onChange={(event) => setMemberText({ ...memberText, [field]: event.target.value })}
+                    aria-invalid={inputError?.field === field}
+                    aria-describedby={describedBy(field)}
+                    className={`mt-1 ${inputClass(field)}`}
+                  />
+                </div>
+              ))}
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThese')}
+              </button>
+            </div>
+            <p id={`${id}-input-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={t(`tree.${mode}.hint`, { nodes: MAX_NODES, max: MAX_VALUE })} />
             </p>
-          )}
-        </form>
+            {inputError && (
+              <p id={`${id}-input-error`} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError.message} />
+              </p>
+            )}
+          </form>
+        </OwnInput>
       </div>
     </div>
   )

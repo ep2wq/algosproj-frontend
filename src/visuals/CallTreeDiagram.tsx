@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextWithCode } from '../components/LessonBody'
 import { CALL_BOX_H, CALL_BOX_W, callTreeLayout, callTreeSize, type CallNode } from './callTree'
+import { useFlip } from './useFlip'
+import type { usePlayback } from './usePlayback'
 import { useScrollCue } from './useScrollCue'
 
 // How a call is drawn: the call running now, an open call waiting for it (on the call stack),
@@ -25,8 +27,21 @@ const TEXT_CLASS: Record<CallMark, string> = {
 // The calls made so far (nodes[0..shown)), drawn as a tree that grows step by step. The whole
 // tree's size is used from the start, so the drawing doesn't jump while it grows; it scrolls
 // sideways inside its own box, and follows the running call. The drawing is left to right in both
-// languages (also what scrollLeft assumes).
-export default function CallTreeDiagram({ nodes, shown, markOf, label }: { nodes: CallNode[]; shown: number; markOf: (id: number) => CallMark; label: string }) {
+// languages (also what scrollLeft assumes). While it plays, a new call fades in, its edge just after
+// it (useFlip), and the call that starts running pulses once.
+export default function CallTreeDiagram({
+  playback,
+  nodes,
+  shown,
+  markOf,
+  label,
+}: {
+  playback: ReturnType<typeof usePlayback>
+  nodes: CallNode[]
+  shown: number
+  markOf: (id: number) => CallMark
+  label: string
+}) {
   const { t } = useTranslation('visuals')
   // One ref: the scroll cue and the follow-the-running-call scrolling share the box.
   const [boxRef, scrollMore] = useScrollCue<HTMLDivElement>()
@@ -43,6 +58,7 @@ export default function CallTreeDiagram({ nodes, shown, markOf, label }: { nodes
       box.scrollLeft = runningX - box.clientWidth / 2
     }
   }, [boxRef, runningX])
+  useFlip(boxRef, playback)
 
   return (
     <div
@@ -63,6 +79,8 @@ export default function CallTreeDiagram({ nodes, shown, markOf, label }: { nodes
             return (
               <line
                 key={`edge-${node.id}`}
+                data-flip={`edge-${node.id}`}
+                data-flip-lag=""
                 x1={a.x}
                 y1={a.y + CALL_BOX_H / 2}
                 x2={b.x}
@@ -76,7 +94,7 @@ export default function CallTreeDiagram({ nodes, shown, markOf, label }: { nodes
             const { x, y } = points.get(node.id)!
             const mark = markOf(node.id)
             return (
-              <g key={node.id}>
+              <g key={node.id} data-flip={`call-${node.id}`}>
                 <rect
                   x={x - CALL_BOX_W / 2}
                   y={y - CALL_BOX_H / 2}
@@ -84,7 +102,9 @@ export default function CallTreeDiagram({ nodes, shown, markOf, label }: { nodes
                   height={CALL_BOX_H}
                   rx={4}
                   strokeWidth={mark === 'running' ? 3 : 1.5}
-                  className={`${BOX_CLASS[mark]} motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm`}
+                  className={`elev-raised-svg ${BOX_CLASS[mark]} motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${
+                    mark === 'running' ? 'origin-center [transform-box:fill-box] motion-safe:[[data-travel]_&]:animate-hit' : ''
+                  }`}
                 />
                 <text x={x} y={y + 4} textAnchor="middle" className={`font-mono text-xs font-semibold ${TEXT_CLASS[mark]}`}>
                   {node.label}
@@ -120,7 +140,7 @@ export function CallTreeLegend() {
         <TextWithCode text={t('callTree.waiting')} />
       </li>
       <li className="flex items-center gap-1.5">
-        <span className="inline-block h-3 w-4 rounded-sm border border-pass bg-pass" aria-hidden="true" />
+        <span className="inline-block h-3 w-4 rounded-sm border border-found-line bg-found" aria-hidden="true" />
         <span aria-hidden="true" className="font-semibold text-pass">
           ✓
         </span>

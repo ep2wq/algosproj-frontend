@@ -18,6 +18,7 @@
     "newRandomArray": "New random array",
     "newRandomExample": "New random example",
     "yourOwnNumbers": "Your own numbers",
+    "tryYourOwn": "Try your own",
     "atLeastOneNumber": "Enter at least one number.",
     "atMostNumbers_one": "Enter at most {{count}} number.",
     "atMostNumbers_other": "Enter at most {{count}} numbers.",

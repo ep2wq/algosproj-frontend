@@ -22,6 +22,7 @@
     "newRandomArray": "~array~ عشوائي جديد",
     "newRandomExample": "مثال عشوائي جديد",
     "yourOwnNumbers": "أعدادك الخاصة",
+    "tryYourOwn": "جرّب مدخلاتك",
     "atLeastOneNumber": "أدخل عددًا واحدًا على الأقل.",
     "atMostNumbers_zero": "أدخل {{count}} عدد على الأكثر.",
     "atMostNumbers_one": "أدخل عددًا واحدًا على الأكثر.",

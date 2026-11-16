@@ -7,52 +7,68 @@
    themes without a dark: class. Every pair used for text is at least 4.5:1, borders of inputs
    (field) and meaningful shapes at least 3:1, in both themes (README "Themes"). */
 @theme {
-  /* Light: a cool gray paper, so white surfaces (cards, header, inputs) stand on it. On the paper:
-     muted 6.34, field 3.98, accent 6.43; accent on surface 7.68, on accent-soft 6.78. */
-  --color-paper: #e8ebef;
-  --color-surface: #ffffff;
-  --color-ink: #0f172a;
-  --color-muted: #475569;
-  --color-line: #d4d9e0;
-  --color-field: #64748b;
+  /* Light: a true neutral gray (no blue tint, no white anywhere). Paper #b4b4b4, surface #c8c8c8
+     (cards, header, footer, inputs, menus, panels). Ratios on paper / surface: ink 9.55 / 11.83,
+     muted 6.55 / 8.12, field 3.13 / 3.88, accent 3.71 / 4.59 (focus ring, filled buttons),
+     accent-text 5.92 / 7.34. line is a divider only (1.32 / 1.64): interactive edges use field. */
+  --color-paper: #b4b4b4;
+  --color-surface: #c8c8c8;
+  --color-ink: #0a0a0a;
+  --color-muted: #2e2e2e;
+  --color-line: #9c9c9c;
+  --color-field: #5e5e5e;
   --color-accent: #065f46;
-  --color-accent-soft: #d1fae5;
-  --color-pass: #3f6212;
-  --color-fail: #be123c;
-  --color-warn: #9a3412;
+  /* Accent as text or a link on paper, surface or a note: accent-text (the accent itself is only for
+     fills with inverse text, borders and the focus ring). Dark: the accent. */
+  --color-accent-text: #043d2d;
+  /* Chips, avatar, "you" rows. accent-text on it 6.86, ink 11.06. */
+  --color-accent-soft: #a9c9b8;
+  /* On paper / surface / note / dotted paper (worst case) / code: pass 5.83 / 7.22 / 6.50 / 4.51 / 6.43;
+     warn 5.93 / 7.35 / 6.62 / 4.59 / 6.55; fail 5.86 / 7.26 / 6.53 / 4.53 / 6.01. */
+  --color-pass: #223d05;
+  --color-fail: #700619;
+  --color-warn: #5f2108;
   --color-inverse: #ffffff;
 
-  /* The Google and GitHub sign-in buttons (SocialSignIn.tsx): the fill, 1 px border and text that
-     Google's branding guidelines require around its "G", light here and dark in .dark. Border on the
-     paper 3.79:1 light, 6.02:1 dark; text 16.48:1 and 14.47:1. */
-  --color-social: #ffffff;
-  --color-social-line: #747775;
-  --color-social-ink: #1f1f1f;
+  /* Narration and status boxes (.note-box below): fill, with a 3 px accent edge in light. ink 10.65,
+     muted 7.31, accent-text 6.61. Dark: accent-soft, as before. */
+  --color-note: #bebebe;
+
+  /* Found / result cells of the visualizations (light: a green fill with a dark green border; dark:
+     the bright pass green with inverse text). Light: text on fill 7.42, border on fill 4.23, on paper
+     3.29, on surface 4.08. */
+  --color-found: #c3d1aa;
+  --color-found-line: #496313;
+  --color-found-ink: #263d0a;
+
+  /* The Google and GitHub sign-in buttons (SocialSignIn.tsx): fill, 1 px border and text, a neutral
+     gray here (no white), dark in .dark. */
+  --color-social: #d2d2d2;
+  --color-social-line: #5e5e5e;
+  --color-social-ink: #0a0a0a;
 
   /* The landing CTA band follows the theme: the surface (with a line border) in light, near black
-     in dark. Text is ink and muted, the button accent with inverse text. Dark: ink 18.93, muted
-     7.72, accent 7.81 (text and focus ring), inverse on accent 7.95. */
-  --color-band: #ffffff;
+     in dark. Text is ink and muted, the button accent with inverse text. */
+  --color-band: #c8c8c8;
 
   /* Code areas (the landing sample, lesson code, examples and output values), never the paper, so
-     code inside a white card does not melt into the page. Every syntax token below and muted are at
+     code inside a card does not melt into the page. Every syntax token below and muted are at
      least 4.5:1 on it, in both themes. */
-  --color-code: #f6f8fa;
+  --color-code: #bdbdbd;
 
-  /* Syntax colours (static, src/syntax.ts and codeSamples.ts). On code: keyword 6.67, function 5.57,
-     number 4.72, string 5.67, comment 5.11, operator 7.12. Never emerald or lime (the accent and
-     "passed"). */
-  --color-syntax-keyword: #6d28d9;
-  --color-syntax-function: #0369a1;
-  --color-syntax-number: #b45309;
-  --color-syntax-string: #be185d;
-  --color-syntax-comment: #5b6b80;
-  --color-syntax-operator: #475569;
+  /* Syntax colours (static, src/syntax.ts and codeSamples.ts). On code (#bdbdbd): keyword 6.33,
+     function 5.88, number 5.36, string 5.58, comment 5.78, operator 7.23. Never emerald or lime (the
+     accent and "passed"). */
+  --color-syntax-keyword: #46198a;
+  --color-syntax-function: #02405f;
+  --color-syntax-number: #6f2f04;
+  --color-syntax-string: #7d0d40;
+  --color-syntax-comment: #3d3d3d;
+  --color-syntax-operator: #2e2e2e;
 
   /* The soft background of a hovered or keyboard-focused ghost button (header, account menu,
-     table rows): one step from the surface. Light: ink 16.30, muted 6.92, accent 7.01 on it;
-     dark: ink 13.98, muted 5.71, accent 5.77. */
-  --color-hover: #f1f5f9;
+     table rows): a step darker than the surface. Light: ink 10.09, muted 6.92, accent-text 6.26. */
+  --color-hover: #b9b9b9;
 
   /* Fonts (README "Languages"): IBM Plex Sans Arabic for all interface text, Latin and Arabic;
      JetBrains Mono for code and numbers set as data. Each is followed by its size-adjusted local
@@ -74,18 +90,52 @@
   --radius-lg: 0.5rem;
   --radius-xl: 0.5rem;
 
-  --ease-calm: cubic-bezier(0.16, 1, 0.3, 1);
-  --animate-check: check-draw 450ms var(--ease-calm) both;
-  --animate-bump: bump 400ms var(--ease-calm);
-  --animate-appear: appear 200ms var(--ease-calm) both;
+  --animate-check: check-draw var(--dur-max) var(--ease-out) both;
+  /* The header points, once, when they go up. */
+  --animate-bump: bump var(--dur-move) var(--ease-out);
+  /* The result badge of a passed submit, once: it lands with a little follow-through. */
+  --animate-pop: pop var(--dur-state) var(--ease-settle) both;
+  --animate-appear: appear var(--dur-ui) var(--ease-out) both;
+  /* Visualizations (src/visuals): the piece a step is about pulses once when it becomes current
+     (1 -> 1.06 -> 1), and the step text fades in once the move has ended (--dur-text is set by
+     usePlayback from the speed). */
+  --animate-hit: bump var(--dur-state) var(--ease-out);
+  --animate-step-text: appear var(--dur-text, var(--dur-ui)) var(--ease-out) both;
+  /* An invalid field, once: two cycles of 4 px sideways (symmetric, so the same in RTL). Used as
+     motion-safe:animate-shake; replay it by remounting (change the key). */
+  --animate-shake: shake var(--dur-move) var(--ease-out) both;
   /* Tailwind's pulse, twice, then at rest at full opacity: nothing loops. */
-  --animate-pulse-twice: pulse-twice 2s cubic-bezier(0.4, 0, 0.6, 1) 2;
+  --animate-pulse-twice: pulse-twice 2s var(--ease-out) 2;
+  /* The Submit busy cells: one pulse over --dur-max, then at rest. */
+  --animate-pulse-once: pulse-twice var(--dur-max) var(--ease-out);
+}
+
+/* Motion tokens (mirrored in src/motion.ts for JS-driven animation). static: the variables are always
+   emitted, even before a class uses them. Durations are used as duration-(--dur-ui); the easings are
+   in Tailwind's ease-* namespace, so ease-out, ease-in-out and ease-settle work as classes (ease-out
+   and ease-in-out replace Tailwind's own curves). Every animation sits behind motion-safe:.
+   micro: press, hover. ui: menus, chips, colour changes. state: visual state changes. move: elements
+   travelling. max: nothing longer, except visualization moves at slow speed (moveDuration). settle
+   overshoots a little: follow-through only, never on text-heavy UI. */
+@theme static {
+  --dur-micro: 120ms;
+  --dur-ui: 200ms;
+  --dur-state: 250ms;
+  --dur-move: 350ms;
+  --dur-max: 500ms;
+
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-settle: cubic-bezier(0.34, 1.4, 0.64, 1);
 }
 
 :root {
   /* Not a theme value: Tailwind would bake it into the utility, and .dark could not swap it. Used as
      shadow-(--float-shadow). */
-  --float-shadow: 0 8px 24px -6px rgb(15 23 42 / 0.18), 0 2px 6px -2px rgb(15 23 42 / 0.1);
+  --float-shadow: 0 8px 24px -6px rgb(0 0 0 / 0.28), 0 2px 6px -2px rgb(0 0 0 / 0.16);
+  /* The 1 px bottom edge of a raised control (elev-raised at the end of this file), a little darker
+     than its border. */
+  --raised-edge: rgb(0 0 0 / 0.28);
 
   /* shadcn/ui roles (src/components/ui, docs/ui-shadcn.md outside this repo), pointed at our tokens,
      so .dark swaps them too. Its muted and accent are left out: here muted is a text colour and
@@ -108,15 +158,15 @@
   --ring: var(--color-accent);
   --radius: 0.5rem;
 
-  /* The header (.site-header below): the surface at 92% in both themes, so in light mode it reads
-     as the same white as the footer (over the gray paper it is #fdfdfd). Measured with the worst
-     content behind it, pure black or white and no blur, every header text pair still passes 4.5:1. */
-  --header-glass: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  /* The header (.site-header below): light, the surface itself (the same as the footer); dark, the
+     surface at 92%. Measured with the worst content behind it, every header text pair passes 4.5:1. */
+  --header-glass: var(--color-surface);
 
-  /* The dot grid on the page background (body below): ink at 7% in both themes. Measured with text
-     sitting on a dot (worst case), every text token on the page still passes: light fail 4.57,
-     pass 5.15, muted 5.51; dark muted 6.41, fail 5.94. At 10% light fail text would drop to 4.30. */
-  --dot-color: color-mix(in srgb, var(--color-ink) 7%, transparent);
+  /* The dot grid on the page background (body below): light, black at 12%; dark, ink at 7%. Measured
+     with text sitting on a dot (worst case, paper under a dot is #9e9e9e), every text token on the
+     page passes in light: muted 5.07, accent-text 4.58, pass 4.51, warn 4.59, fail 4.53; dark muted
+     6.41, fail 5.94. */
+  --dot-color: color-mix(in srgb, #000 12%, transparent);
 }
 
 @theme inline {
@@ -211,7 +261,28 @@
 
 @keyframes bump {
   40% {
-    transform: scale(1.12);
+    transform: scale(1.06);
+  }
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.9);
+  }
+}
+
+@keyframes shake {
+  20%,
+  60% {
+    transform: translateX(4px);
+  }
+  40%,
+  80% {
+    transform: translateX(-4px);
+  }
+  0%,
+  100% {
+    transform: translateX(0);
   }
 }
 
@@ -287,7 +358,12 @@
   --color-line: #1e293b;
   --color-field: #64748b;
   --color-accent: #10b981;
+  --color-accent-text: #10b981;
   --color-accent-soft: #0a3b30;
+  --color-note: #0a3b30;
+  --color-found: #a3e635;
+  --color-found-line: #a3e635;
+  --color-found-ink: #020617;
   --color-pass: #a3e635;
   --color-fail: #f87171;
   --color-warn: #fdba74;
@@ -307,6 +383,9 @@
   --color-syntax-comment: #8391a7;
   --color-syntax-operator: #94a3b8;
   --float-shadow: 0 8px 24px -6px rgb(0 0 0 / 0.5), 0 2px 6px -2px rgb(0 0 0 / 0.4);
+  --raised-edge: rgb(0 0 0 / 0.55);
+  --dot-color: color-mix(in srgb, var(--color-ink) 7%, transparent);
+  --header-glass: color-mix(in srgb, var(--color-surface) 92%, transparent);
 }
 
 /* The page: paper with a static dot grid (18 px), from the top of the page to the bottom whatever
@@ -394,6 +473,13 @@ body {
     }
   }
 
+  /* Monaco gives its "No suggestions." message no font of its own and sizes the box to one editor line
+     (21 px), so on a lesson page the message inherited the prose's 17 px / 1.75 and overflowed it. */
+  .monaco-editor .suggest-widget > .message {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
   /* JetBrains Mono's ligatures draw <= as ≤ and == as one long bar. In code that is being learned,
      every character shows as typed. */
   pre,
@@ -427,17 +513,18 @@ body {
   }
 
   /* One hover and press language for every link and button (README "Themes"): colours ease in
-     150 ms and a pressed button moves down 1 px. Only with motion allowed, and never inside Monaco,
-     which styles its own widgets. */
+     --dur-micro, a pressed button scales to 0.97 and a raised one loses its bottom edge. Only with
+     motion allowed (otherwise colours still change, instantly), and never inside Monaco, which
+     styles its own widgets. */
   @media (prefers-reduced-motion: no-preference) {
     :where(a, button, select, summary, input):not(.monaco-editor *) {
-      transition-property: color, background-color, border-color, text-decoration-color, transform;
-      transition-duration: 150ms;
-      transition-timing-function: var(--ease-calm);
+      transition-property: color, background-color, border-color, text-decoration-color, transform, scale;
+      transition-duration: var(--dur-micro);
+      transition-timing-function: var(--ease-out);
     }
 
     :where(button):not(:disabled, [aria-disabled='true'], .monaco-editor *):active {
-      transform: translateY(1px);
+      transform: scale(0.97);
     }
   }
 
@@ -476,6 +563,16 @@ body {
 :lang(ar) {
   letter-spacing: normal;
   text-transform: none;
+}
+
+/* Narration (step text) and status boxes: the note fill; in light also a 3 px accent edge on the
+   inline-start side (it flips in Arabic). */
+.note-box {
+  background-color: var(--color-note);
+}
+
+:root:not(.dark) .note-box {
+  border-inline-start: 3px solid var(--color-accent);
 }
 
 /* Visible keyboard focus on every link, button and input, in both themes. */
@@ -624,4 +721,66 @@ html {
 /* The mask hides anything outside the box, so a faded box draws its focus outline inside. */
 .scroll-fade:focus-visible {
   outline-offset: -2px;
+}
+
+/* Elevation, light from above (README "Themes"). page: flat, with the dot grid. surface: a card, a
+   border on the page and no shadow. raised: an interactive control, its border plus a 1 px slightly
+   darker bottom edge (an inset line, so nothing changes size); pressed, the edge is gone. floating:
+   menus, popovers, dropdowns and the cookie notice, the only things with --float-shadow.
+   Visualization cells are raised too (tactile pieces); nodes drawn in SVG, where box-shadow does
+   nothing, get the same bottom edge from elev-raised-svg. */
+@utility elev-surface {
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+}
+
+@utility elev-raised {
+  box-shadow: inset 0 -1px 0 var(--raised-edge);
+
+  &:active:not(:disabled, [aria-disabled='true']) {
+    box-shadow: none;
+  }
+}
+
+@utility elev-raised-svg {
+  filter: drop-shadow(0 1px 0 var(--raised-edge));
+}
+
+@utility elev-floating {
+  border: 1px solid var(--color-line);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--float-shadow);
+}
+
+/* A disclosure panel (menus, the Date panel): hidden with visibility, not display, so it can fade
+   and drop in. It opens in --dur-ui and closes in 70% of that. Under reduced motion it just
+   appears. useDisclosure and DateChip set data-open. */
+.disclosure-panel {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.disclosure-panel[data-open] {
+  visibility: visible;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .disclosure-panel {
+    transform: translateY(-4px);
+    transition:
+      opacity calc(var(--dur-ui) * 0.7) var(--ease-in-out),
+      transform calc(var(--dur-ui) * 0.7) var(--ease-in-out),
+      visibility 0s linear calc(var(--dur-ui) * 0.7);
+  }
+
+  .disclosure-panel[data-open] {
+    transform: none;
+    transition:
+      opacity var(--dur-ui) var(--ease-out),
+      transform var(--dur-ui) var(--ease-out),
+      visibility 0s;
+  }
 }

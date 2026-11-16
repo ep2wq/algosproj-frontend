@@ -56,7 +56,7 @@ export default function LoginPage() {
     setSocialError(null)
     setFieldErrors({})
     try {
-      await login(email, password, remember, honeypot, captchaToken)
+      await login(email.trim(), password, remember, honeypot, captchaToken)
       navigate(redirectTarget(location.state), { replace: true })
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) {
@@ -85,14 +85,14 @@ export default function LoginPage() {
       footer={
         <>
           {t('auth.noAccount')}{' '}
-          <Link to="/register" state={location.state} className="rounded text-accent underline underline-offset-2">
+          <Link to="/register" state={location.state} className="rounded text-accent-text underline underline-offset-2">
             {t('auth.register')}
           </Link>
         </>
       }
     >
       {sessionEnded && (
-        <p role="status" className="rounded-lg border border-line bg-accent-soft px-3 py-2 text-sm text-ink">
+        <p role="status" className="rounded-lg border border-line note-box px-3 py-2 text-sm text-ink">
           {t('auth.sessionEnded')}
         </p>
       )}
@@ -107,7 +107,7 @@ export default function LoginPage() {
         errors={fieldErrors.password}
       />
       <p className="-mt-2 text-sm">
-        <Link to="/forgot-password" className="inline-flex min-h-11 items-center rounded text-accent underline underline-offset-2 sm:pointer-fine:min-h-6">
+        <Link to="/forgot-password" className="inline-flex min-h-11 items-center rounded text-accent-text underline underline-offset-2 sm:pointer-fine:min-h-6">
           {t('auth.forgotPassword')}
         </Link>
       </p>

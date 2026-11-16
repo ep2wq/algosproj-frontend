@@ -76,14 +76,14 @@ export default function CookieNotice() {
         <div className="flex items-center gap-4">
           <Link
             to="/cookies"
-            className="inline-flex min-h-11 items-center whitespace-nowrap rounded text-accent underline underline-offset-2 hover:no-underline sm:pointer-fine:min-h-8"
+            className="inline-flex min-h-11 items-center whitespace-nowrap rounded text-accent-text underline underline-offset-2 hover:no-underline sm:pointer-fine:min-h-8"
           >
             {t('cookieNotice.policy')}
           </Link>
           <button
             type="button"
             onClick={dismiss}
-            className="inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded bg-accent px-4 font-medium text-inverse hover:bg-accent/90 sm:pointer-fine:min-h-8"
+            className="elev-raised inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded bg-accent px-4 font-medium text-inverse hover:bg-accent/90 sm:pointer-fine:min-h-8"
           >
             {t('cookieNotice.ok')}
           </button>

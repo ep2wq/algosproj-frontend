@@ -4,6 +4,7 @@ import LessonBody from '../components/LessonBody'
 import PageMeta from '../components/PageMeta'
 import ScrollProgress from '../components/ScrollProgress'
 import { CONTACT_EMAIL } from '../site'
+import { ChevronDown } from 'lucide-react'
 
 // Each answer is checked against the code (docs/ui-public-pages.md "Content facts"); change it
 // when the behaviour changes.
@@ -33,11 +34,9 @@ export default function FaqPage() {
       <div className="mt-8 divide-y divide-line rounded-lg border border-line bg-surface">
         {QUESTIONS.map((id) => (
           <details key={id} id={id} className="group px-4">
-            <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 rounded py-3 font-medium hover:text-accent [&::-webkit-details-marker]:hidden">
+            <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 rounded py-3 font-medium hover:text-accent-text [&::-webkit-details-marker]:hidden">
               <span>{t(`faq.items.${id}.q`)}</span>
-              <svg aria-hidden="true" viewBox="0 0 16 16" className="size-4 shrink-0 text-muted motion-safe:transition-transform motion-safe:duration-200 group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 6l4 4 4-4" />
-              </svg>
+              <ChevronDown aria-hidden="true" className="size-4 shrink-0 text-muted motion-safe:transition-transform motion-safe:duration-(--dur-ui) motion-safe:ease-out group-open:rotate-180" />
             </summary>
             <div className="pb-4">
               <LessonBody text={t(`faq.items.${id}.a`)} lang={i18n.language} />
@@ -47,11 +46,11 @@ export default function FaqPage() {
       </div>
       <p className="mt-8 max-w-prose text-muted">
         {t('faq.stillStuck')}{' '}
-        <a href={`mailto:${CONTACT_EMAIL}`} dir="ltr" className="rounded text-accent underline underline-offset-2">
+        <a href={`mailto:${CONTACT_EMAIL}`} dir="ltr" className="rounded text-accent-text underline underline-offset-2">
           {CONTACT_EMAIL}
         </a>{' '}
         <span aria-hidden="true">·</span>{' '}
-        <Link to="/contact" className="rounded text-accent underline underline-offset-2">
+        <Link to="/contact" className="rounded text-accent-text underline underline-offset-2">
           {t('nav.contact')}
         </Link>
       </p>

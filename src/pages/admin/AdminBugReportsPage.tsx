@@ -15,8 +15,8 @@ const EMPTY = { status: '', seen: '', search: '', screenshot: '', page: '' }
 
 // New sky, in progress amber, fixed green, won't fix outlined: a word in each, never colour alone.
 const STATUS_STYLE: Record<BugReportStatus, string> = {
-  new: 'border-sky-700/40 bg-sky-500/10 text-sky-800 dark:border-sky-300/40 dark:text-sky-300',
-  in_progress: 'border-amber-700/40 bg-amber-500/10 text-amber-800 dark:border-amber-300/40 dark:text-amber-300',
+  new: 'border-sky-700/40 bg-sky-500/10 text-sky-900 dark:border-sky-300/40 dark:text-sky-300',
+  in_progress: 'border-amber-700/40 bg-amber-500/10 text-amber-900 dark:border-amber-300/40 dark:text-amber-300',
   fixed: 'border-pass/40 bg-pass/10 text-pass',
   wont_fix: 'border-field text-muted',
 }

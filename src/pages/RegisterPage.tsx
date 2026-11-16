@@ -24,7 +24,7 @@ export default function RegisterPage() {
     setError('')
     setFieldErrors({})
     try {
-      await register(name, email, password, honeypot, captchaToken)
+      await register(name, email.trim(), password, honeypot, captchaToken)
       navigate(redirectTarget(location.state), { replace: true })
     } catch (err) {
       if (err instanceof ApiError && err.status === 422) {
@@ -52,7 +52,7 @@ export default function RegisterPage() {
       footer={
         <>
           {t('auth.haveAccount')}{' '}
-          <Link to="/login" state={location.state} className="rounded text-accent underline underline-offset-2">
+          <Link to="/login" state={location.state} className="rounded text-accent-text underline underline-offset-2">
             {t('auth.logIn')}
           </Link>
         </>

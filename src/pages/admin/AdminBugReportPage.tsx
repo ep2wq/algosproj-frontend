@@ -18,6 +18,7 @@ import { BUG_REPORTS_CHANGED } from './AdminNav'
 import { StatusChip } from './AdminBugReportsPage'
 import { browserLabel, formatTime, reporter } from './format'
 import { alertClass, primaryButton, secondaryButton, selectClass } from './styles'
+import ShortId from './ShortId'
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -132,7 +133,7 @@ export default function AdminBugReportPage() {
           {loadError}
         </p>
         <ReportProblemButton context={{ message: loadError }} className={`mt-2 ${secondaryButton}`} />
-        <Link to="/admin/bug-reports" className="mt-4 block w-fit rounded text-accent underline underline-offset-2">
+        <Link to="/admin/bug-reports" className="mt-4 block w-fit rounded text-accent-text underline underline-offset-2">
           {t('admin.bugReports.back')}
         </Link>
       </div>
@@ -143,14 +144,14 @@ export default function AdminBugReportPage() {
   const problem = report.problem_context
   return (
     <div className="max-w-4xl">
-      <Link to="/admin/bug-reports" className="rounded text-sm text-accent underline underline-offset-2">
+      <Link to="/admin/bug-reports" className="rounded text-sm text-accent-text underline underline-offset-2">
         {t('admin.bugReports.back')}
       </Link>
       <h1 className="mt-2 flex flex-wrap items-center gap-3 text-3xl font-semibold tracking-tight">
         {t('admin.bugReports.reportTitle')} <StatusChip status={report.status} />
       </h1>
       <p className="mt-1 text-sm text-muted" title={report.created_at}>
-        {formatTime(report.created_at)} · <span className="font-mono">{report.id}</span>
+        {formatTime(report.created_at)} · <ShortId id={report.id} />
       </p>
 
       <Group title={t('admin.bugReports.whatHappened')}>
@@ -215,7 +216,7 @@ export default function AdminBugReportPage() {
           <Item label={t('admin.bugReports.reporter')}>{reporter(report, t)}</Item>
           {report.user && (
             <Item label={t('admin.bugReports.account')}>
-              <Link to={`/admin/users/${report.user.id}`} className="rounded text-accent underline underline-offset-2">
+              <Link to={`/admin/users/${report.user.id}`} className="rounded text-accent-text underline underline-offset-2">
                 <span dir="auto">{report.user.name}</span>
               </Link>
               {' · '}

@@ -81,7 +81,7 @@ export default function ConfirmAction({
           className={
             danger
               ? 'rounded border border-fail/40 bg-surface px-3 py-1 text-sm text-fail hover:bg-fail/5'
-              : 'rounded border border-line bg-surface px-3 py-1 text-sm text-accent hover:border-muted'
+              : 'rounded border border-line bg-surface px-3 py-1 text-sm text-accent-text hover:border-muted'
           }
         >
           {label}

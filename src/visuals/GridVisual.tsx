@@ -1,10 +1,12 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { numberParts } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import { componentColor } from './componentColors'
 import { cellText, islandsFrames, shortestPathFrames, type Cell, type GridFrame, type GridMode } from './gridFrames'
 import type { T } from './i18n'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 import { useScrollCue } from './useScrollCue'
 
@@ -59,7 +61,7 @@ const MODES = {
 }
 
 function parseGrid(text: string, t: T): string[] | string {
-  const rows = text.split(/[\s,]+/).filter(Boolean)
+  const rows = numberParts(text)
   if (rows.length === 0) return t('grid.atLeastOneRow')
   if (rows.some((row) => !/^[01]+$/.test(row))) return t('grid.onlyBinary')
   if (rows.length > MAX_SIDE || rows.some((row) => row.length > MAX_SIDE)) {
@@ -87,9 +89,9 @@ function islandCellClass(frame: GridFrame, r: number, c: number) {
 function shortestCellClass(frame: GridFrame, r: number, c: number) {
   if (frame.grid[r][c] === '1') return 'border-ink bg-ink text-inverse'
   const isEnd = r === frame.grid.length - 1 && c === frame.grid[0].length - 1
-  if (frame.output !== null && isEnd && frame.marks[r][c] !== null) return 'border-pass bg-pass text-inverse'
-  if (same(frame.current, r, c)) return 'border-warn bg-warn text-inverse'
-  if (has(frame.pending, r, c)) return 'border-warn bg-amber-100 dark:bg-amber-950 text-ink'
+  if (frame.output !== null && isEnd && frame.marks[r][c] !== null) return 'border-found-line bg-found text-found-ink'
+  if (same(frame.current, r, c)) return 'border-warn bg-warn text-inverse motion-safe:[[data-travel]_&]:animate-hit'
+  if (has(frame.pending, r, c)) return 'border-warn bg-warn/20 dark:bg-amber-950 text-ink'
   if (frame.marks[r][c] !== null) return 'border-line bg-paper text-muted'
   return 'border-line bg-surface text-ink'
 }
@@ -137,13 +139,14 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
       return
     }
     setInputError('')
+    setGridText(parsed.join(' '))
     restart(parsed)
   }
 
   const describedBy = `${id}-hint${inputError ? ` ${id}-error` : ''}`
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -182,7 +185,7 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
                   return (
                     <span
                       key={c}
-                      className={`relative flex size-8 items-center justify-center rounded border-2 text-sm font-semibold tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${cellClass}`}
+                      className={`elev-raised relative flex size-8 items-center justify-center rounded border-2 text-sm font-semibold tabular-nums motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${cellClass}`}
                     >
                       {corner && <span className="absolute top-0 start-0.5 text-[9px] leading-none font-medium">{corner}</span>}
                       {mark ?? ''}
@@ -252,11 +255,11 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
               {t('grid.legendTaken')}
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="inline-block h-3.5 w-5 rounded border-2 border-warn bg-amber-100 dark:bg-amber-950" aria-hidden="true" />
+              <span className="inline-block h-3.5 w-5 rounded border-2 border-warn bg-warn/20 dark:bg-amber-950" aria-hidden="true" />
               <TextWithCode text={t('grid.legendInQueue')} />
             </li>
             <li className="flex items-center gap-1.5">
-              <span className="inline-block h-3.5 w-5 rounded border-2 border-pass bg-pass" aria-hidden="true" />
+              <span className="inline-block h-3.5 w-5 rounded border-2 border-found-line bg-found" aria-hidden="true" />
               {t('grid.legendEnd')}
             </li>
             <li>
@@ -273,9 +276,7 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} />
 
       <PlaybackControls playback={playback} />
 
@@ -283,39 +284,41 @@ export default function GridVisual({ mode }: { mode: GridMode }) {
         <button type="button" onClick={() => restart(config.random())} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <div className="flex flex-wrap items-end gap-2">
-            <div className="min-w-0 flex-1 basis-40">
-              <label htmlFor={`${id}-input`} className="block text-sm font-medium">
-                {t('grid.ownGrid')}
-              </label>
-              <input
-                id={`${id}-input`}
-                type="text"
-                autoComplete="off"
-                spellCheck={false}
-                dir="ltr"
-                value={gridText}
-                onChange={(event) => setGridText(event.target.value)}
-                placeholder={mode === 'islands' ? t('grid.placeholderIslands') : t('grid.placeholderShortest')}
-                aria-invalid={Boolean(inputError)}
-                aria-describedby={describedBy}
-                className={`mt-1 block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${inputError ? 'border-fail' : 'border-field hover:border-muted'}`}
-              />
+        <OwnInput>
+          <form onSubmit={handleCustom} noValidate>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="min-w-0 flex-1 basis-40">
+                <label htmlFor={`${id}-input`} className="block text-sm font-medium">
+                  {t('grid.ownGrid')}
+                </label>
+                <input
+                  id={`${id}-input`}
+                  type="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  dir="ltr"
+                  value={gridText}
+                  onChange={(event) => setGridText(event.target.value)}
+                  placeholder={mode === 'islands' ? t('grid.placeholderIslands') : t('grid.placeholderShortest')}
+                  aria-invalid={Boolean(inputError)}
+                  aria-describedby={describedBy}
+                  className={`mt-1 block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${inputError ? 'border-fail' : 'border-field hover:border-muted'}`}
+                />
+              </div>
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThis')}
+              </button>
             </div>
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThis')}
-            </button>
-          </div>
-          <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={mode === 'islands' ? t('grid.hintIslands', { max: MAX_SIDE }) : t('grid.hintShortest', { max: MAX_SIDE })} />
-          </p>
-          {inputError && (
-            <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError} />
+            <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={mode === 'islands' ? t('grid.hintIslands', { max: MAX_SIDE }) : t('grid.hintShortest', { max: MAX_SIDE })} />
             </p>
-          )}
-        </form>
+            {inputError && (
+              <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError} />
+              </p>
+            )}
+          </form>
+        </OwnInput>
       </div>
     </div>
   )

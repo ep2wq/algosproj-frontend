@@ -3,19 +3,19 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 // shadcn/ui button (Base UI), mapped to our states (docs/ui-restyle.md outside this repo): default
-// = primaryButton, outline = secondaryButton in buttonStyles.ts. Hover colours, the 1 px press and
+// = primaryButton, outline = secondaryButton in buttonStyles.ts. Hover colours, the 0.97 press and
 // the focus outline come from src/index.css, only with motion allowed. Not used yet.
 const buttonVariants = cva(
   'inline-flex shrink-0 items-center justify-center gap-1.5 rounded border border-transparent bg-clip-padding font-medium whitespace-nowrap select-none disabled:cursor-not-allowed disabled:opacity-60 aria-disabled:cursor-not-allowed aria-disabled:opacity-60 aria-invalid:border-fail [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=size-])]:size-4',
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        outline: 'border-field bg-surface text-ink hover:border-muted',
-        secondary: 'border-line bg-surface text-ink hover:border-muted hover:bg-hover',
+        default: 'elev-raised bg-primary text-primary-foreground hover:bg-primary/90',
+        outline: 'elev-raised border-field bg-surface text-ink hover:border-muted',
+        secondary: 'elev-raised border-line bg-surface text-ink hover:border-muted hover:bg-hover',
         ghost: 'text-ink hover:bg-accent-soft',
-        destructive: 'bg-fail/10 text-fail hover:bg-fail/20',
-        link: 'text-accent underline-offset-2 hover:underline',
+        destructive: 'elev-raised bg-fail/10 text-fail hover:bg-fail/20',
+        link: 'text-accent-text underline-offset-2 hover:underline',
       },
       size: {
         default: 'min-h-11 px-5',

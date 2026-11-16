@@ -29,7 +29,7 @@
         var dark = theme !== 'light'
         root.classList.toggle('dark', dark)
         root.style.colorScheme = dark ? 'dark' : 'light'
-        if (!dark) document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        if (!dark) document.querySelector('meta[name="theme-color"]').setAttribute('content', '#c8c8c8')
         if (lang !== 'en' && lang !== 'ar') {
           var first = (navigator.languages && navigator.languages[0]) || navigator.language || ''
           lang = first.toLowerCase().indexOf('ar') === 0 ? 'ar' : 'en'

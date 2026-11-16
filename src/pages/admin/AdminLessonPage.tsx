@@ -82,7 +82,7 @@ export default function AdminLessonPage() {
           {loadError}
         </p>
         <ReportProblemButton context={{ message: loadError }} className={`mt-2 ${secondaryButton}`} />
-        <Link to="/admin" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
+        <Link to="/admin" className="mt-4 inline-block rounded text-accent-text underline underline-offset-2">
           {t('admin.common.backToContent')}
         </Link>
       </div>
@@ -95,7 +95,7 @@ export default function AdminLessonPage() {
 
   return (
     <div>
-      <Link to="/admin" className="rounded text-sm text-muted hover:text-accent">
+      <Link to="/admin" className="rounded text-sm text-muted hover:text-accent-text">
         {t('admin.common.contentList')}
       </Link>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">{lessonId === null ? t('admin.lesson.add') : t('admin.lesson.edit')}</h1>

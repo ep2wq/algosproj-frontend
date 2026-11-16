@@ -1,10 +1,12 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { normalizeNumberInput, numberParts } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import { DP_NS, type DpT } from './dpI18n'
 import { coinFrames, coinText, houseFrames, stairsFrames, type DpRowFrame } from './dpRowFrames'
 import { joinAnd } from './i18n'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 import { useCentreCells, useScrollCue } from './useScrollCue'
 
@@ -51,12 +53,12 @@ function framesFor(input: RowInput, t: DpT): DpRowFrame[] {
 }
 
 const isWhole = (part: string) => /^\d+$/.test(part)
-const split = (text: string) => text.split(/[\s,]+/).filter(Boolean)
+const split = (text: string) => numberParts(text)
 
 // Returns the input, or the field and message of the error to show.
 function parseInput(mode: DpRowMode, first: string, second: string, t: DpT): RowInput | { field: 1 | 2; error: string } {
   if (mode === 'stairs') {
-    const text = first.trim()
+    const text = normalizeNumberInput(first)
     if (!isWhole(text) || Number(text) < 1 || Number(text) > MAX_N) return { field: 1, error: t('binaryString.invalidN', { max: MAX_N }) }
     return { mode, n: Number(text) }
   }
@@ -72,14 +74,14 @@ function parseInput(mode: DpRowMode, first: string, second: string, t: DpT): Row
   if (parts.length === 0 || parts.length > MAX_COINS || parts.some((part) => !isWhole(part)) || coins.some((c) => c < 1 || c > MAX_COIN) || new Set(coins).size !== coins.length) {
     return { field: 1, error: t('dpRow.coins.coinsInvalid', { maxCoins: MAX_COINS, maxValue: MAX_COIN }) }
   }
-  const amount = second.trim()
+  const amount = normalizeNumberInput(second)
   if (!isWhole(amount) || Number(amount) > MAX_AMOUNT) return { field: 2, error: t('dpRow.coins.amountInvalid', { max: MAX_AMOUNT }) }
   return { mode, amount: Number(amount), coins }
 }
 
 function cellClass(frame: DpRowFrame, index: number) {
-  if (frame.done && index === frame.cells.length - 1) return 'border-pass bg-pass text-inverse'
-  if (frame.current === index) return 'border-warn bg-warn text-inverse'
+  if (frame.done && index === frame.cells.length - 1) return 'border-found-line bg-found text-found-ink'
+  if (frame.current === index) return 'border-warn bg-warn text-inverse motion-safe:[[data-travel]_&]:animate-hit'
   if (frame.reads.includes(index)) return 'border-dashed border-accent bg-surface text-ink'
   if (frame.cells[index] === null) return 'border-line bg-paper text-muted'
   return 'border-muted bg-surface text-ink'
@@ -138,6 +140,8 @@ export default function DpRowVisual({ mode }: { mode: DpRowMode }) {
       return
     }
     setInputError(null)
+    setFirst(normalizeNumberInput(first))
+    setSecond(normalizeNumberInput(second))
     restart(parsed)
   }
 
@@ -147,7 +151,7 @@ export default function DpRowVisual({ mode }: { mode: DpRowMode }) {
     `mt-1 block w-full min-w-0 rounded border bg-surface px-3 py-1.5 font-mono text-sm ${inputError?.field === field ? 'border-fail' : 'border-field hover:border-muted'}`
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -194,7 +198,7 @@ export default function DpRowVisual({ mode }: { mode: DpRowMode }) {
               )}
               <span className="h-4 text-xs font-semibold text-ink">{current.done && i === last ? '✓' : current.current === i ? index : ''}</span>
               <span
-                className={`mt-0.5 flex size-10 items-center justify-center rounded border-2 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${cellClass(current, i)}`}
+                className={`elev-raised mt-0.5 flex size-10 items-center justify-center rounded border-2 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${cellClass(current, i)}`}
               >
                 {cell === null ? '' : coinText(cell, inf)}
               </span>
@@ -214,7 +218,7 @@ export default function DpRowVisual({ mode }: { mode: DpRowMode }) {
           {t('shared.legendRead')}
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block h-3.5 w-5 rounded border-2 border-pass bg-pass" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-found-line bg-found" aria-hidden="true" />
           {t('shared.legendAnswer')}
         </li>
         <li className="flex items-center gap-1.5">
@@ -243,9 +247,7 @@ export default function DpRowVisual({ mode }: { mode: DpRowMode }) {
       )}
 
       {/* Quiet while playing (a sentence per step would flood a screen reader); read out when paused. */}
-      <p aria-live={playing ? 'off' : 'polite'} className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} live={playing ? 'off' : 'polite'} />
 
       <PlaybackControls playback={playback} />
 
@@ -253,68 +255,70 @@ export default function DpRowVisual({ mode }: { mode: DpRowMode }) {
         <button type="button" onClick={() => restart(randomInput(mode))} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <div className="flex flex-wrap items-end gap-2">
-            <div className="min-w-0 flex-1 basis-40">
-              <label htmlFor={`${id}-first`} className="block text-sm font-medium">
-                <TextWithCode text={mode === 'stairs' ? t('dpRow.stairs.inputLabel') : mode === 'house' ? t('dpRow.house.inputLabel') : t('dpRow.coins.coinsLabel')} />
-              </label>
-              <input
-                id={`${id}-first`}
-                type="text"
-                inputMode={mode === 'stairs' ? 'numeric' : undefined}
-                autoComplete="off"
-                spellCheck={false}
-                dir="ltr"
-                value={first}
-                onChange={(event) => setFirst(event.target.value)}
-                placeholder={mode === 'stairs' ? t('dpRow.stairs.placeholder') : mode === 'house' ? t('dpRow.house.placeholder') : t('dpRow.coins.coinsPlaceholder')}
-                aria-invalid={inputError?.field === 1}
-                aria-describedby={describedBy(1)}
-                className={fieldClass(1)}
-              />
-            </div>
-            {mode === 'coins' && (
-              <div className="w-28 shrink-0">
-                <label htmlFor={`${id}-second`} className="block text-sm font-medium">
-                  {t('dpRow.coins.amountLabel')}
+        <OwnInput>
+          <form onSubmit={handleCustom} noValidate>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="min-w-0 flex-1 basis-40">
+                <label htmlFor={`${id}-first`} className="block text-sm font-medium">
+                  <TextWithCode text={mode === 'stairs' ? t('dpRow.stairs.inputLabel') : mode === 'house' ? t('dpRow.house.inputLabel') : t('dpRow.coins.coinsLabel')} />
                 </label>
                 <input
-                  id={`${id}-second`}
+                  id={`${id}-first`}
                   type="text"
-                  inputMode="numeric"
+                  inputMode={mode === 'stairs' ? 'numeric' : undefined}
                   autoComplete="off"
+                  spellCheck={false}
                   dir="ltr"
-                  value={second}
-                  onChange={(event) => setSecond(event.target.value)}
-                  placeholder={t('dpRow.coins.amountPlaceholder')}
-                  aria-invalid={inputError?.field === 2}
-                  aria-describedby={describedBy(2)}
-                  className={fieldClass(2)}
+                  value={first}
+                  onChange={(event) => setFirst(event.target.value)}
+                  placeholder={mode === 'stairs' ? t('dpRow.stairs.placeholder') : mode === 'house' ? t('dpRow.house.placeholder') : t('dpRow.coins.coinsPlaceholder')}
+                  aria-invalid={inputError?.field === 1}
+                  aria-describedby={describedBy(1)}
+                  className={fieldClass(1)}
                 />
               </div>
-            )}
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThis')}
-            </button>
-          </div>
-          <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode
-              text={
-                mode === 'stairs'
-                  ? t('dpRow.stairs.hint', { max: MAX_N })
-                  : mode === 'house'
-                    ? t('dpRow.house.hint', { max: MAX_HOUSES })
-                    : t('dpRow.coins.hint', { maxCoins: MAX_COINS, maxValue: MAX_COIN, maxAmount: MAX_AMOUNT })
-              }
-            />
-          </p>
-          {inputError && (
-            <p id={errorId} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError.error} />
+              {mode === 'coins' && (
+                <div className="w-28 shrink-0">
+                  <label htmlFor={`${id}-second`} className="block text-sm font-medium">
+                    {t('dpRow.coins.amountLabel')}
+                  </label>
+                  <input
+                    id={`${id}-second`}
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    dir="ltr"
+                    value={second}
+                    onChange={(event) => setSecond(event.target.value)}
+                    placeholder={t('dpRow.coins.amountPlaceholder')}
+                    aria-invalid={inputError?.field === 2}
+                    aria-describedby={describedBy(2)}
+                    className={fieldClass(2)}
+                  />
+                </div>
+              )}
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThis')}
+              </button>
+            </div>
+            <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode
+                text={
+                  mode === 'stairs'
+                    ? t('dpRow.stairs.hint', { max: MAX_N })
+                    : mode === 'house'
+                      ? t('dpRow.house.hint', { max: MAX_HOUSES })
+                      : t('dpRow.coins.hint', { maxCoins: MAX_COINS, maxValue: MAX_COIN, maxAmount: MAX_AMOUNT })
+                }
+              />
             </p>
-          )}
-        </form>
+            {inputError && (
+              <p id={errorId} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError.error} />
+              </p>
+            )}
+          </form>
+        </OwnInput>
       </div>
     </div>
   )

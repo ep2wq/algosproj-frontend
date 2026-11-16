@@ -1,9 +1,11 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { normalizeNumberInput, numberParts } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import type { T } from './i18n'
 import { inversionFrames, type InversionFrame } from './inversionFrames'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 import { useCentreCells, useScrollCue } from './useScrollCue'
 
@@ -17,7 +19,7 @@ function randomArray() {
 
 // Returns the numbers, or an error message to show. Empty is allowed: the problem has n = 0.
 function parseNumbers(text: string, t: T): number[] | string {
-  const parts = text.split(/[\s,]+/).filter(Boolean)
+  const parts = numberParts(text)
   if (parts.length > MAX_NUMBERS) return t('common.atMostNumbers', { count: MAX_NUMBERS })
   if (parts.some((part) => !/^-?\d+$/.test(part) || Math.abs(Number(part)) > LIMIT)) {
     return t('inversions.invalid', { limit: LIMIT })
@@ -25,7 +27,7 @@ function parseNumbers(text: string, t: T): number[] | string {
   return parts.map(Number)
 }
 
-const cellClass = 'flex h-10 min-w-10 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm'
+const cellClass = 'elev-raised flex h-10 min-w-10 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out'
 
 function arrayCellStyle(frame: InversionFrame, index: number) {
   if (frame.done && frame.array.length > 0) return 'border-pass bg-surface text-ink'
@@ -134,11 +136,12 @@ export default function InversionsVisual() {
       return
     }
     setInputError('')
+    setCustomText(normalizeNumberInput(customText))
     restart(parsed)
   }
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -216,9 +219,7 @@ export default function InversionsVisual() {
         </div>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} />
 
       <PlaybackControls playback={playback} />
 
@@ -226,38 +227,40 @@ export default function InversionsVisual() {
         <button type="button" onClick={() => restart(randomArray())} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <label htmlFor={`${id}-numbers`} className="block text-sm font-medium">
-            {t('common.yourOwnNumbers')}
-          </label>
-          <div className="mt-1 flex flex-col gap-2 sm:flex-row">
-            <input
-              id={`${id}-numbers`}
-              type="text"
-              autoComplete="off"
-              dir="ltr"
-              value={customText}
-              onChange={(event) => setCustomText(event.target.value)}
-              placeholder={t('inversions.placeholder')}
-              aria-invalid={Boolean(inputError)}
-              aria-describedby={`${id}-numbers-hint${inputError ? ` ${id}-numbers-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
-                inputError ? 'border-fail' : 'border-field hover:border-muted'
-              }`}
-            />
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThese')}
-            </button>
-          </div>
-          <p id={`${id}-numbers-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={t('inversions.hint', { count: MAX_NUMBERS, limit: LIMIT })} />
-          </p>
-          {inputError && (
-            <p id={`${id}-numbers-error`} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError} />
+        <OwnInput>
+          <form onSubmit={handleCustom} noValidate>
+            <label htmlFor={`${id}-numbers`} className="block text-sm font-medium">
+              {t('common.yourOwnNumbers')}
+            </label>
+            <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+              <input
+                id={`${id}-numbers`}
+                type="text"
+                autoComplete="off"
+                dir="ltr"
+                value={customText}
+                onChange={(event) => setCustomText(event.target.value)}
+                placeholder={t('inversions.placeholder')}
+                aria-invalid={Boolean(inputError)}
+                aria-describedby={`${id}-numbers-hint${inputError ? ` ${id}-numbers-error` : ''}`}
+                className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
+                  inputError ? 'border-fail' : 'border-field hover:border-muted'
+                }`}
+              />
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThese')}
+              </button>
+            </div>
+            <p id={`${id}-numbers-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={t('inversions.hint', { count: MAX_NUMBERS, limit: LIMIT })} />
             </p>
-          )}
-        </form>
+            {inputError && (
+              <p id={`${id}-numbers-error`} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError} />
+              </p>
+            )}
+          </form>
+        </OwnInput>
       </div>
     </div>
   )

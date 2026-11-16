@@ -55,7 +55,7 @@ export default function ResendVerification({ className = '' }: { className?: str
         type="button"
         onClick={handleClick}
         aria-disabled={busy || waiting}
-        className="inline-flex min-h-11 items-center rounded px-1 font-medium text-accent underline underline-offset-2 hover:no-underline aria-disabled:cursor-not-allowed aria-disabled:text-muted aria-disabled:no-underline sm:pointer-fine:min-h-8"
+        className="inline-flex min-h-11 items-center rounded px-1 font-medium text-accent-text underline underline-offset-2 hover:no-underline aria-disabled:cursor-not-allowed aria-disabled:text-muted aria-disabled:no-underline sm:pointer-fine:min-h-8"
       >
         {busy ? t('verify.sending') : t('verify.resend')}
         {waiting && (

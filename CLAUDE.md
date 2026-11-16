@@ -35,11 +35,11 @@ Points are only awarded after server-side grading. Never trust a score sent by t
 - `npm run build` also prerenders the public pages (`src/prerender.ts` `ROUTES`, `scripts/prerender.mjs`,
   writes `dist-ssr/`, `dist/*.html`, `robots.txt`, `sitemap.xml`). No hydration. A new public page
   needs its path in `ROUTES`. The build fails on a React client-render marker or build path in the output.
-- Only `theme`, `lang`, `sound`, `cookie-notice` in `localStorage` (try/catch); login is an HttpOnly session cookie
+- Only `theme`, `lang`, `sound`, `code-lang`, `cookie-notice` in `localStorage` (try/catch); login is an HttpOnly session cookie
   (`credentials: 'include'`, `X-XSRF-TOKEN`). No `dangerouslySetInnerHTML`.
 - Sound (README "Sound"): `src/sound.ts`, off by default, one AudioContext made only in a user gesture, tune the constants block at the top; never the only signal.
 - Themes (README "Themes"): dark by default (no OS following), toggle, `src/theme.ts` + inline
-  script in `index.html`. Tokens in `src/index.css` (light paper is cool gray #e8ebef; header and
+  script in `index.html`. Tokens in `src/index.css` (light is true neutral gray, paper #b4b4b4, surface #c8c8c8, no white; `accent-text`, `note`, `found*`; header and
   footer are `surface`; `hover`, `code` (all code areas, never `paper` inside a card), `band` (landing
   CTA band), `syntax-*`), other colors need `dark:`. Text 4.5:1, borders/shapes 3:1, both themes.
 - Layout width: `site-container` utility (max 80rem) shared by header, main and footer. A static dot
@@ -144,13 +144,22 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   `optgroup` get surface/ink in `index.css`, so native dropdowns read in dark mode.
 - Done (2026-11-02): `public/_headers` (Cloudflare Pages): `/assets/*` and `/fonts/*` one-year immutable,
   everything else `no-cache`; a changed font needs a new file name. Measured and rejected: font preload
-  (LCP en 956 -> 1208 ms, ar 1900 -> 2496 ms on the slow profile) and hover prefetch of route chunks (noise).
+  (LCP en 956 -> 1208 ms, ar 1900 -> 2496 ms on the slow profile) and hover prefetch of route chunks (noise; the one tried again during the motion work was removed).
   Numbers: docs/performance-frontend.md outside the repo.
 - Done (2026-11-03): Monaco comes from our own bundle, not jsDelivr: `monaco-editor` 0.55.1 pinned (the
   version the CDN loader served; 0.56+ pull a dompurify with a critical advisory). `src/monaco.ts` (editor
   core, editor worker, basic colouring for python/java/javascript/cpp) is lazy-loaded by `ProblemSolver`,
   which hands it to `loader.config`; a failed download leaves the loading line. No TypeScript/JSON/CSS/HTML
   language services: JavaScript lost type-aware suggestions (`Math.` members) and syntax-error squiggles.
+- Done (2026-11-16, not committed): custom Monaco themes `algoslab-light` / `algoslab-dark` (`src/monacoTheme.ts`) built from the
+  `--color-code/ink/muted/surface/line/accent/syntax-*` tokens read from `:root` at runtime (Monaco needs hex), so they follow the
+  tokens. `ProblemSolver` defines the theme of the current mode on mount and again, then `setTheme`, when `dark` changes
+  (`useTheme`). Bracket pair colours 1-6 are keyword, function, number, string, operator, comment, unexpected = string; measured
+  (2026-11-16) at 5.4-7.2:1 light and 6.0-13.3:1 dark on the editor background, 4.65:1 at the lowest on the current-line
+  highlight, so none was changed. Re-measure if a `syntax-*` token or `--color-code` changes. "No suggestions." popup: Monaco
+  gives it no font and sizes the box to one line, so it inherited the lesson prose's 17 px / 1.75 (not caused by
+  `fixedOverflowWidgets`, which only makes the widget `position: fixed` inside the editor); fixed with a rule on
+  `.monaco-editor .suggest-widget > .message` in `index.css` (14 px / 1.5).
 - Done (2026-11-03, security audit): `_headers` adds nosniff, Referrer-Policy, Permissions-Policy, X-Frame-Options,
   HSTS and a CSP whose inline-script hashes (LF-normalized) and API origin (`API_ORIGIN` from `src/prerender.ts`)
   are filled in by `scripts/prerender.mjs`; changing an inline script in `index.html` is fine, the build re-hashes it.
@@ -172,6 +181,15 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   (`screenshot.ts`, html-to-image, `includeStyleProperties` without custom properties: Monaco's made it 3 s) are lazy;
   first-load JS +1,032 B gzip. Owner pages `/admin/bug-reports[/:id]`, strings in `admin-bug-reports.en.json` (added by
   the admin chunk), badge on AdminNav's 60 s timer. CSP `img-src` has `blob:`. Privacy page text: draft outside the repo.
+- Done (2026-11-16, motion system; not committed): tokens `--dur-*` / `--ease-*` in `src/index.css` mirrored in `src/motion.ts`
+  (change both together), keyframes `pop`, `shake`, `bump`, `appear`, `animate-hit`, `animate-step-text`, elevation utilities
+  (`elev-*`), `.disclosure-panel` (menus fade with `visibility`, no `hidden` attribute), a pressed button scales to 0.97 (the
+  150 ms press with a 1 px move is gone). Submit strip under the editor (sticky on touch). Shortcuts: `/`, `?`, Ctrl/Cmd+Enter,
+  Space and arrows inside a visualization (`src/shortcuts.ts`, `ShortcutsHost`, `ShortcutsDialog`; README "Keyboard shortcuts").
+  Visualizations move between poses with `useFlip` (measures on a new position or resize only); `OwnInput` hides "Try your own"
+  behind one button; `src/lib/normalize.ts` cleans typed input and search. Last code language in `code-lang`. The Cookies
+  text now counts five stored values: `LEGAL_UPDATED` / the backend's `terms_version` were NOT changed, decide whether the notice should
+  show again. The language-switch button still prefetches the other language's strings on hover/focus (`Layout.tsx`).
 - Done (2026-11-07, page weight fixes; numbers in docs/page-weight-fixes-after.md outside the repo): lesson page
   Monaco loads within 400 px of the editor or on focus (`deferEditor` in `ProblemSolver`, from `ProblemCard`);
   "العربية" on English pages uses a 4 kB label subset (`--font-label`, README "Fonts"); only the page language's
@@ -194,4 +212,4 @@ Points are only awarded after server-side grading. Never trust a score sent by t
   The global `:focus-visible` rule at the end of `src/index.css` is outside any `@layer`, so it beats
   utilities like `focus:outline-none`; use the `!` suffix to override. A class glued to a template
   expression (`lg:flex-1${x}`) is not seen by Tailwind's scanner: keep a space before `${`, or put the
-  class earlier. `ProblemSolver` keeps no last-used language, so lesson code tabs open on Python.
+  class earlier. The editor and the lesson code tabs open on the last language picked (`code-lang`, `src/codeLang.ts`), else Python.

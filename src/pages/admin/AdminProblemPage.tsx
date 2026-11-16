@@ -327,7 +327,7 @@ export default function AdminProblemPage() {
           {loadError}
         </p>
         <ReportProblemButton context={{ message: loadError }} className={`mt-2 ${secondaryButton}`} />
-        <Link to="/admin" className="mt-4 inline-block rounded text-accent underline underline-offset-2">
+        <Link to="/admin" className="mt-4 inline-block rounded text-accent-text underline underline-offset-2">
           {t('admin.common.backToContent')}
         </Link>
       </div>
@@ -341,7 +341,7 @@ export default function AdminProblemPage() {
 
   return (
     <div className="max-w-4xl">
-      <Link to="/admin" className="rounded text-sm text-muted hover:text-accent">
+      <Link to="/admin" className="rounded text-sm text-muted hover:text-accent-text">
         {t('admin.common.contentList')}
       </Link>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">{problemId === null ? t('admin.problem.add') : t('admin.problem.edit')}</h1>

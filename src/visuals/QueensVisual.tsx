@@ -1,8 +1,10 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { normalizeNumberInput } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import type { T } from './i18n'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { attackedSquares, queensFrames, type QueensFrame, type TryOutcome } from './queensFrames'
 import { usePlayback } from './usePlayback'
 
@@ -18,7 +20,7 @@ function randomN(not: number) {
 
 // Returns n, or an error message to show.
 function parseN(text: string, t: T): number | string {
-  const trimmed = text.trim()
+  const trimmed = normalizeNumberInput(text)
   if (!/^\d+$/.test(trimmed) || Number(trimmed) < MIN_N || Number(trimmed) > MAX_N) return t('queens.invalidN', { min: MIN_N, max: MAX_N })
   return Number(trimmed)
 }
@@ -42,7 +44,7 @@ function squareOf(frame: QueensFrame, attacked: Set<string>, row: number, col: n
 // Class names are written out in full so Tailwind generates them.
 const SQUARE_CLASS: Record<Square, string> = {
   queen: 'border border-line text-ink',
-  solution: 'border border-pass bg-pass text-inverse',
+  solution: 'border border-found-line bg-found text-found-ink',
   attacker: 'border-4 border-fail text-ink',
   placed: 'border-4 border-warn text-ink',
   conflict: 'border-4 border-fail bg-fail/15 text-fail',
@@ -118,7 +120,7 @@ export default function QueensVisual() {
   }
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -154,7 +156,7 @@ export default function QueensVisual() {
                   return (
                     <span
                       key={col}
-                      className={`flex size-10 items-center justify-center text-xl leading-none motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
+                      className={`flex size-10 items-center justify-center text-xl leading-none motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${
                         square === 'solution' || square === 'conflict' ? '' : dark ? 'bg-paper' : 'bg-surface'
                       } ${SQUARE_CLASS[square]}`}
                     >
@@ -253,7 +255,7 @@ export default function QueensVisual() {
           {t('queens.legendRemoved')}
         </li>
         <li className="flex items-center gap-1.5">
-          <span aria-hidden="true" className="flex size-4 items-center justify-center border border-pass bg-pass text-inverse">
+          <span aria-hidden="true" className="flex size-4 items-center justify-center border border-found-line bg-found text-found-ink">
             ♛
           </span>
           {t('queens.legendSolution')}
@@ -269,9 +271,7 @@ export default function QueensVisual() {
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} />
 
       <PlaybackControls playback={playback} />
 
@@ -279,39 +279,41 @@ export default function QueensVisual() {
         <button type="button" onClick={() => restart(randomN(n))} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <label htmlFor={`${id}-n`} className="block text-sm font-medium">
-            <TextWithCode text={t('queens.ownN')} />
-          </label>
-          <div className="mt-1 flex max-w-xs gap-2">
-            <input
-              id={`${id}-n`}
-              type="text"
-              inputMode="numeric"
-              autoComplete="off"
-              dir="ltr"
-              value={nText}
-              onChange={(event) => setNText(event.target.value)}
-              placeholder={t('queens.placeholder')}
-              aria-invalid={Boolean(inputError)}
-              aria-describedby={`${id}-n-hint${inputError ? ` ${id}-n-error` : ''}`}
-              className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
-                inputError ? 'border-fail' : 'border-field hover:border-muted'
-              }`}
-            />
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThis')}
-            </button>
-          </div>
-          <p id={`${id}-n-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={t('queens.hint', { min: MIN_N, max: MAX_N })} />
-          </p>
-          {inputError && (
-            <p id={`${id}-n-error`} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError} />
+        <OwnInput>
+          <form onSubmit={handleCustom} noValidate>
+            <label htmlFor={`${id}-n`} className="block text-sm font-medium">
+              <TextWithCode text={t('queens.ownN')} />
+            </label>
+            <div className="mt-1 flex max-w-xs gap-2">
+              <input
+                id={`${id}-n`}
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                dir="ltr"
+                value={nText}
+                onChange={(event) => setNText(event.target.value)}
+                placeholder={t('queens.placeholder')}
+                aria-invalid={Boolean(inputError)}
+                aria-describedby={`${id}-n-hint${inputError ? ` ${id}-n-error` : ''}`}
+                className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
+                  inputError ? 'border-fail' : 'border-field hover:border-muted'
+                }`}
+              />
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThis')}
+              </button>
+            </div>
+            <p id={`${id}-n-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={t('queens.hint', { min: MIN_N, max: MAX_N })} />
             </p>
-          )}
-        </form>
+            {inputError && (
+              <p id={`${id}-n-error`} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError} />
+              </p>
+            )}
+          </form>
+        </OwnInput>
       </div>
     </div>
   )

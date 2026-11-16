@@ -33,7 +33,7 @@ function apply() {
   const dark = isDark()
   document.documentElement.classList.toggle('dark', dark)
   document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0f172a' : '#ffffff')
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0f172a' : '#c8c8c8')
   listeners.forEach((listener) => listener())
 }
 

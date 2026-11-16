@@ -1,10 +1,12 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { normalizeNumberInput, westernDigits } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import { componentColor } from './componentColors'
 import { componentsFrames, type ComponentsFrame } from './componentsFrames'
 import type { T } from './i18n'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 import { useScrollCue } from './useScrollCue'
 
@@ -41,12 +43,12 @@ function randomGraph(): Graph {
 }
 
 function parseInput(nText: string, edgesText: string, t: T): Graph | { field: 'n' | 'edges'; message: string } {
-  const nTrimmed = nText.trim()
+  const nTrimmed = normalizeNumberInput(nText)
   if (!/^\d+$/.test(nTrimmed) || Number(nTrimmed) < 1 || Number(nTrimmed) > MAX_NODES) {
     return { field: 'n', message: t('components.invalidN', { max: MAX_NODES }) }
   }
   const n = Number(nTrimmed)
-  const parts = edgesText.split(/[,\n]/).map((part) => part.trim()).filter(Boolean)
+  const parts = westernDigits(edgesText).split(/[,،؛;\n]/).map((part) => part.trim()).filter(Boolean)
   if (parts.length > MAX_EDGES) return { field: 'edges', message: t('components.tooManyEdges', { count: MAX_EDGES }) }
   const edges: [number, number][] = []
   for (const [index, part] of parts.entries()) {
@@ -112,7 +114,9 @@ function Diagram({ frame }: { frame: ComponentsFrame }) {
               cy={y}
               r={NODE_R}
               strokeWidth={frame.current === node ? 4 : 2}
-              className={`${nodeClass(frame, node)} motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm`}
+              className={`elev-raised-svg ${nodeClass(frame, node)} motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${
+                frame.current === node ? 'origin-center [transform-box:fill-box] motion-safe:[[data-travel]_&]:animate-hit' : ''
+              }`}
             />
             <text x={x} y={y + 5} textAnchor="middle" className="fill-ink text-sm font-semibold">
               {node}
@@ -161,6 +165,9 @@ export default function ComponentsVisual() {
       return
     }
     setInputError(null)
+    // The fields show what was used: Western digits, one "u v" pair per edge.
+    setNText(String(parsed.n))
+    setEdgesText(parsed.edges.map(([u, v]) => `${u} ${v}`).join(', '))
     restart(parsed)
   }
 
@@ -171,7 +178,7 @@ export default function ComponentsVisual() {
     }`
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -263,9 +270,7 @@ export default function ComponentsVisual() {
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} />
 
       <PlaybackControls playback={playback} />
 
@@ -273,58 +278,60 @@ export default function ComponentsVisual() {
         <button type="button" onClick={() => restart(randomGraph())} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <div className="flex flex-wrap items-end gap-2">
-            <div className="w-16">
-              <label htmlFor={`${id}-n`} className="block text-sm font-medium">
-                n
-              </label>
-              <input
-                id={`${id}-n`}
-                type="text"
-                inputMode="numeric"
-                autoComplete="off"
-                spellCheck={false}
-                dir="ltr"
-                value={nText}
-                onChange={(event) => setNText(event.target.value)}
-                placeholder="5"
-                aria-invalid={inputError?.field === 'n'}
-                aria-describedby={describedBy('n')}
-                className={`mt-1 ${inputClass('n')}`}
-              />
+        <OwnInput>
+          <form onSubmit={handleCustom} noValidate>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="w-16">
+                <label htmlFor={`${id}-n`} className="block text-sm font-medium">
+                  n
+                </label>
+                <input
+                  id={`${id}-n`}
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  spellCheck={false}
+                  dir="ltr"
+                  value={nText}
+                  onChange={(event) => setNText(event.target.value)}
+                  placeholder="5"
+                  aria-invalid={inputError?.field === 'n'}
+                  aria-describedby={describedBy('n')}
+                  className={`mt-1 ${inputClass('n')}`}
+                />
+              </div>
+              <div className="min-w-0 flex-1 basis-40">
+                <label htmlFor={`${id}-edges`} className="block text-sm font-medium">
+                  <TextWithCode text={t('components.ownEdges')} />
+                </label>
+                <input
+                  id={`${id}-edges`}
+                  type="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  dir="ltr"
+                  value={edgesText}
+                  onChange={(event) => setEdgesText(event.target.value)}
+                  placeholder={t('components.placeholder')}
+                  aria-invalid={inputError?.field === 'edges'}
+                  aria-describedby={describedBy('edges')}
+                  className={`mt-1 ${inputClass('edges')}`}
+                />
+              </div>
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThese')}
+              </button>
             </div>
-            <div className="min-w-0 flex-1 basis-40">
-              <label htmlFor={`${id}-edges`} className="block text-sm font-medium">
-                <TextWithCode text={t('components.ownEdges')} />
-              </label>
-              <input
-                id={`${id}-edges`}
-                type="text"
-                autoComplete="off"
-                spellCheck={false}
-                dir="ltr"
-                value={edgesText}
-                onChange={(event) => setEdgesText(event.target.value)}
-                placeholder={t('components.placeholder')}
-                aria-invalid={inputError?.field === 'edges'}
-                aria-describedby={describedBy('edges')}
-                className={`mt-1 ${inputClass('edges')}`}
-              />
-            </div>
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThese')}
-            </button>
-          </div>
-          <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={t('components.hint', { maxNodes: MAX_NODES, maxEdges: MAX_EDGES })} />
-          </p>
-          {inputError && (
-            <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError.message} />
+            <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={t('components.hint', { maxNodes: MAX_NODES, maxEdges: MAX_EDGES })} />
             </p>
-          )}
-        </form>
+            {inputError && (
+              <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError.message} />
+              </p>
+            )}
+          </form>
+        </OwnInput>
       </div>
     </div>
   )

@@ -1,9 +1,12 @@
-import { useId, useMemo, useState, type FormEvent } from 'react'
+import { useId, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { normalizeNumberInput, numberParts } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import type { T } from './i18n'
 import { cycleFrames, middleFrames, reverseFrames, type ListFrame, type ListMode } from './linkedListFrames'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
+import { useFlip } from './useFlip'
 import { usePlayback } from './usePlayback'
 import { useScrollCue } from './useScrollCue'
 
@@ -22,7 +25,7 @@ const MAX_NODES = 12
 const MAX_VALUE = 1000000
 
 function parseValues(text: string, minCount: number, t: T): number[] | string {
-  const parts = text.split(/[\s,]+/).filter(Boolean)
+  const parts = numberParts(text)
   if (parts.length < minCount) return t('common.atLeastOneNumber')
   if (parts.length > MAX_NODES) return t('common.atMostNumbers', { count: MAX_NODES })
   if (parts.some((part) => !/^-?\d+$/.test(part) || Math.abs(Number(part)) > MAX_VALUE)) {
@@ -32,7 +35,7 @@ function parseValues(text: string, minCount: number, t: T): number[] | string {
 }
 
 function parsePos(text: string, n: number, t: T): number | string {
-  const trimmed = text.trim()
+  const trimmed = normalizeNumberInput(text)
   if (n === 0) return trimmed === '-1' ? -1 : t('linkedList.posEmpty')
   if (!/^-?\d+$/.test(trimmed) || Number(trimmed) < -1 || Number(trimmed) > n - 1) {
     return t('linkedList.posInvalid', { last: n - 1 })
@@ -106,10 +109,15 @@ const TONES = {
 }
 type Tone = keyof typeof TONES
 
-function Arrow({ from, to, tone }: { from: number; to: number; tone: Tone }) {
+// node: whose arrow it is. While it plays, an arrow that turns round fades in on its new side as the
+// step's move ends (useFlip), after the pointer labels have arrived.
+function Arrow({ node, from, to, tone }: { node: number; from: number; to: number; tone: Tone }) {
   const dir = Math.sign(to - from)
-  return <line x1={from} y1={BOX_MID} x2={to - 2 * dir} y2={BOX_MID} className={TONES[tone].line} strokeWidth={2} markerEnd={`url(#arrow-${tone})`} />
+  return <line data-flip={`arrow-${node}`} data-flip-fade="" data-flip-lag="" x1={from} y1={BOX_MID} x2={to - 2 * dir} y2={BOX_MID} className={TONES[tone].line} strokeWidth={2} markerEnd={`url(#arrow-${tone})`} />
 }
+
+// How far a pointer label's path bows when it hops to another node, in pixels (the box's padding).
+const ARC = 12
 
 function listLabel(frame: ListFrame, t: T) {
   const { values, next } = frame
@@ -140,7 +148,7 @@ function Diagram({ frame }: { frame: ListFrame }) {
   function labelText(key: string, center: number) {
     const names = labels.get(key) ?? []
     return names.map((name, line) => (
-      <text key={name} x={center} y={BOX_TOP - 6 - (names.length - 1 - line) * LABEL_LINE} textAnchor="middle" className="fill-ink text-xs font-semibold">
+      <text key={name} data-flip={`pointer-${name}`} data-flip-arc={ARC} x={center} y={BOX_TOP - 6 - (names.length - 1 - line) * LABEL_LINE} textAnchor="middle" className="fill-ink text-xs font-semibold">
         {name}
       </text>
     ))
@@ -159,7 +167,7 @@ function Diagram({ frame }: { frame: ListFrame }) {
   }
 
   return (
-    <svg width={geometry.width} height={geometry.height} viewBox={`0 0 ${geometry.width} ${geometry.height}`} className="block" aria-hidden="true">
+    <svg width={geometry.width} height={geometry.height} viewBox={`0 0 ${geometry.width} ${geometry.height}`} className="block overflow-visible" aria-hidden="true">
       <defs>
         {(Object.keys(TONES) as Tone[]).map((t) => (
           <marker key={t} id={`arrow-${t}`} viewBox="0 0 10 10" refX={9} refY={5} markerWidth={7} markerHeight={7} orient="auto-start-reverse">
@@ -180,12 +188,26 @@ function Diagram({ frame }: { frame: ListFrame }) {
             : watched.has(i)
               ? 'fill-surface stroke-warn'
               : 'fill-surface stroke-muted'
+        // The node the step is about (its next was just changed, or it is the answer) pulses once;
+        // nodes no pointer is on are dimmed until the result is shown.
+        const hit = frame.changed === i || frame.highlight === i
+        const dimmed = !hit && frame.output === null && labels.size > 0 && !labels.has(String(i))
         return (
           <g key={i}>
-            <rect x={x + 1} y={BOX_TOP + 1} width={nodeW - 2} height={BOX_H - 2} rx={4} strokeWidth={2} className={`${box} motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm`} />
-            <text x={center} y={BOX_MID + 5} textAnchor="middle" className={`font-mono text-sm font-medium ${frame.highlight === i ? 'fill-inverse' : 'fill-ink'}`}>
-              {value}
-            </text>
+            <g className={`motion-safe:transition-opacity motion-safe:duration-(--dur-ui) motion-safe:ease-out ${dimmed ? 'opacity-70' : ''}`}>
+              <rect
+                x={x + 1}
+                y={BOX_TOP + 1}
+                width={nodeW - 2}
+                height={BOX_H - 2}
+                rx={4}
+                strokeWidth={2}
+                className={`elev-raised-svg ${box} motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${hit ? 'origin-center [transform-box:fill-box] motion-safe:[[data-travel]_&]:animate-hit' : ''}`}
+              />
+              <text x={center} y={BOX_MID + 5} textAnchor="middle" className={`font-mono text-sm font-medium ${frame.highlight === i ? 'fill-inverse' : 'fill-ink'}`}>
+                {value}
+              </text>
+            </g>
             <text x={center} y={INDEX_Y} textAnchor="middle" className="fill-muted font-mono text-xs tabular-nums">
               {i}
             </text>
@@ -201,11 +223,11 @@ function Diagram({ frame }: { frame: ListFrame }) {
         // Turned-around arrows (reverse) point left; the rest point right, except the
         // cycle's link back, which is the curve below.
         if (frame.flipped[i]) {
-          if (target === null) return <Arrow key={i} from={left} to={leftNullX! + NULL_W} tone={tone(i)} />
-          return <Arrow key={i} from={left} to={nodeX[target] + nodeW} tone={tone(i)} />
+          if (target === null) return <Arrow key={i} node={i} from={left} to={leftNullX! + NULL_W} tone={tone(i)} />
+          return <Arrow key={i} node={i} from={left} to={nodeX[target] + nodeW} tone={tone(i)} />
         }
-        if (target === i + 1) return <Arrow key={i} from={right} to={nodeX[i + 1]} tone={tone(i)} />
-        if (target === null) return <Arrow key={i} from={right} to={rightNullX!} tone={tone(i)} />
+        if (target === i + 1) return <Arrow key={i} node={i} from={right} to={nodeX[i + 1]} tone={tone(i)} />
+        if (target === null) return <Arrow key={i} node={i} from={right} to={rightNullX!} tone={tone(i)} />
         return null
       })}
 
@@ -235,7 +257,8 @@ function Diagram({ frame }: { frame: ListFrame }) {
   )
 }
 
-// One diagram, three algorithms: reverse a list, find its middle, detect a cycle.
+// One diagram, three algorithms: reverse a list, find its middle, detect a cycle. The nodes keep
+// their place; while it plays, the pointer labels hop from node to node on small arcs (useFlip).
 export default function LinkedListVisual({ mode }: { mode: ListMode }) {
   const { t } = useTranslation('visuals')
   const [scrollRef, scrollMore] = useScrollCue<HTMLDivElement>()
@@ -250,6 +273,9 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
   const playback = usePlayback(frames.length)
   const { step, lastStep, goTo } = playback
   const current = frames[Math.min(step, lastStep)]
+  // Measured inside the drawing itself, so its re-centring when a null box appears moves nothing.
+  const drawingRef = useRef<HTMLDivElement>(null)
+  useFlip(drawingRef, playback)
 
   function restart(nextSource: Source) {
     setSource(nextSource)
@@ -269,6 +295,8 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
       return
     }
     setInputError(null)
+    setValuesText(normalizeNumberInput(valuesText))
+    if (mode === 'cycle') setPosText(String(pos))
     restart({ values, pos })
   }
 
@@ -280,7 +308,7 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
     }`
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -293,7 +321,7 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
         ref={scrollRef}
         className={`mt-4 overflow-x-auto rounded-lg border border-line bg-surface p-3${scrollMore ? ' scroll-fade' : ''}`}
       >
-        <div role="img" aria-label={listLabel(current, t)} className="mx-auto w-max">
+        <div ref={drawingRef} role="img" aria-label={listLabel(current, t)} className="mx-auto w-max">
           <Diagram frame={current} />
         </div>
       </div>
@@ -316,7 +344,7 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
           </>
         ) : (
           <li className="flex items-center gap-1.5">
-            <span className="inline-block size-3 rounded-sm border border-pass bg-pass" aria-hidden="true" />
+            <span className="inline-block size-3 rounded-sm border border-found-line bg-found" aria-hidden="true" />
             <TextWithCode text={mode === 'middle' ? t('linkedList.legendMiddle') : t('linkedList.legendMeet')} />
           </li>
         )}
@@ -330,9 +358,7 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} />
 
       <PlaybackControls playback={playback} />
 
@@ -340,59 +366,61 @@ export default function LinkedListVisual({ mode }: { mode: ListMode }) {
         <button type="button" onClick={() => restart(config.random())} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <div className="flex flex-wrap items-end gap-2">
-            <div className="min-w-0 flex-1 basis-40">
-              <label htmlFor={`${id}-input`} className="block text-sm font-medium">
-                {t('common.yourOwnNumbers')}
-              </label>
-              <input
-                id={`${id}-input`}
-                type="text"
-                autoComplete="off"
-                spellCheck={false}
-                dir="ltr"
-                value={valuesText}
-                onChange={(event) => setValuesText(event.target.value)}
-                placeholder={mode === 'reverse' ? t('linkedList.placeholderReverse') : mode === 'middle' ? t('linkedList.placeholderMiddle') : t('linkedList.placeholderCycle')}
-                aria-invalid={inputError?.field === 'values'}
-                aria-describedby={describedBy('values')}
-                className={`mt-1 ${inputClass('values')}`}
-              />
-            </div>
-            {mode === 'cycle' && (
-              <div className="w-20">
-                <label htmlFor={`${id}-pos`} className="block text-sm font-medium">
-                  pos
+        <OwnInput>
+          <form onSubmit={handleCustom} noValidate>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="min-w-0 flex-1 basis-40">
+                <label htmlFor={`${id}-input`} className="block text-sm font-medium">
+                  {t('common.yourOwnNumbers')}
                 </label>
                 <input
-                  id={`${id}-pos`}
+                  id={`${id}-input`}
                   type="text"
-                  inputMode="numeric"
                   autoComplete="off"
                   spellCheck={false}
                   dir="ltr"
-                  value={posText}
-                  onChange={(event) => setPosText(event.target.value)}
-                  aria-invalid={inputError?.field === 'pos'}
-                  aria-describedby={describedBy('pos')}
-                  className={`mt-1 ${inputClass('pos')}`}
+                  value={valuesText}
+                  onChange={(event) => setValuesText(event.target.value)}
+                  placeholder={mode === 'reverse' ? t('linkedList.placeholderReverse') : mode === 'middle' ? t('linkedList.placeholderMiddle') : t('linkedList.placeholderCycle')}
+                  aria-invalid={inputError?.field === 'values'}
+                  aria-describedby={describedBy('values')}
+                  className={`mt-1 ${inputClass('values')}`}
                 />
               </div>
-            )}
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThis')}
-            </button>
-          </div>
-          <p id={`${id}-input-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={mode === 'reverse' ? t('linkedList.hintReverse') : mode === 'middle' ? t('linkedList.hintMiddle') : t('linkedList.hintCycle')} />
-          </p>
-          {inputError && (
-            <p id={`${id}-input-error`} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError.message} />
+              {mode === 'cycle' && (
+                <div className="w-20">
+                  <label htmlFor={`${id}-pos`} className="block text-sm font-medium">
+                    pos
+                  </label>
+                  <input
+                    id={`${id}-pos`}
+                    type="text"
+                    inputMode="text"
+                    autoComplete="off"
+                    spellCheck={false}
+                    dir="ltr"
+                    value={posText}
+                    onChange={(event) => setPosText(event.target.value)}
+                    aria-invalid={inputError?.field === 'pos'}
+                    aria-describedby={describedBy('pos')}
+                    className={`mt-1 ${inputClass('pos')}`}
+                  />
+                </div>
+              )}
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThis')}
+              </button>
+            </div>
+            <p id={`${id}-input-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={mode === 'reverse' ? t('linkedList.hintReverse') : mode === 'middle' ? t('linkedList.hintMiddle') : t('linkedList.hintCycle')} />
             </p>
-          )}
-        </form>
+            {inputError && (
+              <p id={`${id}-input-error`} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError.message} />
+              </p>
+            )}
+          </form>
+        </OwnInput>
       </div>
     </div>
   )

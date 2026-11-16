@@ -1,8 +1,10 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { normalizeNumberInput, numberParts } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import type { T } from './i18n'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { subarraySumFrames, type SumFrame } from './subarraySumFrames'
 import { usePlayback } from './usePlayback'
 import { useScrollCue } from './useScrollCue'
@@ -30,19 +32,19 @@ function randomExample() {
 type Field = 'values' | 'k'
 
 function parseInput(valuesText: string, kText: string, t: T): { values: number[]; k: number } | { field: Field; message: string } {
-  const parts = valuesText.split(/[\s,]+/).filter(Boolean)
+  const parts = numberParts(valuesText)
   if (parts.length === 0) return { field: 'values', message: t('common.atLeastOneNumber') }
   if (parts.length > MAX_NUMBERS) return { field: 'values', message: t('common.atMostNumbers', { count: MAX_NUMBERS }) }
   if (parts.some((part) => !/^-?\d+$/.test(part) || Math.abs(Number(part)) > MAX_VALUE)) {
     return { field: 'values', message: t('inversions.invalid', { limit: MAX_VALUE }) }
   }
-  const k = kText.trim()
+  const k = normalizeNumberInput(kText)
   if (!/^-?\d+$/.test(k) || Math.abs(Number(k)) > MAX_K) return { field: 'k', message: t('subarraySum.invalidK', { max: MAX_K }) }
   return { values: parts.map(Number), k: Number(k) }
 }
 
 function numberStyle(frame: SumFrame, index: number) {
-  if (frame.read === index) return 'border-warn bg-warn text-inverse'
+  if (frame.read === index) return 'border-warn bg-warn text-inverse motion-safe:[[data-travel]_&]:animate-hit'
   if (frame.read !== null && index < frame.read) return 'border-line bg-paper text-muted'
   if (frame.read === null && frame.output !== null) return 'border-line bg-paper text-muted'
   return 'border-muted bg-surface text-ink'
@@ -50,14 +52,14 @@ function numberStyle(frame: SumFrame, index: number) {
 
 // Prefix j is the total of the first j numbers: j = 0 is the empty prefix.
 function prefixStyle(frame: SumFrame, j: number) {
-  if (frame.matches.includes(j)) return 'border-pass bg-pass text-inverse'
+  if (frame.matches.includes(j)) return 'border-found-line bg-found text-found-ink'
   if (frame.read !== null && j === frame.read + 1) return 'border-warn bg-surface text-ink'
   if (frame.prefixes[j] === null) return 'border-dashed border-line bg-surface text-muted'
   return 'border-muted bg-surface text-ink'
 }
 
 function mapStyle(frame: SumFrame, sum: number) {
-  if (frame.matches.length > 0 && frame.lookup === sum) return 'bg-pass text-inverse'
+  if (frame.matches.length > 0 && frame.lookup === sum) return 'bg-found text-found-ink'
   if (frame.stored === sum) return 'bg-accent-soft'
   return ''
 }
@@ -101,6 +103,8 @@ export default function SubarraySumVisual() {
       return
     }
     setInputError(null)
+    setValuesText(normalizeNumberInput(valuesText))
+    setKText(String(parsed.k))
     restart(parsed)
   }
 
@@ -112,7 +116,7 @@ export default function SubarraySumVisual() {
   const sum = current.read !== null ? current.prefixes[current.read + 1] : current.output !== null ? current.prefixes[current.values.length] : 0
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -148,7 +152,7 @@ export default function SubarraySumVisual() {
             <span className="h-4 text-xs text-muted">{t('subarraySum.columnStart')}</span>
             <span className="flex h-10 min-w-14 items-center justify-center text-sm text-muted">-</span>
             <span
-              className={`mt-1 flex h-10 min-w-14 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${prefixStyle(current, 0)}`}
+              className={`elev-raised mt-1 flex h-10 min-w-14 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${prefixStyle(current, 0)}`}
             >
               {current.prefixes[0]}
             </span>
@@ -157,12 +161,12 @@ export default function SubarraySumVisual() {
             <div key={index} className="flex flex-col items-center">
               <span className="h-4 font-mono text-xs text-muted tabular-nums">{index}</span>
               <span
-                className={`flex h-10 min-w-14 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${numberStyle(current, index)}`}
+                className={`elev-raised flex h-10 min-w-14 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${numberStyle(current, index)}`}
               >
                 {value}
               </span>
               <span
-                className={`mt-1 flex h-10 min-w-14 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${prefixStyle(current, index + 1)}`}
+                className={`elev-raised mt-1 flex h-10 min-w-14 items-center justify-center rounded border-2 px-1 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${prefixStyle(current, index + 1)}`}
               >
                 {current.prefixes[index + 1] ?? ''}
               </span>
@@ -189,7 +193,7 @@ export default function SubarraySumVisual() {
                 {t('subarraySum.total')}
               </th>
               {current.map.map((entry) => (
-                <th key={entry.sum} scope="col" className={`min-w-12 px-2 py-1 text-center font-semibold motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${mapStyle(current, entry.sum)}`}>
+                <th key={entry.sum} scope="col" className={`min-w-12 px-2 py-1 text-center font-semibold motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${mapStyle(current, entry.sum)}`}>
                   {entry.sum}
                 </th>
               ))}
@@ -199,7 +203,7 @@ export default function SubarraySumVisual() {
                 {t('subarraySum.timesHeader')}
               </th>
               {current.map.map((entry) => (
-                <td key={entry.sum} className={`min-w-12 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${mapStyle(current, entry.sum)}`}>
+                <td key={entry.sum} className={`min-w-12 px-2 py-1 text-center motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${mapStyle(current, entry.sum)}`}>
                   {entry.times}
                 </td>
               ))}
@@ -218,7 +222,7 @@ export default function SubarraySumVisual() {
           <TextWithCode text={t('subarraySum.legendTotal')} />
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-sm border border-pass bg-pass" aria-hidden="true" />
+          <span className="inline-block size-3 rounded-sm border border-found-line bg-found" aria-hidden="true" />
           <TextWithCode text={t('subarraySum.legendMatch')} />
         </li>
         <li className="flex items-center gap-1.5">
@@ -234,9 +238,7 @@ export default function SubarraySumVisual() {
         </p>
       )}
 
-      <p aria-live="polite" className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} />
 
       <PlaybackControls playback={playback} />
 
@@ -244,57 +246,59 @@ export default function SubarraySumVisual() {
         <button type="button" onClick={() => restart(randomExample())} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <div className="flex flex-wrap items-end gap-2">
-            <div className="min-w-0 flex-1 basis-40">
-              <label htmlFor={`${id}-values`} className="block text-sm font-medium">
-                {t('common.yourOwnNumbers')}
-              </label>
-              <input
-                id={`${id}-values`}
-                type="text"
-                autoComplete="off"
-                spellCheck={false}
-                dir="ltr"
-                value={valuesText}
-                onChange={(event) => setValuesText(event.target.value)}
-                placeholder={t('subarraySum.placeholderValues')}
-                aria-invalid={inputError?.field === 'values'}
-                aria-describedby={describedBy('values')}
-                className={`mt-1 ${inputClass('values')}`}
-              />
+        <OwnInput>
+          <form onSubmit={handleCustom} noValidate>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="min-w-0 flex-1 basis-40">
+                <label htmlFor={`${id}-values`} className="block text-sm font-medium">
+                  {t('common.yourOwnNumbers')}
+                </label>
+                <input
+                  id={`${id}-values`}
+                  type="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  dir="ltr"
+                  value={valuesText}
+                  onChange={(event) => setValuesText(event.target.value)}
+                  placeholder={t('subarraySum.placeholderValues')}
+                  aria-invalid={inputError?.field === 'values'}
+                  aria-describedby={describedBy('values')}
+                  className={`mt-1 ${inputClass('values')}`}
+                />
+              </div>
+              <div className="w-28">
+                <label htmlFor={`${id}-k`} className="block text-sm font-medium">
+                  k
+                </label>
+                <input
+                  id={`${id}-k`}
+                  type="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  dir="ltr"
+                  value={kText}
+                  onChange={(event) => setKText(event.target.value)}
+                  placeholder={t('subarraySum.placeholderK')}
+                  aria-invalid={inputError?.field === 'k'}
+                  aria-describedby={describedBy('k')}
+                  className={`mt-1 ${inputClass('k')}`}
+                />
+              </div>
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThese')}
+              </button>
             </div>
-            <div className="w-28">
-              <label htmlFor={`${id}-k`} className="block text-sm font-medium">
-                k
-              </label>
-              <input
-                id={`${id}-k`}
-                type="text"
-                autoComplete="off"
-                spellCheck={false}
-                dir="ltr"
-                value={kText}
-                onChange={(event) => setKText(event.target.value)}
-                placeholder={t('subarraySum.placeholderK')}
-                aria-invalid={inputError?.field === 'k'}
-                aria-describedby={describedBy('k')}
-                className={`mt-1 ${inputClass('k')}`}
-              />
-            </div>
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThese')}
-            </button>
-          </div>
-          <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={t('subarraySum.hint', { count: MAX_NUMBERS, max: MAX_VALUE, maxK: MAX_K })} />
-          </p>
-          {inputError && (
-            <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError.message} />
+            <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={t('subarraySum.hint', { count: MAX_NUMBERS, max: MAX_VALUE, maxK: MAX_K })} />
             </p>
-          )}
-        </form>
+            {inputError && (
+              <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError.message} />
+              </p>
+            )}
+          </form>
+        </OwnInput>
       </div>
     </div>
   )

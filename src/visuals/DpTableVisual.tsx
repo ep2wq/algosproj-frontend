@@ -1,10 +1,12 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { normalizeNumberInput, numberParts, westernDigits } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import { DP_NS, type DpT } from './dpI18n'
 import { editFrames, gridPathFrames, itemName, knapsackFrames, lcsFrames, type Cell, type DpTableFrame } from './dpTableFrames'
 import { joinAnd } from './i18n'
-import PlaybackControls, { buttonClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { usePlayback } from './usePlayback'
 import { useCentreCells, useScrollCue } from './useScrollCue'
 
@@ -73,7 +75,7 @@ const isWhole = (part: string) => /^\d+$/.test(part)
 // Returns the input, or the field and message of the error to show.
 function parseInput(mode: DpTableMode, first: string, second: string, t: DpT): TableInput | { field: 1 | 2; error: string } {
   if (mode === 'grid') {
-    const rows = first.split(/[\s,]+/).filter(Boolean)
+    const rows = numberParts(first)
     if (rows.length === 0) return { field: 1, error: t('grid.atLeastOneRow') }
     if (rows.some((row) => !/^[.#]+$/.test(row))) return { field: 1, error: t('dpTable.grid.onlyDots') }
     if (rows.length > MAX_SIDE || rows.some((row) => row.length > MAX_SIDE)) return { field: 1, error: t('grid.tooBig', { max: MAX_SIDE }) }
@@ -82,10 +84,10 @@ function parseInput(mode: DpTableMode, first: string, second: string, t: DpT): T
     return { mode, grid: rows }
   }
   if (mode === 'knapsack') {
-    const items = first.split(',').map((item) => item.trim().split(/\s+/)).filter((parts) => parts[0] !== '')
+    const items = westernDigits(first).split(/[,،؛;]/).map((item) => item.trim().split(/\s+/)).filter((parts) => parts[0] !== '')
     const valid = items.length >= 1 && items.length <= MAX_ITEMS && items.every((parts) => parts.length === 2 && parts.every(isWhole) && Number(parts[0]) >= 1 && Number(parts[0]) <= MAX_W && Number(parts[1]) <= 99)
     if (!valid) return { field: 1, error: t('dpTable.knapsack.itemsInvalid', { maxItems: MAX_ITEMS, max: MAX_W }) }
-    const capacity = second.trim()
+    const capacity = normalizeNumberInput(second)
     if (!isWhole(capacity) || Number(capacity) < 1 || Number(capacity) > MAX_W) return { field: 2, error: t('dpTable.knapsack.capacityInvalid', { max: MAX_W }) }
     return { mode, items: items.map((parts): [number, number] => [Number(parts[0]), Number(parts[1])]), capacity: Number(capacity) }
   }
@@ -124,8 +126,8 @@ function isBlocked(input: TableInput, i: number, j: number) {
 function cellClass(input: TableInput, frame: DpTableFrame, i: number, j: number) {
   const last = frame.cells.length - 1
   const lastCol = frame.cells[0].length - 1
-  if (same(frame.current, i, j)) return 'border-warn bg-warn text-inverse'
-  if (frame.answer && i === last && j === lastCol) return 'border-pass bg-pass text-inverse'
+  if (same(frame.current, i, j)) return 'border-warn bg-warn text-inverse motion-safe:[[data-travel]_&]:animate-hit'
+  if (frame.answer && i === last && j === lastCol) return 'border-found-line bg-found text-found-ink'
   if (has(frame.path, i, j)) return 'border-pass bg-pass/15 text-ink'
   if (has(frame.reads, i, j)) return 'border-dashed border-accent bg-surface text-ink'
   if (isBlocked(input, i, j)) return 'border-ink bg-ink text-inverse'
@@ -188,6 +190,15 @@ export default function DpTableVisual({ mode }: { mode: DpTableMode }) {
       return
     }
     setInputError(null)
+    // The fields show what was understood, in one clean form.
+    if (parsed.mode === 'grid') setFirst(parsed.grid.join(' '))
+    else if (parsed.mode === 'knapsack') {
+      setFirst(parsed.items.map((item) => item.join(' ')).join(', '))
+      setSecond(String(parsed.capacity))
+    } else {
+      setFirst(parsed.a)
+      setSecond(parsed.b)
+    }
     restart(parsed)
   }
 
@@ -217,7 +228,7 @@ export default function DpTableVisual({ mode }: { mode: DpTableMode }) {
         : t('dpTable.strings.hint', { max: MAX_LETTERS, limit: PROBLEM_LETTERS[mode] })
 
   return (
-    <div className="mt-4 max-w-5xl">
+    <div className="mt-4 max-w-5xl" {...playback.rootProps}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <SpeedSelect playback={playback} />
       </div>
@@ -256,7 +267,7 @@ export default function DpTableVisual({ mode }: { mode: DpTableMode }) {
                 return (
                   <span
                     key={j}
-                    className={`relative flex size-8 items-center justify-center rounded border-2 text-sm font-semibold tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${cellClass(input, current, i, j)}`}
+                    className={`elev-raised relative flex size-8 items-center justify-center rounded border-2 text-sm font-semibold tabular-nums motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${cellClass(input, current, i, j)}`}
                   >
                     {isBlocked(input, i, j) && <span className="absolute top-0 start-0.5 text-[9px] leading-none font-medium">#</span>}
                     {onPath && <span className="absolute top-0 end-0.5 text-[10px] leading-none">•</span>}
@@ -279,12 +290,12 @@ export default function DpTableVisual({ mode }: { mode: DpTableMode }) {
           {t('shared.legendRead')}
         </li>
         <li className="flex items-center gap-1.5">
-          <span className="inline-block h-3.5 w-5 rounded border-2 border-pass bg-pass" aria-hidden="true" />
+          <span className="inline-block h-3.5 w-5 rounded border-2 border-found-line bg-found" aria-hidden="true" />
           {t('shared.legendAnswer')}
         </li>
         {(mode === 'lcs' || mode === 'edit') && (
           <li className="flex items-center gap-1.5">
-            <span className="inline-block h-3.5 w-5 rounded border-2 border-pass bg-pass/15" aria-hidden="true" />
+            <span className="inline-block h-3.5 w-5 rounded border-2 border-found-line bg-found/15" aria-hidden="true" />
             <TextWithCode text={t('dpTable.legendPath')} />
           </li>
         )}
@@ -325,9 +336,7 @@ export default function DpTableVisual({ mode }: { mode: DpTableMode }) {
       )}
 
       {/* Quiet while playing (a sentence per step would flood a screen reader); read out when paused. */}
-      <p aria-live={playing ? 'off' : 'polite'} className="mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} live={playing ? 'off' : 'polite'} />
 
       <PlaybackControls playback={playback} />
 
@@ -335,60 +344,62 @@ export default function DpTableVisual({ mode }: { mode: DpTableMode }) {
         <button type="button" onClick={() => restart(randomInput(mode))} className={buttonClass}>
           {t('common.newRandomExample')}
         </button>
-        <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-          <div className="flex flex-wrap items-end gap-2">
-            <div className="min-w-0 flex-1 basis-40">
-              <label htmlFor={`${id}-first`} className="block text-sm font-medium">
-                <TextWithCode text={labels[0]} />
-              </label>
-              <input
-                id={`${id}-first`}
-                type="text"
-                autoComplete="off"
-                spellCheck={false}
-                dir="ltr"
-                value={first}
-                onChange={(event) => setFirst(event.target.value)}
-                placeholder={placeholders[0]}
-                aria-invalid={inputError?.field === 1}
-                aria-describedby={describedBy(1)}
-                className={fieldClass(1)}
-              />
-            </div>
-            {twoFields && (
-              <div className={mode === 'knapsack' ? 'w-28 shrink-0' : 'min-w-0 flex-1 basis-40'}>
-                <label htmlFor={`${id}-second`} className="block text-sm font-medium">
-                  <TextWithCode text={labels[1]} />
+        <OwnInput>
+          <form onSubmit={handleCustom} noValidate>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="min-w-0 flex-1 basis-40">
+                <label htmlFor={`${id}-first`} className="block text-sm font-medium">
+                  <TextWithCode text={labels[0]} />
                 </label>
                 <input
-                  id={`${id}-second`}
+                  id={`${id}-first`}
                   type="text"
-                  inputMode={mode === 'knapsack' ? 'numeric' : undefined}
                   autoComplete="off"
                   spellCheck={false}
                   dir="ltr"
-                  value={second}
-                  onChange={(event) => setSecond(event.target.value)}
-                  placeholder={placeholders[1]}
-                  aria-invalid={inputError?.field === 2}
-                  aria-describedby={describedBy(2)}
-                  className={fieldClass(2)}
+                  value={first}
+                  onChange={(event) => setFirst(event.target.value)}
+                  placeholder={placeholders[0]}
+                  aria-invalid={inputError?.field === 1}
+                  aria-describedby={describedBy(1)}
+                  className={fieldClass(1)}
                 />
               </div>
-            )}
-            <button type="submit" className={`${buttonClass} shrink-0`}>
-              {t('common.useThis')}
-            </button>
-          </div>
-          <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
-            <TextWithCode text={hint} />
-          </p>
-          {inputError && (
-            <p id={errorId} role="alert" className="mt-1 text-sm text-fail">
-              <TextWithCode text={inputError.error} />
+              {twoFields && (
+                <div className={mode === 'knapsack' ? 'w-28 shrink-0' : 'min-w-0 flex-1 basis-40'}>
+                  <label htmlFor={`${id}-second`} className="block text-sm font-medium">
+                    <TextWithCode text={labels[1]} />
+                  </label>
+                  <input
+                    id={`${id}-second`}
+                    type="text"
+                    inputMode={mode === 'knapsack' ? 'numeric' : undefined}
+                    autoComplete="off"
+                    spellCheck={false}
+                    dir="ltr"
+                    value={second}
+                    onChange={(event) => setSecond(event.target.value)}
+                    placeholder={placeholders[1]}
+                    aria-invalid={inputError?.field === 2}
+                    aria-describedby={describedBy(2)}
+                    className={fieldClass(2)}
+                  />
+                </div>
+              )}
+              <button type="submit" className={`${buttonClass} shrink-0`}>
+                {t('common.useThis')}
+              </button>
+            </div>
+            <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
+              <TextWithCode text={hint} />
             </p>
-          )}
-        </form>
+            {inputError && (
+              <p id={errorId} role="alert" className="mt-1 text-sm text-fail">
+                <TextWithCode text={inputError.error} />
+              </p>
+            )}
+          </form>
+        </OwnInput>
       </div>
     </div>
   )

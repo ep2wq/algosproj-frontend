@@ -72,11 +72,11 @@ function SignInHint({ text }: { text: string }) {
   return (
     <p className="rounded-lg border border-dashed border-field px-4 py-3 text-muted">
       {text}{' '}
-      <Link to="/login" className="rounded text-accent underline underline-offset-2">
+      <Link to="/login" className="rounded text-accent-text underline underline-offset-2">
         {t('nav.logIn')}
       </Link>{' '}
       <span aria-hidden="true">·</span>{' '}
-      <Link to="/register" className="rounded text-accent underline underline-offset-2">
+      <Link to="/register" className="rounded text-accent-text underline underline-offset-2">
         {t('landing.createAccount')}
       </Link>
     </p>
@@ -219,7 +219,7 @@ export function LessonsPanel({
                         {t('landing.lessons.done')}
                       </span>
                     ) : (
-                      <span className={`mt-0.5 text-sm ${isNext ? 'font-medium text-accent' : 'text-muted'}`}>
+                      <span className={`mt-0.5 text-sm ${isNext ? 'font-medium text-accent-text' : 'text-muted'}`}>
                         {isNext ? t('landing.lessons.upNextMeta', { meta }) : meta}
                       </span>
                     )}
@@ -249,7 +249,7 @@ export function LessonsPanel({
                 columns than modules at this width). /lessons does not scroll to a #track- anchor. */}
             {trackModules.length > 1 && (
               <p className={`mt-1 ${trackModules.length > shown.length ? '' : ALL_SHOWN_FROM[trackModules.length]}`}>
-                <Link to="/lessons" className="inline-flex min-h-11 items-center rounded text-sm text-accent underline underline-offset-2 sm:pointer-fine:min-h-8">
+                <Link to="/lessons" className="inline-flex min-h-11 items-center rounded text-sm text-accent-text underline underline-offset-2 sm:pointer-fine:min-h-8">
                   {t('landing.lessons.seeAll', { count: trackModules.length, value: count(trackModules.length), track: name })}
                 </Link>
               </p>
@@ -289,14 +289,14 @@ export function ChallengesPanel({ challenges, failure, retry }: Data) {
                   <SkeletonLines lines={1} className="w-24 text-sm" />
                 </div>
                 <div className="px-4 pt-2 pb-3">
-                  <span className="inline-flex min-h-11 items-center text-sm text-accent">{t('landing.challenges.show')}</span>
+                  <span className="inline-flex min-h-11 items-center text-sm text-accent-text">{t('landing.challenges.show')}</span>
                 </div>
               </div>
             ))}
           </div>
         </LoadingRegion>
         <p className="mt-4">
-          <Link to="/challenges" className="rounded text-accent underline underline-offset-2">
+          <Link to="/challenges" className="rounded text-accent-text underline underline-offset-2">
             {t('landing.challenges.all')}
           </Link>
         </p>
@@ -363,7 +363,7 @@ export function ChallengesPanel({ challenges, failure, retry }: Data) {
                 )}
               </div>
               <details className="group px-4 pt-2 pb-3">
-                <summary className="inline-flex min-h-11 cursor-pointer items-center gap-1 rounded text-sm text-accent hover:underline">
+                <summary className="inline-flex min-h-11 cursor-pointer items-center gap-1 rounded text-sm text-accent-text hover:underline">
                   {t('landing.challenges.show')}
                 </summary>
                 <ul className="mt-1 grid gap-x-6 md:grid-cols-2">
@@ -373,7 +373,7 @@ export function ChallengesPanel({ challenges, failure, retry }: Data) {
                         {user && item.solved && <CheckIcon />}
                         {user && <span className="sr-only">{item.solved ? t('common.solved') : t('common.notSolved')}</span>}
                       </span>
-                      <Link to={`/challenges/${item.slug}`} className="min-w-0 flex-1 rounded text-ink hover:text-accent hover:underline">
+                      <Link to={`/challenges/${item.slug}`} className="min-w-0 flex-1 rounded text-ink hover:text-accent-text hover:underline">
                         <Content lang="auto">{item.title}</Content>
                       </Link>
                       <span className="shrink-0 text-muted tabular-nums">
@@ -388,7 +388,7 @@ export function ChallengesPanel({ challenges, failure, retry }: Data) {
         })}
       </div>
       <p className="mt-4">
-        <Link to="/challenges" className="rounded text-accent underline underline-offset-2">
+        <Link to="/challenges" className="rounded text-accent-text underline underline-offset-2">
           {t('landing.challenges.all')}
         </Link>
       </p>
@@ -514,7 +514,7 @@ export function LeaderboardPanel() {
                     <td className={`${boardRank} text-muted`}>{formatNumber(entry.rank, language)}</td>
                     <td className={boardName}>
                       <span dir="auto">{entry.name}</span>
-                      {isMe && <span className="ms-2 text-sm font-medium whitespace-nowrap text-accent">{t('leaderboard.you')}</span>}
+                      {isMe && <span className="ms-2 text-sm font-medium whitespace-nowrap text-accent-text">{t('leaderboard.you')}</span>}
                     </td>
                     <td className={boardPoints}>{formatNumber(entry.points, language)}</td>
                   </tr>
@@ -540,13 +540,13 @@ export function LeaderboardPanel() {
       {!loading && !user && (
         <p className="mt-3 text-muted">
           {t('landing.board.signUp')}{' '}
-          <Link to="/register" className="rounded text-accent underline underline-offset-2">
+          <Link to="/register" className="rounded text-accent-text underline underline-offset-2">
             {t('landing.createAccount')}
           </Link>
         </p>
       )}
       <p className="mt-4">
-        <Link to="/leaderboard" className="rounded text-accent underline underline-offset-2">
+        <Link to="/leaderboard" className="rounded text-accent-text underline underline-offset-2">
           {t('landing.board.full')}
         </Link>
       </p>

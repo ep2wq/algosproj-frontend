@@ -126,10 +126,12 @@
     "tabHint": "Tab indents. Ctrl+M (Mac: Ctrl+Shift+M) makes Tab move focus.",
     "submit": "Submit",
     "running": "Running tests...",
-    "logInToSubmit": "Log in to submit"
+    "logInToSubmit": "Log in to submit",
+    "shortcutHint": "Keyboard shortcut:"
   },
   "result": {
     "label": "Submission result",
+    "summary": "Result summary",
     "status": {
       "passed": "Passed",
       "failed": "Failed",
@@ -139,12 +141,13 @@
     "testsPassed_one": "{{passed}} of {{count}} tests passed",
     "testsPassed_other": "{{passed}} of {{count}} tests passed",
     "milliseconds": "{{ms}} ms",
-    "pointsAwarded_one": "+{{count}} point",
-    "pointsAwarded_other": "+{{count}} points",
+    "pointsAwarded_one": "+{{value}} point",
+    "pointsAwarded_other": "+{{value}} points",
     "alreadySolved": "Already solved, so no new points.",
     "compileError": "Compile error",
     "test": "Test {{number}}:",
-    "hiddenTest": "Hidden test:",
+    "hiddenTests_one": "{{value}} hidden test: {{passed}} passed",
+    "hiddenTests_other": "{{value}} hidden tests: {{passed}} passed",
     "passed": "passed",
     "failed": "failed",
     "input": "Input",
@@ -936,7 +939,7 @@
   "cookies": {
     "title": "Cookies and storage",
     "metaDescription": "Every cookie and browser storage key the site uses, what it is for and how long it lasts.",
-    "body": "The site uses three cookies, all needed to log in and to keep forms safe, and keeps four small values in your browser: three settings you choose and whether you have closed the cookie notice. There are no analytics, advertising or tracking cookies, so there is nothing to agree to.\n\n## About the cookies\n\n- The session cookie can't be read by scripts on the page (HttpOnly), and is sent only on requests from this site (SameSite=Lax). On the live site it should also be sent only over HTTPS; that is a server setting.\n- `XSRF-TOKEN` has to be readable by the page, because the page sends its value back with every form. It proves that a request comes from this site, not from another one.\n- Signing in with Google or GitHub uses the same session cookie and adds no other cookie or stored value. When Google or GitHub sends you back to this site, your browser sends the session cookie with that page visit (SameSite=Lax allows this for a link you follow), so the server can check that the sign-in started here.\n\n## Stored in your browser\n\nYour language, theme and sound choices are kept in your browser's local storage, on your device only. When you close the cookie notice, the date of this page's current version is kept there too (`cookie-notice`), so the notice stays closed until this text changes. None of these is ever sent to the server. Clearing your browser's site data removes them.",
+    "body": "The site uses three cookies, all needed to log in and to keep forms safe, and keeps five small values in your browser: four settings you choose and whether you have closed the cookie notice. There are no analytics, advertising or tracking cookies, so there is nothing to agree to.\n\n## About the cookies\n\n- The session cookie can't be read by scripts on the page (HttpOnly), and is sent only on requests from this site (SameSite=Lax). On the live site it should also be sent only over HTTPS; that is a server setting.\n- `XSRF-TOKEN` has to be readable by the page, because the page sends its value back with every form. It proves that a request comes from this site, not from another one.\n- Signing in with Google or GitHub uses the same session cookie and adds no other cookie or stored value. When Google or GitHub sends you back to this site, your browser sends the session cookie with that page visit (SameSite=Lax allows this for a link you follow), so the server can check that the sign-in started here.\n\n## Stored in your browser\n\nYour language, theme, sound and code language choices are kept in your browser's local storage, on your device only. When you close the cookie notice, the date of this page's current version is kept there too (`cookie-notice`), so the notice stays closed until this text changes. None of these is ever sent to the server. Clearing your browser's site data removes them.",
     "table": {
       "caption": "Cookies and storage keys",
       "name": "Name",
@@ -988,6 +991,13 @@
         "duration": "Until you clear site data",
         "necessary": "A setting you chose"
       },
+      "codeLang": {
+        "name": "`code-lang`",
+        "kind": "Local storage",
+        "purpose": "The programming language you used last in the code editor, so the editor and the lesson code open on it.",
+        "duration": "Until you clear site data",
+        "necessary": "A setting you chose"
+      },
       "cookieNotice": {
         "name": "`cookie-notice`",
         "kind": "Local storage",
@@ -1005,7 +1015,25 @@
   },
   "filters": {
     "label": "Filters",
-    "clearSearch": "Clear search"
+    "clearSearch": "Clear search",
+    "more": "More filters"
+  },
+  "shortcuts": {
+    "menu": "Keyboard shortcuts",
+    "title": "Keyboard shortcuts",
+    "closeDialog": "Close",
+    "done": "Done",
+    "search": "Focus the search field",
+    "submit": "Submit your code",
+    "playPause": "Play or pause a visualization",
+    "step": "Step a visualization back or forward",
+    "close": "Close a menu or dialog",
+    "help": "Show this list",
+    "ctrl": "Ctrl",
+    "cmd": "Cmd",
+    "enter": "Enter",
+    "space": "Space",
+    "esc": "Esc"
   },
   "bugReport": {
     "reportBug": "Report a bug",

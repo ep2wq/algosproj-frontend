@@ -1,11 +1,12 @@
 // The large call-to-action links of the public pages (landing, 404, contact): one filled, one outlined.
-// Links, so they get the 1 px press that index.css gives buttons here.
+// Links, so they get the press (scale 0.97, motion allowed) that index.css gives buttons; both are raised
+// controls (elev-raised, index.css): the bottom edge goes when pressed.
 export const primaryButton =
-  'inline-flex min-h-11 items-center justify-center rounded bg-accent px-5 font-medium text-inverse hover:bg-accent/90 motion-safe:active:translate-y-px'
+  'elev-raised inline-flex min-h-11 items-center justify-center rounded bg-accent px-5 font-medium text-inverse hover:bg-accent/90 motion-safe:active:scale-[0.97]'
 export const secondaryButton =
-  'inline-flex min-h-11 items-center justify-center rounded border border-field bg-surface px-5 font-medium text-ink hover:border-muted motion-safe:active:translate-y-px'
+  'elev-raised inline-flex min-h-11 items-center justify-center rounded border border-field bg-surface px-5 font-medium text-ink hover:border-muted hover:bg-hover motion-safe:active:scale-[0.97]'
 
 // Skip links: hidden until focused, then a floating box at the top start corner, above the sticky
 // header.
 export const skipLink =
-  'sr-only focus:not-sr-only focus:fixed focus:start-2 focus:top-2 focus:z-30 focus:rounded focus:border focus:border-accent focus:bg-surface focus:px-3 focus:py-2 focus:text-accent focus:shadow-(--float-shadow)'
+  'sr-only focus:not-sr-only focus:fixed focus:start-2 focus:top-2 focus:z-30 focus:rounded focus:border focus:border-accent focus:bg-surface focus:px-3 focus:py-2 focus:text-accent-text focus:shadow-(--float-shadow)'

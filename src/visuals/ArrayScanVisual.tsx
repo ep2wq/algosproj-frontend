@@ -1,12 +1,18 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { normalizeNumberInput, numberParts } from '../lib/normalize'
 import { TextWithCode } from '../components/LessonBody'
 import { maxFrames, sumFrames, type ScanMode } from './arrayScanFrames'
 import type { T } from './i18n'
-import PlaybackControls, { buttonClass, demoCaptionClass, SpeedSelect } from './PlaybackControls'
+import OwnInput from './OwnInput'
+import PlaybackControls, { buttonClass, SpeedSelect, StepText } from './PlaybackControls'
 import { CELL_SIZES } from './SearchCells'
+import { useFlip } from './useFlip'
 import { usePlayback } from './usePlayback'
 import { useCentreCells, useScrollCue } from './useScrollCue'
+
+// The name of the reading position, drawn above its cell.
+const POINTER = 'i'
 
 const MAX_NUMBERS = 12
 
@@ -18,7 +24,7 @@ function randomArray() {
 
 // Returns the numbers, or an error message to show.
 function parseNumbers(text: string, t: T): number[] | string {
-  const parts = text.split(/[\s,]+/).filter(Boolean)
+  const parts = numberParts(text)
   if (parts.length === 0) return t('common.atLeastOneNumber')
   if (parts.length > MAX_NUMBERS) return t('common.atMostNumbers', { count: MAX_NUMBERS })
   if (parts.some((part) => !/^-?\d+$/.test(part) || Number(part) < -99 || Number(part) > 99)) {
@@ -48,6 +54,8 @@ export default function ArrayScanVisual({ mode, demo }: { mode: ScanMode; demo?:
   // Before the first step the row starts at the beginning; after the last it stays at the end.
   const focusIndex = current.current ?? (current.done ? current.array.length - 1 : 0)
   useCentreCells(scrollRef, focusIndex, focusIndex, array)
+  // While it plays, the i pointer slides to the next cell, and that cell pulses once.
+  useFlip(scrollRef, playback)
 
   function restart(nextArray: number[]) {
     setArray(nextArray)
@@ -62,11 +70,12 @@ export default function ArrayScanVisual({ mode, demo }: { mode: ScanMode; demo?:
       return
     }
     setInputError('')
+    setCustomText(normalizeNumberInput(customText))
     restart(parsed)
   }
 
   return (
-    <div className={demo === undefined ? 'mt-4 max-w-5xl' : undefined}>
+    <div className={demo === undefined ? 'mt-4 max-w-5xl' : undefined} {...playback.rootProps}>
       {demo === undefined && (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <SpeedSelect playback={playback} />
@@ -88,10 +97,10 @@ export default function ArrayScanVisual({ mode, demo }: { mode: ScanMode; demo?:
         >
           {current.array.map((value, index) => (
             <div key={index} data-index={index} className={`flex ${size.width} flex-col items-center`}>
-              <span className={`h-4 ${size.small} font-semibold text-ink ${size.pointer}`}>{current.current === index ? 'i' : ''}</span>
+              <span className={`h-4 ${size.small} font-semibold text-ink ${size.pointer}`}>{current.current === index && <span data-flip="pointer-i">{POINTER}</span>}</span>
               <span
-                className={`mt-0.5 flex ${size.box} items-center justify-center rounded border-2 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-300 motion-safe:ease-calm ${
-                  current.current === index ? 'border-warn bg-warn text-inverse' : 'border-muted bg-surface text-ink'
+                className={`elev-raised mt-0.5 flex ${size.box} items-center justify-center rounded border-2 text-sm font-medium tabular-nums motion-safe:transition-colors motion-safe:duration-(--dur-ui) motion-safe:ease-out ${
+                  current.current === index ? 'border-warn bg-warn text-inverse motion-safe:[[data-travel]_&]:animate-hit' : 'border-muted bg-surface text-ink'
                 }`}
               >
                 {value}
@@ -124,12 +133,7 @@ export default function ArrayScanVisual({ mode, demo }: { mode: ScanMode; demo?:
         </p>
       )}
 
-      <p
-        aria-live={demo === undefined ? 'polite' : undefined}
-        className={demo === undefined ? 'mt-3 min-h-12 rounded-lg bg-accent-soft px-3 py-2 text-sm' : demoCaptionClass}
-      >
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} demo={demo !== undefined} />
 
       <PlaybackControls playback={playback} wide={demo !== undefined} />
 
@@ -138,37 +142,39 @@ export default function ArrayScanVisual({ mode, demo }: { mode: ScanMode; demo?:
           <button type="button" onClick={() => restart(randomArray())} className={buttonClass}>
             <TextWithCode text={t('common.newRandomArray')} />
           </button>
-          <form onSubmit={handleCustom} noValidate className="min-w-0 flex-1 basis-56">
-            <label htmlFor={`${id}-numbers`} className="block text-sm font-medium">
-              {t('common.yourOwnNumbers')}
-            </label>
-            <div className="mt-1 flex flex-col gap-2 sm:flex-row">
-              <input
-                id={`${id}-numbers`}
-                type="text"
-                dir="ltr"
-                value={customText}
-                onChange={(event) => setCustomText(event.target.value)}
-                placeholder={t('arrayScan.placeholder')}
-                aria-invalid={Boolean(inputError)}
-                aria-describedby={`${id}-numbers-hint${inputError ? ` ${id}-numbers-error` : ''}`}
-                className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
-                  inputError ? 'border-fail' : 'border-field hover:border-muted'
-                }`}
-              />
-              <button type="submit" className={`${buttonClass} shrink-0`}>
-                {t('common.useThese')}
-              </button>
-            </div>
-            <p id={`${id}-numbers-hint`} className="mt-1 text-xs text-muted">
-              <TextWithCode text={t('arrayScan.hint', { count: MAX_NUMBERS })} />
-            </p>
-            {inputError && (
-              <p id={`${id}-numbers-error`} role="alert" className="mt-1 text-sm text-fail">
-                <TextWithCode text={inputError} />
+          <OwnInput>
+            <form onSubmit={handleCustom} noValidate>
+              <label htmlFor={`${id}-numbers`} className="block text-sm font-medium">
+                {t('common.yourOwnNumbers')}
+              </label>
+              <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+                <input
+                  id={`${id}-numbers`}
+                  type="text"
+                  dir="ltr"
+                  value={customText}
+                  onChange={(event) => setCustomText(event.target.value)}
+                  placeholder={t('arrayScan.placeholder')}
+                  aria-invalid={Boolean(inputError)}
+                  aria-describedby={`${id}-numbers-hint${inputError ? ` ${id}-numbers-error` : ''}`}
+                  className={`block w-full min-w-0 rounded border bg-surface px-3 py-1.5 text-sm ${
+                    inputError ? 'border-fail' : 'border-field hover:border-muted'
+                  }`}
+                />
+                <button type="submit" className={`${buttonClass} shrink-0`}>
+                  {t('common.useThese')}
+                </button>
+              </div>
+              <p id={`${id}-numbers-hint`} className="mt-1 text-xs text-muted">
+                <TextWithCode text={t('arrayScan.hint', { count: MAX_NUMBERS })} />
               </p>
-            )}
-          </form>
+              {inputError && (
+                <p id={`${id}-numbers-error`} role="alert" className="mt-1 text-sm text-fail">
+                  <TextWithCode text={inputError} />
+                </p>
+              )}
+            </form>
+          </OwnInput>
         </div>
       )}
     </div>

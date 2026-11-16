@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextWithCode } from '../components/LessonBody'
 import { binarySearchFrames } from './binarySearchFrames'
-import PlaybackControls, { buttonClass, demoCaptionClass } from './PlaybackControls'
+import PlaybackControls, { buttonClass, StepText } from './PlaybackControls'
 import SearchCells from './SearchCells'
 import { usePlayback } from './usePlayback'
 
@@ -25,18 +25,17 @@ export function HeroSearch({ demo }: { demo: { array: number[]; target: number }
   const { playback, current } = useAutoSearch(demo.array, demo.target)
 
   return (
-    <div>
+    <div {...playback.rootProps}>
       <SearchCells
         frame={current}
+        playback={playback}
         large
         framed={false}
         className="mt-3"
         regionLabel={t('binarySearch.region')}
         imageLabel={t('binarySearch.label', { values: current.array.join(', '), target: demo.target })}
       />
-      <p className={demoCaptionClass}>
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} demo />
       <PlaybackControls playback={playback} wide />
     </div>
   )
@@ -54,15 +53,14 @@ export function NotFoundSearch() {
   const ended = playback.step >= playback.lastStep
 
   return (
-    <div>
+    <div {...playback.rootProps}>
       <SearchCells
         frame={current}
+        playback={playback}
         regionLabel={t('notFoundSearch.region')}
         imageLabel={t('notFoundSearch.label', { values: current.array.join(', '), target: NOT_FOUND })}
       />
-      <p className="mt-3 min-h-16 rounded-lg bg-accent-soft px-3 py-2 text-sm">
-        <TextWithCode text={current.description} />
-      </p>
+      <StepText playback={playback} text={current.description} live="off" className="mt-3 min-h-16 note-box rounded-lg px-3 py-2 text-sm" />
       {/* The punchline, announced once when the search ends; Search again sits next to it. */}
       <div className="mt-3 flex min-h-9 flex-wrap items-center gap-x-4 gap-y-2">
         <p aria-live="polite" className="text-lg font-semibold">

@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { shakeElement } from '../lib/normalize'
 
 type FieldProps = {
   id: string
@@ -19,10 +20,16 @@ type FieldProps = {
 export default function Field({ id, label, type = 'text', value, onChange, autoComplete, errors, required = true, dir, lang, hint }: FieldProps) {
   const { t } = useTranslation()
   const [visible, setVisible] = useState(false)
+  const input = useRef<HTMLInputElement>(null)
   const errorId = `${id}-error`
   const hintId = `${id}-hint`
   const hasError = Boolean(errors && errors.length > 0)
   const isPassword = type === 'password'
+  // A new error shakes the field once (2 cycles, 4 px, motion allowed only).
+  const errorKey = hasError ? errors!.join('|') : ''
+  useEffect(() => {
+    if (errorKey) shakeElement(input.current)
+  }, [errorKey])
   const describedBy = [hint ? hintId : '', hasError ? errorId : ''].filter(Boolean).join(' ') || undefined
   const hintEl = hint && (
     <p id={hintId} className="mt-1 text-sm text-muted">
@@ -36,6 +43,7 @@ export default function Field({ id, label, type = 'text', value, onChange, autoC
         {label}
       </label>
       <input
+        ref={input}
         id={id}
         name={id}
         type={isPassword && visible ? 'text' : type}
@@ -44,6 +52,8 @@ export default function Field({ id, label, type = 'text', value, onChange, autoC
         lang={lang}
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        // An email is trimmed when the field is left (and again before it is sent).
+        onBlur={type === 'email' ? () => onChange(value.trim()) : undefined}
         autoComplete={autoComplete}
         required={required}
         aria-invalid={hasError}
@@ -60,7 +70,7 @@ export default function Field({ id, label, type = 'text', value, onChange, autoC
             type="button"
             aria-controls={id}
             onClick={() => setVisible((v) => !v)}
-            className="mt-1 inline-flex min-h-11 shrink-0 items-center rounded px-1 text-sm text-accent underline-offset-2 hover:underline sm:pointer-fine:min-h-6"
+            className="mt-1 inline-flex min-h-11 shrink-0 items-center rounded px-1 text-sm text-accent-text underline-offset-2 hover:underline sm:pointer-fine:min-h-6"
           >
             {t(visible ? 'auth.hidePassword' : 'auth.showPassword')}
           </button>
@@ -71,7 +81,7 @@ export default function Field({ id, label, type = 'text', value, onChange, autoC
       {hasError && (
         // Field errors come from the server, in the page language (the admin area: English). The
         // span keeps the punctuation of an English message in place on an Arabic page.
-        <p id={errorId} className="mt-1 text-sm text-fail">
+        <p id={errorId} role="alert" className="mt-1 text-sm text-fail">
           <span dir="auto">{errors!.join(' ')}</span>
         </p>
       )}
